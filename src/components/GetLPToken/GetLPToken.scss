@@ -1,0 +1,91 @@
+@import '../../assets/theme/clr_var.scss';
+
+.connect_wallet.get_tokens{
+    .modal-dialog{
+        display: flex;
+        flex: 1;  
+        height: auto;
+        
+        .modal-body{
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-content{
+            background: #1C1C2D;
+            color: $white;
+            border: 1px solid $boderColor;
+            border-radius: 19px;
+            .modal-header{
+                padding: 30px 45px; border-bottom: 1px solid $boderColor;
+                @media (max-width:767px){
+                    padding: 20px;   
+                }
+                .modal-title{
+                    font-size: 20px; font-weight: 600;
+                    @media (max-width:767px){
+                        font-size: 16px;
+                    }
+                }
+                .btn-close {
+                    background: url(../../assets/images/icon_close_modal.png) center no-repeat;
+                    outline: none;
+                    background-size: 13px;
+                    background-color: #AD3E7E;
+                    opacity: 1;
+                    border-radius: 50px;
+                }
+               
+            }
+            
+            .lptokn_area{
+                padding: 20px 25px 15px;
+                @media (max-width:767px){
+                   padding: 5px 5px 0;
+                }
+                p{
+                    font-family: $baseFont;
+                    margin-bottom: 15px; font-size: 14px; font-weight: 700; color: $white;
+                }
+                .input-group{
+                    .form-control{
+                        background: $dimbg; border-radius: 30px; padding:13px 15px; border:0;
+                        color: $white; width: 100%; font-size: 16px; font-weight: 700;
+                        &:focus{
+                            box-shadow: 0 0 0 0.25rem rgba(171, 61, 127, 0.4);
+                        }
+                    }
+                    .action{
+                        position: absolute;
+                        right: 11px; z-index: 9;
+                        top: 8px; background: $dimbg; padding-left: 12px;
+                        display: flex; align-items: center;
+                        .max_btn.btn {
+                            min-width: auto;
+                            padding: 0 18px;
+                            height: 34px;
+                            font-size: 14px;
+                        }
+                        .token_name {
+                            font-size: 16px;
+                            font-weight: 700;
+                            letter-spacing: 0.5px; margin-right: 20px;
+                        }
+                    }
+                }
+                .confirmation {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 30px 0 10px;
+                    .cancel_btn.btn{
+                        background: $dimbg;
+                    }
+                    .btn{
+                        font-weight: 600;
+                    }
+                }
+            }
+        }
+    }
+    
+}
+

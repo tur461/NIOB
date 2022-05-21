@@ -1,0 +1,77 @@
+@import "../../../assets/theme/clr_var.scss";
+
+.setting_modl {
+  .modal-dialog {
+    max-width: 460px;
+    margin: auto;
+    .modal-content {
+      @media (max-width: 767px) {
+        width: 95%;
+        margin: auto;
+      }
+    }
+  }
+  .modal-header {
+    padding: 21px 44px;
+  }
+  .stting_modl {
+    h6 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .selct_area {
+      margin: 25px 0;
+      button {
+        border-radius: 30px;
+        border: 0;
+        background: $dimbg;
+        color: $white;
+        padding: 8px 19px;
+        margin-right: 7px;
+        font-size: 14px;
+        position: relative;
+        font-weight: 600;
+        @media (max-width: 767px) {
+          padding: 8px 25px;
+          margin-bottom: 10px;
+        }
+      }
+      input {
+        background: $dimbg;
+        border: 0;
+        width: 150px;
+        color: $white;
+        border-radius: 30px;
+        padding: 0 15px;
+        height: 42px;
+        &:focus {
+          outline: 0 !important;
+        }
+        @media (max-width: 767px) {
+          width: 85%;
+          height: 35px;
+        }
+      }
+      small {
+        font-size: 11px;
+      }
+      .d-flex {
+        @media (max-width: 767px) {
+          display: block !important;
+        }
+      }
+    }
+    .dedline {
+      margin: 0;
+      button {
+        padding: 8px 19px;
+        width: 100px;
+      }
+    }
+  }
+
+  .toleranceIcon {
+    width: 15px;
+    margin-left: 5px;
+  }
+}

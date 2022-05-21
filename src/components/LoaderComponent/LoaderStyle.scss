@@ -1,0 +1,21 @@
+.overlayBox {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 11, 41, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.overlayDiv {
+    display: flex; 
+    position: fixed;
+    height: 100%;
+    width: 100%;
+    z-index: 9;
+    background: rgba(0,11,41, 0.7);
+    align-items: center;
+    justify-content: center;
+}

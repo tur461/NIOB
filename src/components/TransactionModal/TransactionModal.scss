@@ -1,0 +1,69 @@
+@import "../../assets/theme/_var.scss";
+
+.selectCurrency_modal {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  max-width: 410px;
+  transform: translateY(-50%);
+  @media (max-width: 767px) {
+    left: 15px;
+    right: 15px;
+  }
+}
+.modal_headerStyle {
+  border-bottom: 1px solid $secondaryColor;
+  margin-bottom: 25px;
+}
+
+.modal_headerStyle__rowA {
+  padding-top: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  .modal_headerStyle__rowA_colLeft {
+    display: flex;
+    align-items: center;
+    h2 {
+      font-family: $secondaryFont;
+      font-size: 18px;
+      color: $whiteColor;
+      font-weight: 400;
+      margin-right: 5px;
+    }
+  }
+  .modal_headerStyle__rowA_colRight {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    @media (max-width: 767px) {
+      flex-basis: 0;
+    }
+  }
+}
+.transactionSubmit {
+  max-width: 362px !important;
+  .modal_headerStyle {
+    border-bottom: 0 solid #000;
+  }
+  .transaction_body {
+    display: flex;
+    flex-direction: column;
+    .viewbox {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      a {
+        font-size: 19px;
+        line-height: 23px;
+        font-weight: 600;
+        color: #e3d42e;
+        margin-top: 20px;
+      }
+    }
+    .buttonStyle {
+      margin: 25px 0 15px 0;
+    }
+  }
+}

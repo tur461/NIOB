@@ -1,0 +1,160 @@
+@import "../../../assets/theme/clr_var.scss";
+
+.removeLiq_Modal {
+  .modal-dialog {
+    .modal-content {
+      .tokenName {
+        hr {
+          margin-bottom: 15px;
+        }
+      }
+
+      .modal-body {
+        padding: 0 30px 25px;
+        .comnBrdr {
+          border: 1px solid $boderColor;
+          border-radius: 9px;
+          padding: 24px 20px;
+        }
+        .removeAmnt {
+          h6 {
+            font-size: 12px;
+            font-weight: 700;
+            span {
+              color: $secondaryColor;
+            }
+          }
+          // slider style
+          .slidecontainer {
+            width: 100%;
+            h2 {
+              font-size: 24px;
+              font-weight: 700;
+              margin-bottom: 0;
+            }
+            .slider {
+              -webkit-appearance: none;
+              appearance: none;
+              width: 100%;
+              height: 2px;
+              background: $blueColor;
+              outline: none;
+              opacity: 1;
+              -webkit-transition: 0.2s;
+              transition: opacity 0.2s;
+              &::-webkit-slider-thumb {
+                background: $dimbg;
+                -webkit-appearance: none;
+                appearance: none;
+                width: 15px;
+                height: 15px;
+                border-radius: 100%;
+              }
+              &::-moz-range-thumb {
+                width: 15px;
+                height: 15px;
+                border-radius: 100%;
+                background: $dimbg;
+                cursor: pointer;
+              }
+            }
+          }
+          .amountSelect {
+            display: flex;
+            margin-top: 15px;
+            button {
+              flex-grow: 1;
+              background-color: $dimbg;
+              border-radius: 17px;
+              border: 0;
+              color: $white;
+              padding: 5px;
+              transition: all linear 0.2s;
+              font-size: 14px;
+              font-weight: 600;
+              &:hover {
+                background-color: $secondaryColor;
+              }
+            }
+          }
+        }
+        .downArrow {
+          margin-bottom: 5px;
+          img {
+            width: 13px;
+            height: auto;
+          }
+        }
+
+        .receiveAmnt {
+          display: flex;
+          justify-content: space-between;
+          ul {
+            padding: 0;
+            margin: 0;
+            li {
+              font-size: 8px;
+              line-height: 26px;
+              font-weight: 600;
+              margin-bottom: 5px;
+            }
+
+            &.leftSide {
+              li {
+                img {
+                  width: 26px;
+                  height: 26px;
+                  margin-right: 9px;
+                }
+              }
+              h6 {
+                margin-top: 25px;
+                margin-bottom: 0;
+                font-size: 13px;
+                font-weight: 600;
+              }
+            }
+          }
+        }
+        .totalPrice {
+          display: flex;
+          justify-content: space-between;
+          padding: 0 20px;
+          margin-top: 15px;
+          ul {
+            padding: 0;
+            li {
+              font-size: 12px;
+              line-height: 22px;
+              font-weight: 600;
+            }
+          }
+        }
+        .btnCol {
+          display: flex;
+          justify-content: space-between;
+          .approveBtn {
+            margin-right: 5px;
+            
+          }
+          .buttonStyle {
+            font-size: 16px;
+            font-weight: 700;
+            padding: 5px 20px;
+            &:hover {
+              color: $white;
+            }
+            &.dismissBtn {
+              background-color: $dimbg;
+              background-image: none;
+            }
+            @media (max-width:767px){
+              font-size: 14px;
+              padding: 5px 18px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

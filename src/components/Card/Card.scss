@@ -1,0 +1,14 @@
+@import '../../assets/theme/clr_var.scss';
+
+.card_style{
+    border-radius: 25px;
+    border:1px solid $secondaryColor;
+    background: $baseColor;
+    color: white; 
+    &.mb-26{
+    margin-bottom: 26px;
+    }
+    &.fullHeight{
+        height: 100%;
+    }
+}

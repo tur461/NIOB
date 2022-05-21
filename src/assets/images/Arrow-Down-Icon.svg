@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="47" height="46" viewBox="0 0 47 46">
+  <defs>
+    <linearGradient id="linear-gradient" x1="1.043" y1="0.379" x2="-0.054" y2="0.5" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#5155bc"/>
+      <stop offset="1" stop-color="#b63b78"/>
+    </linearGradient>
+  </defs>
+  <g id="Gruppe_11629" data-name="Gruppe 11629" transform="translate(-759.5 -499.5)">
+    <rect id="Rechteck_3" data-name="Rechteck 3" width="47" height="46" rx="23" transform="translate(806.5 545.5) rotate(180)" fill="url(#linear-gradient)"/>
+    <path id="Icon_ionic-ios-arrow-back" data-name="Icon ionic-ios-arrow-back" d="M4.071,11.806l8.937-8.93A1.688,1.688,0,0,0,10.617.493L.492,10.611a1.685,1.685,0,0,0-.049,2.327L10.61,23.127A1.688,1.688,0,1,0,13,20.743Z" transform="translate(771.191 529.252) rotate(-90)" fill="#fff"/>
+  </g>
+</svg>

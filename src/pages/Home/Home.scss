@@ -1,0 +1,431 @@
+@import "../../assets/theme/clr_var.scss";
+@import "../../assets/theme/_mixins.scss";
+
+.container_wrap {
+  margin-left: 236px;
+  max-width: calc(100% - 236px);
+  min-height: 100%;
+  background: url(../../assets/images/dashboard-bg.jpg) top center no-repeat;
+  background-size: cover;
+  transition: all 0.5s;
+  position: relative;
+  @media (max-width: 991px) {
+    max-width: 100%;
+    margin-left: 0;
+  }
+  .captionFooter {
+    background: transparent linear-gradient(262deg, #ac3e7f 0%, #5a53b7 100%) 0%
+      0% no-repeat padding-box;
+    border-radius: 0px 0px 0px 19px;
+    padding: 17px 38px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    font-family: $baseFont;
+    left: 0;
+    text-decoration: none;
+    @media (max-width: 767px) {
+      padding: 12px 20px;
+      border-radius: 0px 0px 19px 19px;
+    }
+    span {
+      @include fluid-type(320px, 1920px, 14px, 17px);
+      font-weight: 700;
+      color: $white;
+      text-decoration: none;
+    }
+    &:hover {
+      img {
+        margin-top: -2px;
+        @include transition(all ease 0.5s);
+      }
+    }
+  }
+  .container_inside {
+    padding-top: 70px;
+    padding-bottom: 70px;
+    @media (max-width: 1440px) {
+      padding-top: 55px;
+    }
+    @media (max-width: 1199px) {
+      padding-top: 30px;
+      padding-bottom: 30px;
+    }
+  }
+}
+.carousel_caption_announce {
+  background: #111326;
+  border-radius: 25px;
+  padding: 50px;
+  // border: 1px solid #e3d32d;
+}
+.comnBlk {
+  background: #1c1c2d 0% 0% no-repeat padding-box;
+  border-radius: 19px;
+  padding: 20px 35px;
+  color: $white;
+}
+.container_inside {
+  padding-top: 70px;
+  padding-bottom: 70px;
+}
+body.expande_container .container_wrap {
+  margin-left: 73px;
+  max-width: calc(100% - 73px);
+  @media (max-width: 960px) {
+    margin-left: 0;
+    max-width: 100%;
+  }
+}
+.homePage {
+  .updateSection {
+    margin-bottom: 22px;
+    .readState_btn {
+      text-decoration: none;
+      width: 100%;
+      max-width: 300px;
+      margin: 16px auto 0;
+      cursor: pointer;
+  background-image: $gradientColor;
+  border-radius: 25px;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 700;
+  color: $white;
+  
+  font-family: $baseFont;
+  z-index: 1;
+  transition: all ease 0.5s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @media (max-width: 767px) {
+    min-width: 125px;
+    height: 42px;
+    font-size: 14px;
+  }
+  &:focus {
+    box-shadow: unset;
+    outline: unset;
+  }
+  img {
+    display: none;
+  }
+  &:after {
+    position: absolute;
+    content: "";
+    background-image: linear-gradient(
+      90deg,
+      rgba(77, 76, 181, 1) 0%,
+      rgba(137, 70, 150, 1) 73%,
+      rgba(176, 60, 124, 1) 100%
+    );
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    border-radius: 25px;
+    top: 0;
+    opacity: 0;
+    left: 100%;
+    transition: all ease 0.5s;
+  }
+
+  &:hover {
+    color: #fff;
+    &:after {
+      opacity: 1;
+      left: 0;
+      transition: all ease 0.5s;
+    }
+  }
+    }
+    .forDesktop,
+    .forMob {
+      width: 100%;
+      border-radius: 16px;
+    }
+    // .forDesktop {
+    //   display: block;
+    //   @media (max-width: 767px) {
+    //     display: none;
+    //   }
+    // }
+    // .forMob {
+    //   display: none;
+    //   @media (max-width: 767px) {
+    //     display: block;
+    //   }
+    // }
+  }
+  .carousel {
+    margin-bottom: 36px;
+    @media (max-width: 767px) {
+      margin-bottom: 20px;
+    }
+    .carousel-item,
+    .bgImage {
+      border-radius: 21px;
+      object-fit: cover;
+      object-position: right;
+      width: 100%;
+      @media (max-width: 1199px) {
+        height: 305px;
+      }
+      @media (max-width: 767px) {
+        height: 305px;
+        border-radius: 25px;
+      }
+    }
+  }
+
+  .carousel-control-prev {
+    display: none;
+  }
+  .carousel-control-next {
+    width: auto;
+    opacity: 1;
+    right: -14px;
+    @media (max-width: 991px) {
+      right: -5px;
+    }
+    @media (max-width: 767px) {
+      right: 5px;
+    }
+    .carousel-control-next-icon {
+      background-color: #af3c7c;
+      border-radius: 100px;
+      padding: 15px;
+      background-size: 20px;
+      background-position: center center;
+    }
+  }
+
+  .carousel-caption {
+    width: 425px;
+    background: rgba($color: #1c1c2d, $alpha: 0.74);
+    border-radius: 25px 0px 0px 25px;
+    height: 100%;
+    left: 0;
+    right: auto;
+    bottom: 0;
+    padding: 53px 35px 64px;
+    text-align: left;
+    @media (max-width: 1199px) {
+      width: 415px;
+      padding: 30px 30px 55px;
+    }
+    @media (max-width: 767px) {
+      border-radius: 25px;
+      width: 100%;
+      padding: 20px 40px 35px 20px;
+    }
+    p {
+      letter-spacing: 0px;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 19px;
+    }
+    h3 {
+      margin-bottom: 19px;
+      letter-spacing: -1.25px;
+      color: #ffffff;
+      font-weight: 700;
+      @include fluid-type(320px, 1920px, 18px, 25px);
+    }
+  }
+  .startEngine {
+    margin-bottom: 40px;
+    @media (max-width: 1199px) {
+      margin-bottom: 10px;
+    }
+    .comnBlk {
+      position: relative;
+      padding: 30px 35px 80px;
+      @include transition(all ease-in-out 0.5s);
+      @media (max-width: 1199px) {
+        margin-bottom: 20px;
+      }
+      @media (max-width: 767px) {
+        padding: 20px 20px 70px;
+      }
+      &:hover {
+        @include transition(all ease-in-out 0.5s);
+        img {
+          transform: rotateY(180deg);
+          @include transition(all ease-in-out 0.5s);
+        }
+        .arrowIcon {
+          margin-right: -2px;
+          @include transition(all ease-in-out 0.5s);
+        }
+      }
+      .captionFooter {
+        border-radius: 0px 0px 19px 19px;
+        font-family: $baseFont;
+        .arrowIcon {
+          transform: rotate(-45deg);
+          -webkit-transform: rotate(-45deg);
+          width: 12px;
+          height: 12px;
+          border-radius: 2px;
+          border-width: 0 2.5px 2.5px 0 !important;
+          border: solid white;
+          @include transition(all ease-in-out 0.5s);
+        }
+      }
+      .headerImg {
+        margin-bottom: 18px;
+        @include transition(all ease-in-out 0.5s);
+      }
+
+      h3 {
+        letter-spacing: -0.6px;
+        color: #ffffff;
+        font-weight: 700;
+        @include fluid-type(320px, 1920px, 16px, 20px);
+      }
+      p {
+        letter-spacing: 0px;
+        color: #ffffff;
+        font-size: 10px;
+        margin-bottom: 21px;
+      }
+    }
+  }
+  .announcements {
+    // .announce_time{
+    //   max-width: 637px;
+    //   background-color: #111326;
+    // }
+    .comnBlk {
+      padding: 25px 35px 20px;
+      @media (max-width: 1199px) {
+        margin-bottom: 20px;
+      }
+      @media (max-width: 1199px) {
+        padding: 20px;
+      }
+      h3 {
+        letter-spacing: -0.5px;
+        color: #ffffff;
+        font-weight: 700;
+        @include fluid-type(320px, 1920px, 16px, 20px);
+        margin-bottom: 20px;
+      }
+      .niobStats {
+        padding-left: 0;
+        margin-bottom: 0;
+        li {
+          margin-bottom: 15px;
+          display: flex;
+          align-items: center;
+          font-weight: 500;
+          justify-content: space-between;
+          font-size: 13px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+      .NiobSwap {
+        padding: 0 30px;
+        position: relative;
+        &:before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          background: url("../../assets/images/token_icons/NIOB.svg") no-repeat;
+          width: 22px;
+          height: 22px;
+          background-size: contain;
+          background-position: center center;
+        }
+        p {
+          font-size: 14px;
+          margin: 25px 0;
+          line-height: 22px;
+          @media (max-width: 1440px) {
+            font-size: 13px;
+            margin: 15px 0;
+            line-height: 21px;
+          }
+        }
+      }
+      h5 {
+        letter-spacing: 0px;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        span {
+          display: inherit;
+        }
+      }
+      .niobImg {
+        background: url("../../assets/images/swap-bg.jpg") no-repeat;
+        background-position: center center;
+        background-size: cover;
+        width: 100%;
+        height: 156px;
+        display: inherit;
+        border-radius: 19px 19px 0 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-position: center top -63px;
+        @media (max-width: 767px) {
+          height: auto;
+        }
+        img {
+          width: 200px;
+        }
+      }
+      .headSec {
+        padding-bottom: 15px;
+        border-bottom: 0.5px solid #ffffff5e;
+        margin-bottom: 12px;
+      }
+      .socialLinks {
+        li {
+          a {
+            margin: 0px 4px;
+          }
+        }
+      }
+      .totl_value {
+        h3 {
+          margin-bottom: 15px;
+        }
+        p {
+          font-size: 13px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+  .all_farms {
+    .farm_title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 40px 0 10px;
+      @media (max-width: 991px) {
+        margin: 20px 0;
+      }
+      h3 {
+        font-weight: 25px;
+        font-weight: 700;
+        margin-bottom: 0;
+        @media (max-width: 991px) {
+          font-size: 20px;
+        }
+      }
+    }
+    .farmcard {
+      margin-top: 20px;
+    }
+  }
+}

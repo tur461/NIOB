@@ -1,0 +1,119 @@
+@import "../../assets/theme/clr_var.scss";
+
+.footer_style {
+  display: flex;
+  background: $dimbg;
+  font-family: $baseFont;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 2;
+  width: calc(100% - 236px);
+  margin-left: 236px;
+  padding: 30px 50px;
+  color: $white;
+  @media (max-width:1199px){
+    padding: 20px;
+  }
+  @media (max-width:991px){
+    width: 100%;
+    margin-left: 0;
+  }
+  @media (max-width:767px){
+    padding: 15px 15px 10px;
+  }
+  .niob_price {
+    display: flex;
+    align-items: center;
+    img{
+      @media (max-width:991px){
+        width: 35px;
+      }
+    }
+    .flex {
+      margin-left: 15px;
+      display: flex;
+      flex-direction: column;
+      @media (max-width:991px){
+        margin-left: 10px;
+      }
+      span {
+        font-size: 11px;
+      }
+      .vlue {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        line-height: 24px;
+      }
+    }
+  }
+
+  .footer_align {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center; position: relative;
+    @media (max-width:767px){
+      flex-wrap: wrap;
+    }
+    .buy_niob {
+      img {
+        width: 36px;
+        height: 36px;
+        margin-right: 20px;
+        @media (max-width:991px){
+          margin-right: 10px;
+        }
+      }
+      .cm_btn {
+        min-width: 107px;
+        font-size: 14px;
+        font-weight: 700;
+        height: 36px;
+        line-height: 36px; padding: 0;
+      }
+    } 
+    .noib_info {
+      display: flex;
+      @media (max-width:767px){
+        flex-wrap: wrap; margin-top: 10px;
+        justify-content: space-between;
+        width: 100%;
+      }
+      ul {
+        margin-bottom: 0;
+        padding-left: 46px;
+        @media (max-width:1199px){
+          padding-left: 15px; 
+        }
+        li,
+        p {
+          font-size: 12px;
+          line-height: 22px;
+          font-weight: 400;
+          @media (max-width:767px){
+            font-size: 10px;
+          line-height: 20px;
+          }
+          span,
+          p {
+            font-weight: 600;
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+    .scrollUp {
+      img{
+        @media (max-width:991px){
+          width: 35px;
+        }
+        @media (max-width:767px){
+          position: absolute;
+          right: 0;
+          top: -51px;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,75 @@
+@import "../../assets/theme/clr_var.scss";
+.poolGalaxy_cont {
+  .planet_bar.btn {
+    padding: 15px 70px;
+    justify-content: flex-start;
+    @media (max-width: 1199px) {
+      padding: 15px;
+    }
+    .cions {
+      width: 210px;
+      display: flex;
+      align-items: center;
+      @media (max-width: 1199px) {
+        width: 171px;
+      }
+      @media (max-width: 767px) {
+        width: 100%;
+      }
+      .coin_title {
+        margin-left: 20px;
+        @media (max-width: 1199px) {
+          margin-left: 10px;
+        }
+      }
+      img {
+        width: 39px;
+        height: 39px;
+        @media (max-width: 1199px) {
+          width: 28px;
+          height: 28px;
+        }
+      }
+    }
+    .coin_detail {
+      width: auto;
+      margin-left: 0px;
+      .lqdty {
+        margin: 0 15px;
+        width: 160px;
+        @media (max-width: 767px) {
+          margin: 10px 0;
+        }
+      }
+      .prcentx {
+        text-align: center;
+        margin-right: 15px;
+        @media (max-width: 1199px) {
+          width: 35px;
+          height: 35px;
+          line-height: 35px;
+          font-size: 11px;
+        }
+      }
+      .QrIcon {
+        margin-right: 10px;
+      }
+      p {
+        @media (max-width: 1199px) {
+          font-size: 14px;
+        }
+      }
+      .apr {
+        width: 150px;
+      }
+    }
+    .dtl_btn {
+      margin-left: auto;
+      p {
+        span {
+          margin-left: 12px;
+        }
+      }
+    }
+  }
+}

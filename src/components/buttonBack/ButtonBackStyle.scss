@@ -1,0 +1,29 @@
+@import '../../assets/theme/clr_var.scss';
+
+.goBackButtonStyle{
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: transparent;
+    display: inline-block;
+    text-align: center;
+    line-height: 38px; transition: all ease 0.5s; -webkit-transition: all ease 0.5s;
+    left: -5px;  top: -8px;
+    @media (max-width:767.98px){
+        top: -12px; left: 2px;
+        width: 40px;
+        height: 40px;
+        line-height: 38px;
+    }
+    &:hover{
+        box-shadow: 0 0 10px #af3d7d; 
+        transition: all ease 0.5s; -webkit-transition: all ease 0.5s;
+    }
+    img{
+        width: 20px;
+        @media (max-width:767.98px){
+            width: 16px;
+        }
+    }
+}

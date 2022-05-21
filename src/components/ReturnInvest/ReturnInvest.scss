@@ -1,0 +1,96 @@
+@import "../../assets/theme/clr_var.scss";
+
+.connect_wallet.return_invest {
+  .modal-dialog {
+    display: flex;
+    flex: 1;
+    height: auto;
+
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-content {
+      background: #1c1c2d;
+      color: $white;
+      border: 1px solid $boderColor;
+      border-radius: 19px;
+      .modal-header {
+        padding: 30px 45px;
+        border-bottom: 1px solid $boderColor;
+        @media (max-width: 767px) {
+          padding: 20px;
+        }
+        .modal-title {
+          font-size: 20px;
+          font-weight: 600;
+          @media (max-width: 767px) {
+            font-size: 16px;
+          }
+        }
+        .btn-close {
+          background: url(../../assets/images/icon_close_modal.png) center
+            no-repeat;
+          outline: none;
+          background-size: 13px;
+          background-color: #ad3e7e;
+          opacity: 1;
+          border-radius: 50px;
+        }
+      }
+
+      .invest_area {
+        padding: 20px 25px 15px;
+        @media (max-width: 767px) {
+          padding: 5px 5px 0;
+        }
+        table {
+          color: $white;
+          border-collapse: collapse;
+          font-family: $baseFont;
+          th,
+          td,
+          tr {
+            border-style: hidden !important;
+            font-size: 14px;
+            @media (max-width: 767px) {
+              font-size: 12px;
+              padding: 5px;
+            }
+          }
+          th {
+            color: $secondaryColor;
+            width: 130px;
+            @media (max-width: 767px) {
+              width: auto;
+            }
+          }
+        }
+        p {
+          font-family: $baseFont;
+          margin-bottom: 15px;
+          font-size: 14px;
+          color: $white;
+          @media (max-width: 767px) {
+            margin-bottom: 10px;
+            font-size: 12px;
+          }
+        }
+
+        .confirmation {
+          display: flex;
+          justify-content: center;
+          margin: 30px 0 10px;
+          .btn {
+            font-weight: 600;
+            @media (max-width: 767px) {
+              font-weight: 500;
+              font-size: 13px;
+              min-width: 120px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

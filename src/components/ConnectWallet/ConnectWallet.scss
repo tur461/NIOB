@@ -1,0 +1,98 @@
+@import '../../assets/theme/clr_var.scss';
+
+.connect_wallet{
+    .modal-dialog{
+        display: flex;
+        flex: 1; font-family: $baseFont;
+        height: auto;
+        
+        .modal-body{
+            display: flex;
+            padding: 20px ​15px 5px;
+            flex-direction: column;
+        }
+        .modal-content{
+            background: #1C1C2D;
+            color: $white;
+            border: 1px solid $boderColor;
+            border-radius: 19px;
+            .modal-header{
+                padding: 30px 45px;
+                border: 1px solid #A73F83;
+                @media (max-width:767px){
+                    padding: 20px;   
+                  }
+                .modal-title{
+                    font-size: 20px; font-weight: 400;
+                    @media (max-width:767px){
+                        font-size: 16px;
+                    }
+                }
+                .btn-close {
+                    background: url(../../assets/images/icon_close_modal.png) center no-repeat;
+                    outline: none;
+                    background-size: 13px;
+                    background-color: #AD3E7E;
+                    opacity: 1;
+                    border-radius: 50px;
+                }
+               
+            }
+            .baseToken_style.token_strut{
+                padding-top: 20px;
+                @media (max-width:767px){
+                    padding-top: 0 ;
+                }
+                ul{ padding: 0 25px;
+                    @media (max-width:767px){
+                        padding: 0; margin-bottom: 0;
+                    }
+                    li{
+                        display:block;
+                        margin-bottom: 10px;
+                        button.btn{
+                                padding: 15px 20px;
+                                border-radius: 30px;
+                                width: 100%;
+                                text-decoration: none;
+                                font-size: 14px;
+                                font-weight: 600;
+                                color: #fff;
+                                font-family: "Montserrat",sans-serif;
+                                display: block;
+                                text-align: left;
+                                height: 51px;
+                                background: #323245;
+                                position: relative;
+                                border: 0;
+                                line-height: 23px;
+                            
+                            @media (max-width:767px){
+                                padding: 12px 20px; font-size: 13px;
+                            }
+                            &:focus{
+                                box-shadow: none;
+                            }
+                            img{
+                                width: 38px;
+                                position: absolute;
+                                right: 15px;
+                                top: 6px;
+                                height: 38px;
+                                background: #fff;
+                                border-radius: 50%;
+                                padding: 1px;
+                                @media (max-width:767px){
+                                    width: 34px;
+                                    right: 6px;
+                                    top: 4px;
+                                    height: 34px;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

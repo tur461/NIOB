@@ -1,0 +1,303 @@
+@import "../../assets/theme/clr_var.scss";
+
+.planet_bar.btn {
+  background-color: $baseColor;
+  border: none;
+  font-family: $baseFont;
+  justify-content: space-between;
+  position: relative;
+  align-items: center;
+  width: 100%;
+  display: flex;
+  padding: 15px 25px;
+  border-radius: 0 !important;
+  margin: auto;
+  min-height: 100px;
+  border-bottom: 1px solid $dimbg !important;
+  @media (max-width: 991px) {
+    padding: 10px;
+    height: 60px;
+  }
+  @media (max-width: 767px) {
+    display: block;
+    height: auto;
+    border-radius: 15px !important;
+  }
+  &:hover {
+    background-color: $baseColor;
+    border-color: $secondaryColor;
+    color: $white !important;
+  }
+  &:focus,
+  &:active {
+    box-shadow: none !important;
+    background-color: $baseColor;
+    border-bottom: 1px solid $dimbg;
+  }
+  .cions {
+    width: 275px;
+    text-align: left;
+    .coin_imgs {
+      background: $dimbg;
+      border-radius: 50%;
+      width: 39px;
+      height: 39px;
+      display: inline-block;
+      @media (max-width: 991px) {
+        width: 28px;
+        height: 28px;
+      }
+    }
+    @media (max-width: 991px) {
+      width: 190px;
+      margin-bottom: 10px;
+    }
+    .uppr {
+      position: relative;
+      z-index: 1;
+    }
+    .dwn {
+      margin-left: -10px;
+    }
+    img {
+      width: 39px;
+      @media (max-width: 991px) {
+        width: 28px;
+      }
+    }
+    .coin_title {
+      font-size: 16px;
+      color: $white;
+      font-weight: 600;
+      margin-left: 10px;
+      @media (max-width: 991px) {
+        font-size: 14px;
+        margin-left: 8px;
+      }
+    }
+  }
+  .coin_detail {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 550px;
+    @media (max-width: 1440px) {
+      width: 450px;
+    }
+    @media (max-width: 991px) {
+      width: 315px;
+    }
+    @media (max-width: 767px) {
+      width: 100%;
+      align-items: baseline;
+      justify-content: flex-start;
+      flex-direction: column;
+    }
+    span {
+      font-size: 10px;
+    }
+    p {
+      margin-bottom: 0;
+      font-size: 16px;
+      font-weight: 700;
+      @media (max-width: 991px) {
+        font-size: 14px;
+      }
+    }
+    .apr {
+      width: 205px;
+    }
+  }
+  .prcentx {
+    background-image: $gradientColor;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    line-height: 48px;
+    font-size: 14px;
+    font-weight: 600;
+    @media (max-width: 991px) {
+      width: 35px;
+      height: 35px;
+      line-height: 35px;
+      font-size: 11px;
+    }
+    @media (max-width: 767px) {
+      width: 30px;
+      height: 30px;
+      line-height: 31px;
+      font-size: 10px;
+      position: absolute;
+      right: 12px;
+      top: 8px;
+    }
+  }
+  .dtl_btn {
+    @media (max-width: 767px) {
+      margin: 10px 0 0;
+    }
+    p {
+      margin-bottom: 0;
+      @media (max-width: 767px) {
+        font-size: 10px;
+      }
+    }
+    img {
+      width: 12px;
+      @media (max-width: 767px) {
+        width: 10px;
+        margin-left: 3px;
+      }
+    }
+  }
+}
+
+.planet_strip {
+  background: $dimbg;
+
+  .available_funds {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: calc(100% - 135px);
+    margin: 0 20px !important;
+    padding: 10px 0;
+    @media (max-width: 991px) {
+      width: 100%;
+      padding: 10px;
+    }
+    @media (max-width: 767px) {
+      display: block;
+    }
+    .funds {
+      display: flex;
+      align-items: center;
+      @media (max-width: 767px) {
+        justify-content: start;
+      }
+      .count_funds {
+        color: $white;
+        min-width: 200px;
+        @media (max-width: 1440px) {
+          min-width: 160px;
+        }
+        @media (max-width: 991px) {
+          min-width: auto;
+          margin-right: 18px;
+        }
+        @media (max-width: 767px) {
+          min-width: 140px;
+          margin-left: 15px;
+          margin-right: 5px;
+        }
+        span {
+          font-size: 11px;
+          @media (max-width: 767px) {
+            font-size: 10px;
+          }
+        }
+        p {
+          font-size: 18px;
+          font-weight: 700;
+          margin: 5px 0 0px;
+          @media (max-width: 991px) {
+            font-size: 14px;
+            margin: 0 0 -4px;
+          }
+          @media (max-width: 767px) {
+            font-size: 12px;
+            margin: 0 0 -8px;
+          }
+        }
+      }
+      .forwd_arrow {
+        margin-right: 20px;
+        @media (max-width: 991px) {
+          margin-right: 10px;
+        }
+        img {
+          width: 13px;
+          @media (max-width: 991px) {
+            width: 10px;
+          }
+          @media (max-width: 767px) {
+            width: 7px;
+          }
+        }
+      }
+      .funds_btn {
+        background-image: $gradientColor;
+        width: auto;
+        border: 0;
+        white-space: nowrap;
+        min-width: auto;
+        padding: 0 30px;
+        font-weight: 600;
+        font-size: 16px;
+        margin-right: 20px;
+        @media (max-width: 1440px) {
+          font-size: 15px;
+          margin-right: 15px;
+          padding: 0 20px;
+        }
+        @media (max-width: 991px) {
+          font-size: 13px;
+          margin-right: 10px;
+          padding: 0 15px;
+          height: 37px;
+        }
+        @media (max-width: 767px) {
+          font-size: 10px;
+          margin-right: 10px;
+          padding: 0 13px;
+          height: 32px;
+          min-width: 95px;
+        }
+
+        &:hover {
+          background-color: $baseColor;
+        }
+        &:focus,
+        &:active {
+          box-shadow: none !important;
+          background-color: $baseColor;
+        }
+      }
+
+      .cardFarm_increase {
+        display: flex;
+        margin: 0 10px;
+        button {
+          width: 40px;
+          height: 33px;
+          font-size: 30px;
+          border: 0px;
+          background: $baseColor;
+          border-radius: 11px;
+          padding: 0px;
+          line-height: 33px;
+          color: $secondaryColor;
+          margin-right: 5px;
+          span {
+            position: relative;
+            top: -2px;
+          }
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+      }
+    }
+  }
+}
+
+.planet_list_view .planet_bar.btn:last-child {
+  border-bottom: 0 !important;
+}
+
+.planet_bar.glaxy_bar {
+  &:hover {
+    color: #fff !important;
+  }
+}

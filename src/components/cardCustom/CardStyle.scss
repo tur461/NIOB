@@ -1,0 +1,15 @@
+.cardStyle.card {
+  background: transparent;
+  border-radius: 10px;
+  border: none;
+  @media (max-width: 767.98px) {
+    p {
+      margin-bottom: 0;
+    }
+  }
+}
+@media (max-width: 767.98px) {
+  .cardStyle.graph_container.card {
+    margin-top: 15px;
+  }
+}

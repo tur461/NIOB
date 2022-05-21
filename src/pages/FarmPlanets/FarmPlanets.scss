@@ -1,0 +1,301 @@
+@import "../../assets/theme/clr_var.scss";
+
+.container_wrap.farmpln {
+  background: url(../../assets/images/swap-bg.jpg) top center no-repeat;
+  background-size: cover;
+  height: 100%;
+  padding-bottom: 50px;
+  .upper_text {
+    background: $dimbg;
+    padding: 50px 0 75px;
+    @media (max-width: 1199px) {
+      padding: 30px 0 55px;
+    }
+    .farm_title {
+      display: flex;
+      align-items: center;
+      @media (max-width: 767px) {
+        display: block;
+      }
+      .farm_icon {
+        position: relative;
+        left: -25px;
+        @media (max-width: 1199px) {
+          left: 0;
+          margin-right: 15px;
+          img {
+            width: 100px;
+            @media (max-width: 767px) {
+              width: 60px;
+            }
+          }
+        }
+      }
+      .desc {
+        p {
+          @media (max-width: 767px) {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+  .contain_area {
+    position: relative;
+    .srchbar_area {
+      background: $baseColor;
+      display: flex;
+      align-items: center;
+      padding: 13px 70px;
+      border-radius: 50px;
+      margin-top: -35px;
+      justify-content: space-between;
+      @media (max-width: 1199px) {
+        padding: 8px 15px;
+      }
+      @media (max-width: 767px) {
+        border-radius: 10px;
+        display: block;
+      }
+      .serch_field {
+        display: flex;
+        align-items: center;
+        label {
+          font-family: $baseFont;
+          margin-bottom: 0;
+          font-size: 17px;
+          font-weight: 600;
+          color: $white;
+          margin-right: 15px;
+          @media (max-width: 1199px) {
+            font-size: 15px;
+          }
+        }
+        .input-group {
+          .form-control {
+            background: $dimbg;
+            border-radius: 30px;
+            padding: 11px 15px;
+            border: 0;
+            width: 330px;
+            color: $white;
+            @media (max-width: 1440px) {
+              width: 230px;
+            }
+            @media (max-width: 1199px) {
+              width: 195px;
+              padding: 6px 13px;
+            }
+            &:focus {
+              box-shadow: 0 0 0 0.25rem rgba(171, 61, 127, 0.4);
+            }
+          }
+          .search_btn {
+            background: transparent;
+            border: 0;
+            position: absolute;
+            right: 13px;
+            top: 8px;
+            z-index: 9;
+            @media (max-width: 1199px) {
+              right: 9px;
+              top: 4px;
+            }
+            img {
+              width: 18px;
+              @media (max-width: 1199px) {
+                width: 13px;
+              }
+            }
+          }
+        }
+      }
+      .staked_only {
+        align-items: center;
+        display: flex;
+        @media (max-width: 767px) {
+          margin-top: 10px;
+        }
+        .form-check {
+          align-items: center;
+          margin-right: 30px;
+          display: flex;
+          color: $white;
+          font-family: $baseFont;
+          font-size: 15px;
+          @media (max-width: 1199px) {
+            font-size: 13px;
+            margin-right: 15px;
+          }
+          .form-check-input {
+            margin-right: 10px;
+            cursor: pointer;
+            border-radius: 50px;
+            height: 25px;
+            width: 25px;
+            background: $dimbg;
+            &:checked {
+              background-color: #a73f83;
+              border-color: #a73f83;
+              cursor: pointer;
+            }
+            &:focus {
+              box-shadow: none;
+              outline: none;
+              border: none;
+            }
+          }
+        }
+        .harvest_btn.btn {
+          color: $white;
+          background: $dimbg;
+          border: 0;
+          @media (max-width: 1199px) {
+            min-width: 110px;
+            font-size: 13px;
+            padding: 10px 10px;
+            height: 41px;
+            line-height: 23px;
+          }
+          &:hover {
+            background: $gradientColor;
+          }
+        }
+      }
+    }
+  }
+
+  .frm_plnet_list {
+    .farm_tabs {
+      .nav-pills {
+        background: $dimbg;
+        border-radius: 30px;
+        color: $white;
+        position: absolute;
+        right: 37%;
+        top: 15px;
+        @media (max-width: 1440px) {
+          right: 40%;
+        }
+        @media (max-width: 1199px) {
+          right: 35%;
+          top: 12px;
+        }
+        @media (max-width: 991px) {
+          right: 37%;
+        }
+        @media (max-width: 767px) {
+          right: auto;
+          position: static;
+          width: 158px;
+          padding: 1px;
+          margin: 15px auto 0;
+        }
+        .nav-link {
+          color: $white;
+          padding: 11px 25px;
+          font-family: $baseFont;
+          font-size: 15px;
+          @media (max-width: 1199px) {
+            padding: 8px 16px;
+            font-size: 13px;
+          }
+          &.active {
+            background: $gradientColor;
+            border-radius: 30px;
+            color: $white;
+            padding: 11px 25px;
+            @media (max-width: 1199px) {
+              padding: 8px 16px;
+            }
+          }
+        }
+      }
+      .planet_list_view {
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 400px;
+        @media (max-width: 767px) {
+          overflow-y: unset;
+          overflow-x: unset;
+          height: auto;
+        }
+      }
+      .spinner {
+        margin: 100px auto 0;
+        width: 70px;
+        text-align: center;
+      }
+      
+      .spinner > div {
+        width: 18px;
+        height: 18px;
+        background-color: rgb(121, 114, 121);
+      
+        border-radius: 100%;
+        display: inline-block;
+        -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+        animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+      }
+      
+      .spinner .bounce1 {
+        -webkit-animation-delay: -0.32s;
+        animation-delay: -0.32s;
+      }
+      
+      .spinner .bounce2 {
+        -webkit-animation-delay: -0.16s;
+        animation-delay: -0.16s;
+      }
+      
+      @-webkit-keyframes sk-bouncedelay {
+        0%, 80%, 100% { -webkit-transform: scale(0) }
+        40% { -webkit-transform: scale(1.0) }
+      }
+      
+      @keyframes sk-bouncedelay {
+        0%, 80%, 100% { 
+          -webkit-transform: scale(0);
+          transform: scale(0);
+        } 40% { 
+          -webkit-transform: scale(1.0);
+          transform: scale(1.0);
+        }
+      }
+    }
+  }
+  .farm_tabs {
+    .tab-content {
+      margin-top: 20px;
+      background: $baseColor;
+      padding: 20px 0;
+      border-radius: 20px;
+      @media (max-width: 991px) {
+        margin-top: 15px;
+        padding: 10px 0;
+      }
+    }
+  }
+  h2 {
+    font-size: 25px;
+    line-height: 34px;
+    font-weight: 700;
+  }
+  p {
+    color: $white;
+    line-height: 21px;
+    font-size: 14px;
+    @media (max-width: 1199px) {
+      font-size: 12px;
+      line-height: 17px;
+    }
+    @media (max-width: 767px) {
+      font-size: 12px;
+      line-height: 20px;
+    }
+  }
+}
+
+.frm_plnet_disply .coin_detail .lqdty {
+  width: 115px;
+}

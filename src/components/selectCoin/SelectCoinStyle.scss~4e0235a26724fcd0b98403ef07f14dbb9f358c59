@@ -1,0 +1,103 @@
+@import "../../assets/styles/_var.scss";
+
+.selectCoin_style.col {
+  height: 74px;
+  border-radius: 37px;
+  margin-bottom: 42px;
+  padding: 20px 30px;
+  background: #202231 0% 0% no-repeat padding-box;
+  border-radius: 10px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+  @media (max-width: 767.98px) {
+    border-radius: 20px;
+  }
+  .coin_Img {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // background: $cardBgInside;
+    @media (max-width: 767.98px) {
+      width: 45px;
+      height: 45px;
+    }
+    img {
+      min-width: 55px;
+      @media (max-width: 767.98px) {
+        min-width: 45px;
+      }
+    }
+  }
+  .select_buttonStyle.col {
+    max-width: 150px;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    label {
+      font-family: $baseFont;
+      font-size: 14px;
+      //   color: $textlight;
+      margin-bottom: -5px;
+    }
+    button {
+      text-align: left;
+      border: 0px;
+      background: transparent;
+      font-family: $baseFont;
+      font-size: 26px;
+      color: $white;
+      font-weight: 600;
+      padding: 0px;
+      @media (max-width: 767.98px) {
+        font-size: 20px;
+      }
+      strong {
+        font-weight: 600;
+      }
+    }
+    .selectDropDownStyle {
+      margin-top: -5px;
+      margin-left: 16px;
+    }
+  }
+  .selectCoin_left_style.col {
+    max-width: 200px;
+    @media (max-width: 767.98px) {
+      min-width: 100%;
+    }
+  }
+  .selectCoin_right_style {
+    padding: 0px;
+    @media (max-width: 767.98px) {
+      margin-top: 10px;
+    }
+    ::placeholder {
+      color: #fff;
+    }
+    input {
+      width: 100%;
+      height: 54px;
+      border: 0px;
+      background: #161522 0% 0% no-repeat padding-box;
+      border-radius: 10px;
+      font-size: 26px;
+      font-family: $baseFont;
+      font-weight: 400;
+      color: $white;
+      outline: none;
+      padding: 11px 15px;
+      &::placeholder {
+        color: $white;
+        opacity: 1;
+      }
+      @media (max-width: 767.98px) {
+        height: 35px;
+        font-size: 20px;
+      }
+    }
+  }
+}

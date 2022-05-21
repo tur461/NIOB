@@ -1,0 +1,128 @@
+@import "../../assets/theme/clr_var.scss";
+
+.connect_wallet {
+  .modal-dialog {
+    display: flex;
+    flex: 1;
+    font-family: $baseFont;
+    height: auto;
+
+    .modal-body {
+      display: flex;
+      padding: 20px ​15px 5px;
+      flex-direction: column;
+    }
+    .modal-content {
+      background: #1c1c2d;
+      color: $white;
+      border: 1px solid $boderColor;
+      border-radius: 19px;
+      .modal-header {
+        padding: 30px 45px;
+        border: 1px solid #a73f83;
+        @media (max-width: 767px) {
+          padding: 20px;
+        }
+        .modal-title {
+          font-size: 20px;
+          font-weight: 400;
+          @media (max-width: 767px) {
+            font-size: 16px;
+          }
+        }
+        .btn-close {
+          background: url(../../assets/images/icon_close_modal.png) center
+            no-repeat;
+          outline: none;
+          background-size: 13px;
+          background-color: #ad3e7e;
+          opacity: 1;
+          border-radius: 50px;
+        }
+      }
+      .baseToken_style {
+        padding: 0;
+        text-align: center;
+        img {
+          display: block;
+          margin: 0 auto 0.9735rem;
+          &.icon_color {
+            filter: invert(33%) sepia(74%) saturate(654%) hue-rotate(276deg) brightness(89%) contrast(91%);
+          }
+        }
+        > a {
+          font-size: 1.1rem;
+          text-decoration: none;
+          color: white;
+          font-weight: 600;
+          display: inline-block;
+          margin-bottom: 0.9rem;
+          &:hover {
+            color: $secondaryColor;
+          }
+        }
+        @media (max-width: 767px) {
+          padding-top: 0;
+        }
+        ul {
+          padding: 0 25px;
+          @media (max-width: 767px) {
+            padding: 0;
+            margin-bottom: 0;
+          }
+          li {
+            display: block;
+            margin-bottom: 10px;
+            button.btn {
+              padding: 15px 20px;
+              border-radius: 30px;
+              width: 100%;
+              text-decoration: none;
+              font-size: 14px;
+              font-weight: 600;
+              color: #ffffff;
+              font-family: $baseFont;
+              display: block;
+              text-align: left;
+              height: auto;
+              background: #323245;
+              position: relative;
+              border: 0;
+              @media (max-width: 767px) {
+                padding: 12px 20px;
+                font-size: 13px;
+              }
+              &:focus {
+                box-shadow: none;
+              }
+              img {
+                width: 38px;
+                position: absolute;
+                right: 15px;
+                top: 6px;
+                height: 38px;
+                background: #fff;
+                border-radius: 50%;
+                padding: 1px;
+                @media (max-width: 767px) {
+                  width: 34px;
+                  right: 6px;
+                  top: 4px;
+                  height: 34px;
+                }
+              }
+            }
+          }
+        }
+
+        .no_record {
+          .buttonStyle {
+            max-width: 150px;
+            text-align: center;
+            margin: 0 auto;
+          }
+        }
+      }
+    }
+  }
+}
