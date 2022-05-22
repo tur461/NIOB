@@ -26,91 +26,56 @@ import {
 import { BigNumber } from "bignumber.js";
 import SupplyModal from "../../components/SupplyModal/SupplyModal";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
+import { TOKEN_TYPE } from "../../constant";
+import useLiquid from "../../redux/volatiles/liquid";
 
 const AddLiquidity = (props) => {
-  const tokenList = useSelector((state) => state.persist.tokenList);
+  const liquid = useLiquid(s => s);
+  
+  const deadline = useSelector(s => s.persist.deadline);
+  const tokenList = useSelector(s => s.persist.tokenList);
+  const walletType = useSelector(s => s.persist.walletType);
+  const slippage = useSelector(s => s.persist.slippagePercentage);
+  const isUserConnected = useSelector(s => s.persist.isUserConnected);
 
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const [show1, setShow1] = useState(false);
-  const handleClose1 = () => setShow1(false);
-  const handleShow1 = () => setShow1(true);
-  const [settingShow, setsettingShow] = useState(false);
-  const settingClose = () => setsettingShow(false);
-  const [showRecent, setShowRecent] = useState(false);
-  const supplyModalClose = () => setShowSupplyModal(false);
-  const recentTransactionsClose = () => setShowRecent(false);
-  const settinghandleShow = () => setsettingShow(true);
+  const [show, setShow] = useState(!1);
+  const handleClose = () => setShow(!1);
+  const [show1, setShow1] = useState(!1);
+  const handleClose1 = () => setShow1(!1);
+  const handleShow1 = () => setShow1(!0);
+  const [settingShow, setsettingShow] = useState(!1);
+  const [showRecent, setShowRecent] = useState(!1);
   const [search, setSearch] = useState("");
-  const [max, setMax] = useState(true);
+
+  const settingClose = () => setsettingShow(!1);
+  const supplyModalClose = () => setShowSupplyModal(!1);
+  const recentTransactionsClose = () => setShowRecent(!1);
+  const settinghandleShow = () => setsettingShow(!0);
+  const [max, setMax] = useState(!0);
 
   const dispatch = useDispatch();
-
+  const dpt = dispatch;
   const MINIMUM_LIQUIDITY = 10 ** 3;
 
-  const isUserConnected = useSelector((state) => state.persist.isUserConnected);
-  const walletType = useSelector((state) => state.persist.walletType);
-  const deadline = useSelector((state) => state.persist.deadline);
-  const slippagePercentage = useSelector(
-    (state) => state.persist.slippagePercentage
-  );
-
-  const [modalCurrency, setModalCurrency] = useState(false);
-  const [tokenOne, setTokenOne] = useState(TOKEN_LIST[0]);
-  const [tokenTwo, setTokenTwo] = useState({});
-  const [tokenOneValue, setTokenOneValue] = useState('');
-  const [tokenTwoValue, setTokenTwoValue] = useState('');
-  const [sharePoolValue, setSharePoolValue] = useState(100);
-  const [tokenOneCurrency, setCurrencyNameForTokenOne] = useState(
-    TOKEN_LIST[0].symbol
-  );
-  const [tokenTwoCurrency, setCurrencyNameForTokenTwo] =
-    useState("Select a token");
-  const [tokenOneBalance, setTokenOneBalance] = useState(0);
-  const [tokenTwoBalance, setTokenTwoBalance] = useState(0);
-  const [tokenOneDeposit, setTokenOneDeposit] = useState(0);
-  const [tokenTwoDeposit, setTokenTwoDeposit] = useState(0);
-  const [tokenOneApproval, setTokenOneApproval] = useState(false);
-  const [tokenTwoApproval, setTokenTwoApproval] = useState(false);
-
-  const [tokenOneApproved, setTokenOneApproved] = useState(false);
-  const [tokenTwoApproved, setTokenTwoApproved] = useState(false);
-
-  const [lpTokenBalance, setLpTokenBalance] = useState(0);
-  const [tokenType, setTokenType] = useState("TK1");
-  const [showSupplyModal, setShowSupplyModal] = useState(false);
-
-  const [filteredTokenList, setFilteredTokenList] = useState([]);
-  const [approvalConfirmation, setApprovalConfirmation] = useState(false);
-  const [liquidityConfirmation, setLiquidityConfirmation] = useState(false);
-
-  const [selectedCurrency, setSelectedCurrency] = useState("");
-
-  const [currentPairAddress, setCurrentPairAddress] = useState("");
-  const [firstProvider, setFirstProvider] = useState(false);
-  const [showPoolShare, setShowPoolShare] = useState(false);
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [txHash, setTxHash] = useState("");
-
   useEffect(() => {
-    setFilteredTokenList(tokenList.filter((token) => token.name.toLowerCase().includes(search.toLowerCase())));
-    init();
+    liquid.FilteredTokenList(tokenList.filter((token) => token.name.toLowerCase().includes(search.toLowerCase())));
+ liquid.   init();
   }, [search, tokenList]);
 
   const init = async () => {
     if (isUserConnected) {
       const oneBalance = await ContractServices.getBNBBalance(isUserConnected);
-      setTokenOneBalance(oneBalance);
+      liquid.setTokenBalance(oneBalance, T_TYPE.A);
 
       const { lptoken } = props;
       if (lptoken) {
-        setCurrentPairAddress(lptoken.pair);
-        setLpTokenBalance(lptoken.balance);
-        setSharePoolValue(lptoken.poolShare);
+        liquid.setCurrentPair(lptoken.pair);
+        liquid.LpTokenBalance(lptoken.balance);
+        liquid.SharePoolValue(lptoken.poolShare);
         if (lptoken.token0Obj) {
-          setTokenOne(lptoken.token0Obj);
-          setCurrencyNameForTokenOne(lptoken.token0Obj.symbol);
-          setTokenOneDeposit(lptoken.token0Deposit);
+          liquid.setTokenValue(lptoken.token0Obj, T_TYPE.A);
+          liquid.setTokenCurrency(lptoken.token0Obj.symbol, T_TYPE.A);
+          liquid.setTokenDeposit(lptoken.token0Deposit, T_TYPE.A);
           let tokenBal = 0;
           if (lptoken.token0Obj.address === "BNB") {
             tokenBal = oneBalance;
@@ -120,12 +85,12 @@ const AddLiquidity = (props) => {
               isUserConnected
             );
           }
-          setTokenOneBalance(tokenBal);
+          liquid.setTokenBalance(tokenBal, T_TYPE.A);
         }
         if (lptoken.token1Obj) {
-          setTokenTwo(lptoken.token1Obj);
-          setCurrencyNameForTokenTwo(lptoken.token1Obj.symbol);
-          setTokenTwoDeposit(lptoken.token1Deposit);
+          liquid.setToken(lptoken.token1Obj, T_TYPE.B);
+          liquid.setTokenCurrency(lptoken.token1Obj.symbol, T_TYPE.B);
+          liquid.setTokenDeposit(lptoken.liquid.token1Deposit, T_TYPE.B);
           let tokenBal = 0;
           if (lptoken.token1Obj.address === "BNB") {
             tokenBal = oneBalance;
@@ -135,14 +100,14 @@ const AddLiquidity = (props) => {
               isUserConnected
             );
           }
-          setTokenTwoBalance(tokenBal);
+          liquid.setTokenBalance(tokenBal, T_TYPE.B);
         }
       }
     }
   };
 
   const closeTransactionModal = () => {
-    setShowTransactionModal(false);
+    liquid.showTransactionModal(!1);
     props.backBtn();
     window.location.reload();
   };
@@ -152,15 +117,13 @@ const AddLiquidity = (props) => {
     if (!isUserConnected) {
       return toast.error("Connect wallet first!");
     }
-    setShow(true);
-    setFilteredTokenList(tokenList);
-    setSelectedCurrency(
-      tokenType === "TK1" ? tokenTwoCurrency : tokenOneCurrency
+    setShow(!0);
+    liquid.FilteredTokenList(tokenList);
+    liquid.setSelectedCurrency(
+      tokenType === T_TYPE.A ? liquid.token2Currency : liquid.token1Currency
     );
-    setModalCurrency({
-      modalCurrency: true,
-    });
-    setTokenType(tokenType);
+    liquid.setModalCurrency(!0);
+    liquid.setTokenType(tokenType);
   };
   const onHandleSelectCurrency = async (token, selecting) => {
     console.log('select currency:', token, selecting);
@@ -172,156 +135,156 @@ const AddLiquidity = (props) => {
       a2,
       oneBalance = 0,
       twoBalance = 0;
-    if (selecting === "TK1") {
+    if (selecting === T_TYPE.A) {
       handleClose();
       a1 = address;
       if (address === "BNB") {
         oneBalance = await ContractServices.getBNBBalance(isUserConnected);
-        setTokenOneApproved(true);
+        liquid.setTokenApproved(!0, T_TYPE.A);
       } else {
-        setTokenOneApproved(false);
+        liquid.setTokenApproved(!1, T_TYPE.A);
         oneBalance = await ContractServices.getTokenBalance(
           address,
           isUserConnected
         );
       }
-      setTokenOne(token);
-      setCurrencyNameForTokenOne(symbol);
-      setTokenOneBalance(oneBalance);
-      if (tokenTwo.address) {
-        a2 = tokenTwo.address;
+      liquid.setToken(token, T_TYPE.A);
+      liquid.setTokenCurrency(symbol);
+      liquid.setTokenBalance(oneBalance, T_TYPE.A);
+      if (liquid.token2.address) {
+        a2 = liquid.token2.address;
       }
-      if (tokenOneValue > 0) {
-        const r = await getAllowance(tokenOneValue, "TK1");
+      if (liquid.token1Value > 0) {
+        const r = await getAllowance(liquid.token1Value, T_TYPE.A);
       }
     }
-    if (selecting === "TK2") {
+    if (selecting === T_TYPE.B) {
       handleClose();
       a2 = address;
       if (address === "BNB") {
-        setTokenTwoApproved(true);
+        liquid.setTokenApproved(!0, T_TYPE.B);
         twoBalance = await ContractServices.getBNBBalance(isUserConnected);
       } else {
-        setTokenTwoApproved(false);
+        liquid.setTokenApproved(!1, T_TYPE.B);
         twoBalance = await ContractServices.getTokenBalance(
           address,
           isUserConnected
         );
       }
-      setTokenTwo(token);
-      setCurrencyNameForTokenTwo(symbol);
-      setTokenTwoBalance(twoBalance);
-      if (tokenOne.address) {
-        a1 = tokenOne.address;
+      liquid.setToken(token, T_TYPE.B);
+      liquid.setTokenCurrency(symbol);
+      liquid.setTokenBalance(twoBalance, T_TYPE.B);
+      if (liquid.token1.address) {
+        a1 = liquid.token1.address;
       }
-      if (tokenTwoValue > 0) {
-        const r = await getAllowance(tokenTwoValue, "TK2");
+      if (liquid.token2Value > 0) {
+        const r = await getAllowance(liquid.token2Value, T_TYPE.B);
       }
     }
-    setModalCurrency(!modalCurrency);
+    liquid.setModalCurrency(!modalCurrency);
+    liquid.FilteredTokenList(liquid.tokenList);
     setSearch("");
-    setFilteredTokenList(tokenList);
 
     if (a1 && a2) {
-      let currentPairAddress;
+      let currentPair;
       if (a1 === "BNB") {
         a1 = WETH; //WETH
-        currentPairAddress = await ExchangeService.getPair(a1, a2);
+        currentPair = await ExchangeService.getPair(a1, a2);
       } else if (a2 === "BNB") {
         a2 = WETH; //WETH
-        currentPairAddress = await ExchangeService.getPair(a1, a2);
+        currentPair = await ExchangeService.getPair(a1, a2);
       } else {
-        currentPairAddress = await ExchangeService.getPair(a1, a2);
+        currentPair = await ExchangeService.getPair(a1, a2);
       }
 
-      if (currentPairAddress !== "0x0000000000000000000000000000000000000000") {
-        setCurrentPairAddress(currentPairAddress);
+      if (currentPair !== "0x0000000000000000000000000000000000000000") {
+        liquid.setCurrentPair(currentPair);
         const lpTokenBalance = await ContractServices.getTokenBalance(
-          currentPairAddress,
+          currentPair,
           isUserConnected
         );
         const d1 = await ContractServices.getDecimals(a1);
         const d2 = await ContractServices.getDecimals(a2);
-        const reserves = await ExchangeService.getReserves(currentPairAddress);
-        calculateLiquidityPercentageWithSelectCurrency(reserves, d1, d2, lpTokenBalance, currentPairAddress);
-        setLpTokenBalance(lpTokenBalance);
-        setFirstProvider(false);
-        setShowPoolShare(true);
+        const reserves = await ExchangeService.getReserves(currentPair);
+        calculateLiquidityPercentageWithSelectCurrency(reserves, d1, d2, liquid.lpTokenBalance, currentPair);
+        liquid.LpTokenBalance(liquid.lpTokenBalance);
+        liquid.setIsFirstLP(!1);
+        liquid.showPoolShare(!0);
         // xxxxxxxxx
-        // const reserves = await ExchangeService.getReserves(currentPairAddress);
+        // const reserves = await ExchangeService.getReserves(currentPair);
         // calculateLiquidityPercentage(reserves, amt1, amt2);
-        // console.log('qqqqq', currentPairAddress);
-        // const reserves = await ExchangeService.getReserves(currentPairAddress);
+        // console.log('qqqqq', currentPair);
+        // const reserves = await ExchangeService.getReserves(currentPair);
         // console.log('aaaaa', reserves);
         // await calculateLiquidityPercentage(reserves, 0.1, 0.02);
         // console.log('wwww', result);
       } else {
-        setCurrentPairAddress("");
-        setFirstProvider(true);
-        setShowPoolShare(true);
-        setLpTokenBalance(0);
+        liquid.setCurrentPair("");
+        liquid.setIsFirstLP(!0);
+        liquid.showPoolShare(!0);
+        liquid.LpTokenBalance(0);
       }
     }
   };
 
   const getAllowance = async (amount, tokenType) => {
-    if (tokenType === "TK1") {
-      if (isUserConnected && tokenOne.address !== "BNB") {
+    if (tokenType === T_TYPE.A) {
+      if (isUserConnected && liquid.token1.address !== "BNB") {
         let allowance = await ContractServices.allowanceToken(
-          tokenOne.address,
+          liquid.token1.address,
           MAIN_CONTRACT_LIST.router.address,
           isUserConnected
         );
-        allowance = Number(allowance) / 10 ** Number(tokenOne.decimals);
+        allowance = Number(allowance) / 10 ** Number(liquid.token1.decimals);
         // console.log(allowance, 'token 1')
         if (amount > allowance) {
-          setTokenOneApproval(true);
+          liquid.setTokenApprovalNeeded(!0, T_TYPE.A);
         } else {
-          setTokenOneApproved(true);
+          liquid.setTokenApproved(!0, T_TYPE.A);
         }
       } else {
-        setTokenOneApproved(true);
+        liquid.setTokenApproved(!0, T_TYPE.A);
       }
     }
-    if (tokenType === "TK2") {
-      if (isUserConnected && tokenTwo.address !== "BNB") {
+    if (tokenType === T_TYPE.B) {
+      if (isUserConnected && liquid.token2.address !== "BNB") {
         let allowance = await ContractServices.allowanceToken(
-          tokenTwo.address,
+          liquid.token2.address,
           MAIN_CONTRACT_LIST.router.address,
           isUserConnected
         );
-        allowance = Number(allowance) / 10 ** Number(tokenTwo.decimals);
+        allowance = Number(allowance) / 10 ** Number(liquid.token2.decimals);
         // console.log(allowance, 'token 2')
         if (amount > allowance) {
-          setTokenTwoApproval(true);
+          liquid.setTokenApprovalNeeded(!0, T_TYPE.B);
         } else {
-          setTokenTwoApproved(true);
+          liquid.setTokenApproved(!0, T_TYPE.B);
         }
       } else {
-        setTokenTwoApproved(true);
+        liquid.setTokenApproved(!0, T_TYPE.B);
       }
     }
-    return true;
+    return !0;
   };
 
   const handleTokenValue = async (amount, tokenType) => {
     console.log('handling token value:', amount, tokenType);
     let amt1, amt2;
-    if (tokenType === "TK1") {
-      setTokenOneValue(amount);
+    if (tokenType === T_TYPE.A) {
+      liquid.setTokenValue(amount, T_TYPE.A);
       amt1 = amount;
       const r = await getAllowance(amount, tokenType);
-      if (r && tokenOne.address && tokenTwo.address && amount > 0) {
-        let tokenAddress = tokenOne.address;
-        if (tokenOne.address === "BNB") {
+      if (r && liquid.token1.address && liquid.token2.address && amount > 0) {
+        let tokenAddress = liquid.token1.address;
+        if (liquid.token1.address === "BNB") {
           tokenAddress = WETH;
         }
 
-        if (currentPairAddress) {
-          const tk0 = await ExchangeService.getTokenZero(currentPairAddress);
-          const tk1 = await ExchangeService.getTokenOne(currentPairAddress);
+        if (currentPair) {
+          const tk0 = await ExchangeService.getTokenZero(currentPair);
+          const tk1 = await ExchangeService.getToken1(currentPair);
           const reserves = await ExchangeService.getReserves(
-            currentPairAddress
+            currentPair
           );
           console.log('tko and tk1:', tk0, tk1);
           const token0Decimal = await ContractServices.getDecimals(tk0);
@@ -344,30 +307,30 @@ const AddLiquidity = (props) => {
                   (reserves[1] / 10 ** token1Decimal))
               ).toFixed(5);
             }
-            setTokenTwoValue(a);
+            liquid.setTokenValue(a, T_TYPE.B);
             amt2 = a;
-            if (!tokenTwoApproval) {
-              const r = await getAllowance(a, "TK2");
-              handleApprovalButton("TK2");
+            if (!token2Approval) {
+              const r = await getAllowance(a, T_TYPE.B);
+              getApprovalButton(T_TYPE.B);
             }
           }
         }
       }
     }
-    if (tokenType === "TK2") {
-      setTokenTwoValue(amount);
+    if (tokenType === T_TYPE.B) {
+      liquid.setTokenValue(amount, T_TYPE.B);
       amt2 = amount;
       const r = await getAllowance(amount, tokenType);
-      if (r && tokenOne.address && tokenTwo.address && amount > 0) {
-        let tokenAddress = tokenTwo.address;
-        if (tokenTwo.address === "BNB") {
+      if (r && liquid.token1.address && liquid.token2.address && amount > 0) {
+        let tokenAddress = liquid.token2.address;
+        if (liquid.token2.address === "BNB") {
           tokenAddress = WETH;
         }
-        if (currentPairAddress) {
-          const tk0 = await ExchangeService.getTokenZero(currentPairAddress);
-          const tk1 = await ExchangeService.getTokenOne(currentPairAddress);
+        if (currentPair) {
+          const tk0 = await ExchangeService.getTokenZero(currentPair);
+          const tk1 = await ExchangeService.getToken1(currentPair);
           const reserves = await ExchangeService.getReserves(
-            currentPairAddress
+            currentPair
           );
           const token0Decimal = await ContractServices.getDecimals(tk0);
           const token1Decimal = await ContractServices.getDecimals(tk1);
@@ -389,50 +352,50 @@ const AddLiquidity = (props) => {
                   (reserves[1] / 10 ** token1Decimal))
               ).toFixed(5);
             }
-            setTokenOneValue(a);
+            liquid.setTokenValue(a, T_TYPE.A);
             amt1 = a;
-            if (!tokenOneApproval) {
-              const r = await getAllowance(a, "TK1");
-              handleApprovalButton("TK1");
+            if (!token1Approval) {
+              const r = await getAllowance(a, T_TYPE.A);
+              getApprovalButton(T_TYPE.A);
             }
           }
         }
       }
     }
-    if (tokenOne.address && tokenTwo.address) {
-      let a1 = tokenOne.address,
-        a2 = tokenTwo.address;
+    if (liquid.token1.address && liquid.token2.address) {
+      let a1 = liquid.token1.address,
+        a2 = liquid.token2.address;
 
-      let currentPairAddress;
+      let currentPair;
       if (a1 === "BNB") {
         a1 = WETH; //WETH
-        currentPairAddress = await ExchangeService.getPair(a1, a2);
+        currentPair = await ExchangeService.getPair(a1, a2);
       } else if (a2 === "BNB") {
         a2 = WETH; //WETH
-        currentPairAddress = await ExchangeService.getPair(a1, a2);
+        currentPair = await ExchangeService.getPair(a1, a2);
       } else {
-        currentPairAddress = await ExchangeService.getPair(a1, a2);
+        currentPair = await ExchangeService.getPair(a1, a2);
       }
-      if (currentPairAddress !== "0x0000000000000000000000000000000000000000") {
-        setCurrentPairAddress(currentPairAddress);
-        const lpTokenBalance = await ContractServices.getTokenBalance(
-          currentPairAddress,
+      if (currentPair !== "0x0000000000000000000000000000000000000000") {
+        liquid.setCurrentPair(currentPair);
+        const liquid.lpTokenBalance = await ContractServices.getTokenBalance(
+          currentPair,
           isUserConnected
         );
-        setLpTokenBalance(lpTokenBalance);
+        liquid.LpTokenBalance(liquid.lpTokenBalance);
 
-        const reserves = await ExchangeService.getReserves(currentPairAddress);
+        const reserves = await ExchangeService.getReserves(currentPair);
         const ratio = await calculateLiquidityPercentage(reserves, amt1, amt2);
         // console.log(reserves, ratio, '---------------------------ratio');
-        setSharePoolValue(ratio);
+      .SharePoolValue(ratio);
 
-        setFirstProvider(false);
-        setShowPoolShare(true);
+        liquid.setIsFirstLP(!1);
+        liquid.showPoolShare(!0);
       } else {
-        setCurrentPairAddress("");
-        setFirstProvider(true);
-        setShowPoolShare(true);
-        setLpTokenBalance(0);
+        liquid.setCurrentPair("");
+        liquid.setIsFirstLP(!0);
+        liquid.showPoolShare(!0);
+        liquid.LpTokenBalance(0);
       }
     }
   };
@@ -449,11 +412,11 @@ const AddLiquidity = (props) => {
     const value =
       "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
     let tokenAddress = "BNB";
-    if (tokenType === "TK1") {
-      tokenAddress = tokenOne.address;
+    if (tokenType === T_TYPE.A) {
+      tokenAddress = liquid.token1.address;
     }
-    if (tokenType === "TK2") {
-      tokenAddress = tokenTwo.address;
+    if (tokenType === T_TYPE.B) {
+      tokenAddress = liquid.token2.address;
     }
     try {
       dispatch(startLoading());
@@ -466,28 +429,28 @@ const AddLiquidity = (props) => {
       if (r.code == 4001) {
         toast.error("User denied transaction signature.");
       } else {
-        setApprovalConfirmation(true);
+        setApprovalConfirmation(!0);
         let data = {
           message: `Approve`,
           tx: r.transactionHash,
         };
-        if (tokenType === "TK1") {
-          setTokenOneApproved(true);
-          setTokenOneApproval(false);
+        if (tokenType === T_TYPE.A) {
+          liquid.setTokenApproved(!0, T_TYPE.A);
+          liquid.setTokenApprovalNeeded(!1, T_TYPE.A);
 
-          data.message = `Approve ${tokenOne.symbol}`;
+          data.message = `Approve ${liquid.token1.symbol}`;
         }
-        if (tokenType === "TK2") {
-          setTokenTwoApproved(true);
-          setTokenTwoApproval(false);
-          data.message = `Approve ${tokenTwo.symbol}`;
+        if (tokenType === T_TYPE.B) {
+          liquid.setTokenApproved(!0, T_TYPE.B);
+          liquid.setTokenApprovalNeeded(!1, T_TYPE.B);
+          data.message = `Approve ${liquid.token2.symbol}`;
         }
         dispatch(addTransaction(data));
-        setApprovalConfirmation(false);
+        setApprovalConfirmation(!1);
       }
       dispatch(stopLoading());
     } catch (err) {
-      setApprovalConfirmation(false);
+      setApprovalConfirmation(!1);
       dispatch(stopLoading());
       console.log(err);
       toast.error("Transaction Reverted!");
@@ -497,30 +460,30 @@ const AddLiquidity = (props) => {
   const handleSearchToken = async (data) => {
     try {
       const res = await dispatch(searchTokenByNameOrAddress(data));
-      setFilteredTokenList(res);
-    } catch (error) {
+      liquid.FilteredTokenList(res);
+    } liquid.catch (error) {
       toast.error("Something went wrong!");
     }
   }
-  const handleApprovalButton = (tokenType) => {
-    if (tokenOneApproval && tokenType === "TK1") {
+  const getApprovalButton = (tokenType) => {
+    if (token1Approval && tokenType === T_TYPE.A) {
       return (
         <div className="col button_unlockWallet">
           <ButtonPrimary
             className="swapBtn"
-            title={`Approve ${tokenOne.symbol}`}
+            title={`Approve ${liquid.token1.symbol}`}
             disabled={approvalConfirmation}
             onClick={() => handleTokenApproval(tokenType)}
           />
         </div>
       );
     }
-    if (tokenTwoApproval && tokenType === "TK2") {
+    if (token2Approval && tokenType === T_TYPE.B) {
       return (
         <div className="col button_unlockWallet">
           <ButtonPrimary
             className="swapBtn"
-            title={`Approve ${tokenTwo.symbol}`}
+            title={`Approve ${liquid.token2.symbol}`}
             disabled={approvalConfirmation}
             onClick={() => handleTokenApproval(tokenType)}
           />
@@ -530,34 +493,34 @@ const AddLiquidity = (props) => {
     //dead code
     return null;
   };
-  const calculateLiquidityPercentageWithSelectCurrency = async (reserve, d1, d2, lpBalance, currentPairAddress) => {
+  const calculateLiquidityPercentageWithSelectCurrency = async (reserve, d1, d2, lpBalance, currentPair) => {
     const _reserve0 = Number(reserve["_reserve0"]) / 10 ** d1;
     const _reserve1 = Number(reserve["_reserve1"]) / 10 ** d2;
 
     let _totalSupply = await ContractServices.getTotalSupply(
-      currentPairAddress
+      currentPair
     );
 
     let ratio = lpBalance / _totalSupply;
     const t0 = (ratio * _reserve0).toFixed(5);
-    setTokenOneDeposit(t0);
+    liquid.setTokenDeposit(t0);
     const t1 = (ratio * _reserve1).toFixed(5);
-    setTokenTwoDeposit(t1);
+    liquid.setTokenDeposit(t1);
   };
   const calculateLiquidityPercentage = async (reserve, amount0, amount1) => {
-    const _reserve0 = Number(reserve["_reserve0"]) / 10 ** tokenOne.decimals;
-    const _reserve1 = Number(reserve["_reserve1"]) / 10 ** tokenTwo.decimals;
+    const _reserve0 = Number(reserve["_reserve0"]) / 10 ** liquid.token1.decimals;
+    const _reserve1 = Number(reserve["_reserve1"]) / 10 ** liquid.token2.decimals;
 
     let liquidity = 0;
     let _totalSupply = await ContractServices.getTotalSupply(
-      currentPairAddress
+      currentPair
     );
 
-    let ratio = lpTokenBalance / _totalSupply;
+    let ratio = liquid.lpTokenBalance / _totalSupply;
     const t0 = (ratio * _reserve0).toFixed(5);
-    setTokenOneDeposit(t0);
+    liquid.setTokenDeposit(t0);
     const t1 = (ratio * _reserve1).toFixed(5);
-    setTokenTwoDeposit(t1);
+    liquid.setTokenDeposit(t1);
 
 
     if (_totalSupply === 0) {
@@ -588,40 +551,40 @@ const AddLiquidity = (props) => {
       if (isUserConnected.toLowerCase() !== address.toLowerCase()) {
         return toast.error("Mismatch wallet address!");
       }
-      if (!tokenOne.address) {
+      if (!liquid.token1.address) {
         return toast.error("Select first token!");
       }
-      if (!tokenTwo.address) {
+      if (!liquid.token2.address) {
         return toast.error("Select second token!");
       }
-      if (tokenOneValue <= 0) {
+      if (liquid.token1Value <= 0) {
         return toast.error("Enter first token value!");
       }
-      if (tokenTwoValue <= 0) {
+      if (liquid.token2Value <= 0) {
         return toast.error("Enter second token value!");
       }
-      if (!tokenOneApproved) {
+      if (!token1Approved) {
         return toast.error("First Token approval is pending!");
       }
-      if (!tokenTwoApproved) {
+      if (!token2Approved) {
         return toast.error("Second Token approval is pending!");
       }
       console.log(
-        tokenOneBalance < tokenOneValue,
-        tokenOneBalance,
-        tokenOneValue
+        token1Balance < liquid.token1Value,
+        token1Balance,
+        liquid.token1Value
       );
-      if (tokenOneBalance < tokenOneValue) {
+      if (token1Balance < liquid.token1Value) {
         return toast.error(
-          `Wallet have insufficient ${tokenOne.symbol} balance!`
+          `Wallet have insufficient ${liquid.token1.symbol} balance!`
         );
       }
-      if (tokenTwoBalance < tokenTwoValue) {
+      if (liquid.token2Balance < liquid.token2Value) {
         return toast.error(
-          `Wallet have insufficient ${tokenTwo.symbol} balance!`
+          `Wallet have insufficient ${liquid.token2.symbol} balance!`
         );
       }
-      setShowSupplyModal(true);
+      setShowSupplyModal(!0);
     }
   };
 
@@ -630,60 +593,60 @@ const AddLiquidity = (props) => {
     if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
       return toast.error("Wallet address doesn`t match!");
     }
-    if (liquidityConfirmation) {
+    if (liquid.isLiqConfirmed) {
       return toast.info("Transaction is processing!");
     }
-    setLiquidityConfirmation(true);
+    liquid.setLiqConfirmed(!0);
     let value = 0,
-      checkBNB = false,
+      checkBNB = !1,
       token;
 
     let dl = Math.floor(new Date().getTime() / 1000);
     dl = dl + deadline * 60;
 
-    if (tokenOne.address === "BNB") {
-      checkBNB = true;
-      value = tokenOneValue;
-      token = tokenTwo.address;
+    if (liquid.token1.address === "BNB") {
+      checkBNB = !0;
+      value = liquid.token1Value;
+      token = liquid.token2.address;
     }
-    if (tokenTwo.address === "BNB") {
-      checkBNB = true;
-      value = tokenTwoValue;
-      token = tokenOne.address;
+    if (liquid.token2.address === "BNB") {
+      checkBNB = !0;
+      value = liquid.token2Value;
+      token = liquid.token1.address;
     }
     if (value > 0) {
       value = value * 10 ** 18;
     }
     if (checkBNB) {
       let amountETHMin = BigNumber(
-        Math.floor(Number(value) - (Number(value) * slippagePercentage) / 100)
+        Math.floor(Number(value) - (Number(value) * slippage) / 100)
       ).toFixed();
       let amountTokenMin = "";
       let amountTokenDesired = 0;
-      if (tokenOne.address === "BNB") {
-        amountTokenDesired = tokenTwoValue;
+      if (liquid.token1.address === "BNB") {
+        amountTokenDesired = liquid.token2Value;
         amountTokenMin = BigNumber(
           Math.floor(
             (amountTokenDesired -
-              (amountTokenDesired * slippagePercentage) / 100) *
-            10 ** tokenTwo.decimals
+              (amountTokenDesired * slippage) / 100) *
+            10 ** liquid.token2.decimals
           )
         ).toFixed();
         amountTokenDesired = BigNumber(
-          amountTokenDesired * 10 ** tokenTwo.decimals
+          amountTokenDesired * 10 ** liquid.token2.decimals
         ).toFixed();
       }
-      if (tokenTwo.address === "BNB") {
-        amountTokenDesired = tokenOneValue;
+      if (liquid.token2.address === "BNB") {
+        amountTokenDesired = liquid.token1Value;
         amountTokenMin = BigNumber(
           Math.floor(
             (amountTokenDesired -
-              (amountTokenDesired * slippagePercentage) / 100) *
-            10 ** tokenOne.decimals
+              (amountTokenDesired * slippage) / 100) *
+            10 ** liquid.token1.decimals
           )
         ).toFixed();
         amountTokenDesired = BigNumber(
-          amountTokenDesired * 10 ** tokenOne.decimals
+          amountTokenDesired * 10 ** liquid.token1.decimals
         ).toFixed();
       }
       value = value.toString();
@@ -705,49 +668,49 @@ const AddLiquidity = (props) => {
 
         if (result) {
           setTxHash(result);
-          setShowTransactionModal(true);
-          setShowSupplyModal(false);
+          liquid.showTransactionModal(!0);
+          setShowSupplyModal(!1);
 
           const data = {
-            message: `Add ${tokenOne.symbol} and ${tokenTwo.symbol}`,
+            message: `Add ${liquid.token1.symbol} and ${liquid.token2.symbol}`,
             tx: result,
           };
           dispatch(addTransaction(data));
-          dispatch(checkUserLpTokens(false));
+          dispatch(checkUserLpTokens(!1));
         }
-        setLiquidityConfirmation(false);
+        liquid.setLiqConfirmed(!1);
       } catch (err) {
         dispatch(stopLoading());
         const message = await ContractServices.web3ErrorHandle(err);
         toast.error(message);
-        setLiquidityConfirmation(false);
+        liquid.setLiqConfirmed(!1);
       }
     } else {
-      let amountADesired = tokenOneValue;
-      let amountBDesired = tokenTwoValue;
+      let amountADesired = liquid.token1Value;
+      let amountBDesired = liquid.token2Value;
 
       let amountAMin = Math.floor(
-        amountADesired - (amountADesired * slippagePercentage) / 100
+        amountADesired - (amountADesired * slippage) / 100
       );
       let amountBMin = Math.floor(
-        amountBDesired - (amountBDesired * slippagePercentage) / 100
+        amountBDesired - (amountBDesired * slippage) / 100
       );
 
       amountADesired = BigNumber(
-        amountADesired * 10 ** tokenOne.decimals
+        amountADesired * 10 ** liquid.token1.decimals
       ).toFixed();
       amountBDesired = BigNumber(
-        amountBDesired * 10 ** tokenTwo.decimals
+        amountBDesired * 10 ** liquid.token2.decimals
       ).toFixed();
-      amountAMin = BigNumber(amountAMin * 10 ** tokenOne.decimals).toFixed();
-      amountBMin = BigNumber(amountBMin * 10 ** tokenOne.decimals).toFixed();
+      amountAMin = BigNumber(amountAMin * 10 ** liquid.token1.decimals).toFixed();
+      amountBMin = BigNumber(amountBMin * 10 ** liquid.token1.decimals).toFixed();
 
       let dl = Math.floor(new Date().getTime() / 1000);
       dl = dl + deadline * 60;
 
       const data = {
-        tokenA: tokenOne.address,
-        tokenB: tokenTwo.address,
+        tokenA: liquid.token1.address,
+        tokenB: liquid.token2.address,
         amountADesired,
         amountBDesired,
         amountAMin,
@@ -764,36 +727,36 @@ const AddLiquidity = (props) => {
         dispatch(stopLoading());
         if (result) {
           setTxHash(result);
-          setShowTransactionModal(true);
-          setShowSupplyModal(false);
+          liquid.showTransactionModal(!0);
+          setShowSupplyModal(!1);
 
           const data = {
-            message: `Add ${tokenOne.symbol} and ${tokenTwo.symbol}`,
+            message: `Add ${liquid.token1.symbol} and ${liquid.token2.symbol}`,
             tx: result,
           };
           dispatch(addTransaction(data));
-          dispatch(checkUserLpTokens(false));
+          dispatch(checkUserLpTokens(!1));
         }
-        setLiquidityConfirmation(false);
+        liquid.setLiqConfirmed(!1);
       } catch (err) {
         console.log(err);
         dispatch(stopLoading());
         const message = await ContractServices.web3ErrorHandle(err);
         toast.error(message);
-        setLiquidityConfirmation(false);
+        liquid.setLiqConfirmed(!1);
       }
     }
   };
   const calculateFraction = (tokenType) => {
     let r = 0;
-    if (tokenOneValue && tokenTwoValue) {
-      if (tokenType === "TK1") {
-        if (tokenOneValue === 0) return 0;
-        r = tokenTwoValue / tokenOneValue;
+    if (liquid.token1Value && liquid.token2Value) {
+      if (tokenType === T_TYPE.A) {
+        if (liquid.token1Value === 0) return 0;
+        r = liquid.token2Value / liquid.token1Value;
       }
-      if (tokenType === "TK2") {
-        if (tokenTwoValue === 0) return 0;
-        r = tokenOneValue / tokenTwoValue;
+      if (tokenType === T_TYPE.B) {
+        if (liquid.token2Value === 0) return 0;
+        r = liquid.token1Value / liquid.token2Value;
       }
       return Number(r.toFixed(5));
     } else {
@@ -805,16 +768,16 @@ const AddLiquidity = (props) => {
     if (!isUserConnected) {
       return toast.error('Connect wallet first!');
     }
-    if (tokenOne.address === 'BNB') {
+    if (liquid.token1.address === 'BNB') {
       // .002 BNB is reserved for saving gas fee 
       const bnbBalance = await ContractServices.getBNBBalance(isUserConnected) - 0.1;
       handleTokenValue(bnbBalance, amountIn);
-      setMax(false);
+      setMax(!1);
     } else {
       // __ amount of particular token must be reserved for saving -needs to be fixed 
-      const tokenBalance = await ContractServices.getTokenBalance(tokenOne.address, isUserConnected);
+      const tokenBalance = await ContractServices.getTokenBalance(liquid.token1.address, isUserConnected);
       handleTokenValue(tokenBalance, amountIn);
-      setMax(false);
+      setMax(!1);
     }
   }
   return (
@@ -829,13 +792,13 @@ const AddLiquidity = (props) => {
             <div className="settingIcon">
               <img
                 src={TimerIcon}
-                onClick={() => setShowRecent(true)}
+                onClick={() => setShowRecent(!0)}
                 className="timerImg"
               />
-              <img src={SettingIcon} onClick={() => settinghandleShow(true)} />
+              <img src={SettingIcon} onClick={() => settinghandleShow(!0)} />
             </div>
           </div>
-          {firstProvider && (
+          {isFirstLP && (
             <div className="firstPro_Note">
               <p>You are the first liquidity provider.</p>
               <p>
@@ -847,15 +810,15 @@ const AddLiquidity = (props) => {
           <div className="liquidtySec">
             {
               <SelectCoin
-                label={`Balance: ${tokenOneBalance}`}
-                coinImage={tokenOne?.icon}
-                value={tokenOneCurrency}
-                onClick={() => onHandleOpenModal("TK1")}
+                label={`Balance: ${token1Balance}`}
+                coinImage={liquid.token1?.icon}
+                value={liquid.token1Currency}
+                onClick={() => onHandleOpenModal(T_TYPE.A)}
                 inputLabel="Input"
                 className="mb-0"
                 placeholder="0.0"
-                onChange={(e) => handleTokenValue(e.target.value, "TK1")}
-                defaultValue={tokenOneValue}
+                onChange={(e) => handleTokenValue(e.target.value, T_TYPE.A)}
+                defaultValue={liquid.token1Value}
                 max={max}
                 onMax={() => handleMaxBalance('TK1')}
               />
@@ -865,46 +828,46 @@ const AddLiquidity = (props) => {
             </div>
             {
               <SelectCoin
-                label={`Balance: ${tokenTwoBalance}`}
-                coinImage={tokenTwo?.icon}
-                value={tokenTwoCurrency}
-                onClick={() => onHandleOpenModal("TK2")}
+                label={`Balance: ${liquid.token2Balance}`}
+                coinImage={liquid.token2?.icon}
+                value={liquid.token2Currency}
+                onClick={() => onHandleOpenModal(T_TYPE.B)}
                 inputLabel="Input"
                 className="mb-0"
                 placeholder="0.0"
-                onChange={(e) => handleTokenValue(e.target.value, "TK2")}
-                defaultValue={tokenTwoValue}
-                max={false}
+                onChange={(e) => handleTokenValue(e.target.value, T_TYPE.B)}
+                defaultValue={liquid.token2Value}
+                max={!1}
               />
             }
-            {showPoolShare && (
+            {liquid.poolShareShown && (
               <Col className="poolSec">
                 <h6>PRICES AND POOL SHARE</h6>
                 <div className="poolDiv">
                   <span>
-                    {calculateFraction("TK1")} per
+                    {calculateFraction(T_TYPE.A)} per
                     <br />
                     <small>
                       {" "}
-                      {tokenTwoCurrency} per {tokenOneCurrency}
+                      {liquid.token2Currency} per {liquid.token1Currency}
                     </small>
                   </span>
                   <span>
-                    {calculateFraction("TK2")} per
+                    {calculateFraction(T_TYPE.B)} per
                     <br />
                     <small>
                       {" "}
-                      {tokenOneCurrency} per {tokenTwoCurrency}
+                      {liquid.token1Currency} per {liquid.token2Currency}
                     </small>
                   </span>
                   <span>
-                    {sharePoolValue}% <br />
+                    {liquid.sharePoolValue}% <br />
                     <small>Share of Pool</small>
                   </span>
                 </div>
               </Col>
             )}
-            {currentPairAddress && (
+            {liquid.currentPair && (
               <Col className="lp-class">
                 <h4>LP Tokens in your Wallet</h4>
                 <ul className="LptokensList">
@@ -913,37 +876,37 @@ const AddLiquidity = (props) => {
                       <img
                         className="sc-fWPcDo bUpjCL"
                         alt="icon 1"
-                        src={tokenOne?.icon}
+                        src={liquid.token1?.icon}
                       />
                       <img
                         className="sc-fWPcDo bUpjCL"
                         alt="icon 2"
-                        src={tokenTwo?.icon}
+                        src={liquid.token2?.icon}
                       />
                       &nbsp;&nbsp;
-                      {`${tokenOneCurrency}/${tokenTwoCurrency}`}:
+                      {`${liquid.token1Currency}/${liquid.token2Currency}`}:
                     </span>{" "}
-                    <span>{lpTokenBalance?.toFixed(5)}</span>
+                    <span>{liquid.lpTokenBalance?.toFixed(5)}</span>
                   </li>
                   <li>
-                    {tokenOne.symbol}: <span>{tokenOneDeposit}</span>
+                    {liquid.token1.symbol}: <span>{liquid.token1Deposit}</span>
                   </li>
                   <li>
                     {" "}
-                    {tokenTwo.symbol}: <span>{tokenTwoDeposit}</span>
+                    {liquid.token2.symbol}: <span>{liquid.token2Deposit}</span>
                   </li>
                 </ul>
               </Col>
             )}
           </div>
           <Col className="swapBtn_col">
-            {handleApprovalButton("TK1")}
-            {handleApprovalButton("TK2")}
+            {getApprovalButton(T_TYPE.A)}
+            {getApprovalButton(T_TYPE.B)}
 
             <ButtonPrimary
               className="swapBtn dismissBtn"
               title={isUserConnected ? "Supply" : "Unlock Wallet"}
-              // onClick={() => handleShow1(true)}
+              // onClick={() => handleShow1(!0)}
               onClick={() => checkAddLiquidity()}
             />
           </Col>
@@ -952,13 +915,13 @@ const AddLiquidity = (props) => {
       <ModalCurrency
         show={show}
         handleClose={handleClose}
-        tokenList={filteredTokenList}
+        tokenList={liquid.filteredTokenList}
         searchToken={handleSearchToken}
         searchByName={setSearch}
         selectCurrency={onHandleSelectCurrency}
-        tokenType={tokenType}
-        currencyName={selectedCurrency}
-        handleOrder={setFilteredTokenList}
+        tokenType={liquid.tokenType}
+        currencyName={liquid.selectedCurrency}
+        handleOrder={liquid.FilteredTokenListliquid.}
       />
       <ConnectWallet
         show={show1}
@@ -971,19 +934,19 @@ const AddLiquidity = (props) => {
         handleClose={settingClose}
       />
       <SupplyModal
-        show={showSupplyModal}
+        show={liquid.showSupplyModal}
         handleClose={supplyModalClose}
         addLiquidity={addLiquidity}
-        liquidityConfirmation={liquidityConfirmation}
-        tokenOneCurrency={tokenOneCurrency}
-        tokenOneValue={tokenOneValue}
-        tokenTwoCurrency={tokenTwoCurrency}
-        tokenTwoValue={tokenTwoValue}
+        liquidityConfirmation={liquid.isLiqConfirmed}
+        liquid.token1Currency={liquid.token1Currency}
+        liquid.token1Value={liquid.token1Value}
+        liquid.token2Currency={liquid.token2Currency}
+        liquid.token2Value={liquid.token2Value}
         calculateFraction={calculateFraction}
-        sharePoolValue={sharePoolValue}
-        tokenOne={tokenOne}
-        tokenTwo={tokenTwo}
-        slippagePercentage={slippagePercentage}
+        liquid.sharePoolValue={liquid.sharePoolValue}
+        token1={token1}
+        token2={token2}
+        slippage={slippage}
       />
       <RecentTransactions
         show={showRecent}

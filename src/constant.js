@@ -93,3 +93,9 @@ export const addCommas = (nStr) => {
   return x1 + x2;
 }
 
+export const T_TYPE = {
+  A: 1,
+  B: 2,
+  AB: 0,
+}
+
