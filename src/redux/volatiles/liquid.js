@@ -5,7 +5,6 @@ import { T_TYPE } from "../../constant";
 
 
 const useLiquid = create((set, get) => ({
-  approvalConfirmation: !1,
   
   currentPair: '',
   
@@ -13,6 +12,7 @@ const useLiquid = create((set, get) => ({
   
   isFirstLP: !1,
   isLiqConfirmed: !1,
+  isApprovalConfirmed: !1,
   
   lpTokenBalance: 0,
   
@@ -23,7 +23,7 @@ const useLiquid = create((set, get) => ({
   showSupplyModal: !1,
   sharePoolValue: 100,
   selectedCurrency: '',
-  showTransactionModal: !1,
+  transactionModalShown: !1,
   
   txHash: '',
   token2: {},
@@ -102,8 +102,17 @@ const useLiquid = create((set, get) => ({
   setModalCurrency: modalCurrency => {
     set(s => ({...s, modalCurrency}));
   },
-  setCurrentPair: currentPair => {
-    set(s => ({...s, currentPair}));
+  setApprovalConfirmed: isApprovalConfirmed => {
+    set(s => ({...s, isApprovalConfirmed}));
+  },
+  setShowSupplyModal: showSupplyModal => {
+    set(s => ({...s, showSupplyModal}));
+  },
+  setTxHash: txHash => {
+    set(s => ({...s, txHash}));
+  },
+  showTransactionModal: transactionModalShown => {
+    set(s => ({...s, transactionModalShown}));
   },
 }))
 

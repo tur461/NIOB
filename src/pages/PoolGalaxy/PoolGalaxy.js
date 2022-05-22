@@ -56,7 +56,7 @@ function PoolGalaxy(props) {
   const [roiModalData, setRoiModalData] = useState(null);
 
   const [poolLength, setPoolLength] = useState(0);
-  const [farms, setFarms] = useState([]);
+  const [farms , setFarms] = useState([]);
   const [inactiveFarms, setInactiveFarms] = useState([]);
   const [stakingOnly, setStakingOnly] = useState([]);
   const [stakeData, setStakeData] = useState(null);
