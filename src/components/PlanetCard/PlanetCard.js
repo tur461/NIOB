@@ -261,7 +261,7 @@ const PlanetCard = (props) => {
     const decimalZero = await ContractServices.getDecimals(tokenZero);
     const decimalOne = await ContractServices.getDecimals(tokenOne);
 
-    // console.log(tokenZero, TOKEN_LIST[2].address);
+    console.log(tokenZero, TOKEN_LIST[2].address);
 
     if (tokenZero.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
       return (price =
@@ -418,7 +418,7 @@ const PlanetCard = (props) => {
   };
   const earnedNiobValue = (dollarValue, rewards) => {
 
-    console.log("DOllar value:", dollarValue);
+    console.log("DOllar value:", dollarValue, 'rewards:', rewards);
     let fixedAfterDecimal = Number(0.01 * rewards).toFixed(9);
     let res = addCommas(fixedAfterDecimal);
     return res;

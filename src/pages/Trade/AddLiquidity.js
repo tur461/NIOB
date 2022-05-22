@@ -58,8 +58,8 @@ const AddLiquidity = (props) => {
   const [modalCurrency, setModalCurrency] = useState(false);
   const [tokenOne, setTokenOne] = useState(TOKEN_LIST[0]);
   const [tokenTwo, setTokenTwo] = useState({});
-  const [tokenOneValue, setTokenOneValue] = useState();
-  const [tokenTwoValue, setTokenTwoValue] = useState();
+  const [tokenOneValue, setTokenOneValue] = useState('');
+  const [tokenTwoValue, setTokenTwoValue] = useState('');
   const [sharePoolValue, setSharePoolValue] = useState(100);
   const [tokenOneCurrency, setCurrencyNameForTokenOne] = useState(
     TOKEN_LIST[0].symbol
@@ -148,6 +148,7 @@ const AddLiquidity = (props) => {
   };
 
   const onHandleOpenModal = (tokenType) => {
+    console.log('dropdown:', tokenType);
     if (!isUserConnected) {
       return toast.error("Connect wallet first!");
     }
@@ -162,7 +163,7 @@ const AddLiquidity = (props) => {
     setTokenType(tokenType);
   };
   const onHandleSelectCurrency = async (token, selecting) => {
-
+    console.log('select currency:', token, selecting);
     const { address, symbol } = token;
     if (!isUserConnected) {
       return toast.error("Connect wallet first!");
@@ -304,6 +305,7 @@ const AddLiquidity = (props) => {
   };
 
   const handleTokenValue = async (amount, tokenType) => {
+    console.log('handling token value:', amount, tokenType);
     let amt1, amt2;
     if (tokenType === "TK1") {
       setTokenOneValue(amount);
@@ -321,6 +323,7 @@ const AddLiquidity = (props) => {
           const reserves = await ExchangeService.getReserves(
             currentPairAddress
           );
+          console.log('tko and tk1:', tk0, tk1);
           const token0Decimal = await ContractServices.getDecimals(tk0);
           const token1Decimal = await ContractServices.getDecimals(tk1);
 

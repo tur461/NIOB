@@ -3,7 +3,7 @@ import { actionTypes } from "../actions/PersistActions";
 
 const initialState = {
   walletType: "Metamask",
-  isUserConnected: "",
+  isUserConnected: '',
   tokenList: TOKEN_LIST,
   slippagePercentage: 7.5,
   deadline: 20,

@@ -87,11 +87,11 @@ const PublicRoutes = () => {
           exact={true}
         />
         <Route path={"/trade/:tab/:fillter?"} component={Trade} exact={true} />
-        {/* <Route
+        <Route
               path={'/trade/addLiquidity'}
               component={AddLiquidity}
               exact={true} 
-          /> */}
+          />
         <Route path={"/poolgalaxy"} component={PoolGalaxy} exact={true} />
       </Switch>
       <Footer />

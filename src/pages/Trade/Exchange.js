@@ -275,7 +275,18 @@ const Exchange = (props) => {
     return false;
   }
 
+  const isInputOk = ip => typeof ip == 'string' && !ip.length ? !1 : ip === 0 ? !1 : !0;
+
   const handleTokenValue = async (amount, tokenType) => {
+    console.log('handling token value:', amount, tokenType);
+    if(tokenType === 'TK1') setTokenOneValue(amount);
+    if(tokenType === 'TK2') setTokenTwoValue(amount);
+    if(!isInputOk(amount)) {
+      console.log('amount not ok!');
+      if(tokenType === 'TK1') setTokenTwoValue('');
+      if(tokenType === 'TK2') setTokenOneValue('');
+      return;
+    }
     try {
       if (!isUserConnected) {
         return;
@@ -286,7 +297,6 @@ const Exchange = (props) => {
       }
       let add1ForPriceImpact, add2ForPriceImpact;
       if (tokenType === 'TK1') {
-        setTokenOneValue(amount);
         if (tokenTwoCurrency === 'Select a token') {
           setBtnText('Select token');
           return;
@@ -340,7 +350,6 @@ const Exchange = (props) => {
         }
       }
       if (tokenType === 'TK2') {
-        setTokenTwoValue(amount);
         if (tokenOneCurrency === 'Select a token') {
           setBtnText('Select token');
           return;
@@ -370,6 +379,7 @@ const Exchange = (props) => {
             result = await ExchangeService.getAmountsIn(amount, [tokenTwoAddress, tokenOneAddress]);
             add1ForPriceImpact = tokenOneAddress;
             add2ForPriceImpact = tokenTwoAddress;
+            
           } else {
             const pair = await checkPairWithBNBOrUSDT(tokenTwoAddress, tokenOneAddress);
             if (pair) {
@@ -379,6 +389,8 @@ const Exchange = (props) => {
               isPriceImpact = true;
             }
           }
+          console.log('add1ForPriceImpact', add1ForPriceImpact);
+          console.log('add2ForPriceImpact', add2ForPriceImpact);
           if (result.length > 0) {
             const a = Number(result[result.length - 1].toFixed(5));
             setTokenOneValue(a);
@@ -392,6 +404,7 @@ const Exchange = (props) => {
           }
         }
       }
+      console.log('tokenOne and tokenTwo:', tokenOne, tokenTwo);
       if (tokenOne.address && tokenTwo.address) {
         let a1 = add1ForPriceImpact, a2 = add2ForPriceImpact;
         let currentPairAddress;
@@ -407,6 +420,8 @@ const Exchange = (props) => {
         }
         if (currentPairAddress !== '0x0000000000000000000000000000000000000000') {
           setCurrentPairAddress(currentPairAddress);
+          console.log('a1 and a2', a1, a2);
+          console.log('token balance, cpa, isuser', currentPairAddress, isUserConnected);
           const lpTokenBalance = await ContractServices.getTokenBalance(currentPairAddress, isUserConnected);
           setLpTokenBalance(lpTokenBalance);
           //const reserves = await ExchangeService.getReserves(currentPairAddress);

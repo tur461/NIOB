@@ -1,8 +1,10 @@
 import Web3 from "web3";
 import TOKEN_ABI from "../assets/ABI/tokenContract.ABI.json";
 import { toast } from "../components/Toast/Toast";
-import { NETWORK_CHAIN_ID, NETWORK_CHAIN_NAME, NETWORK_LINK, NETWORK_NATIVE_CURRENCY_DECIMALS, NETWORK_NATIVE_CURRENCY_NAME, NETWORK_NATIVE_CURRENCY_SYMBOL, NETWORK_RPC_URL } from '../constant'
+import { NETWORK_CHAIN_NAME, NETWORK_LINK, NETWORK_NATIVE_CURRENCY_DECIMALS, NETWORK_NATIVE_CURRENCY_NAME, NETWORK_NATIVE_CURRENCY_SYMBOL, NETWORK_RPC_URL } from '../constant'
 import WalletConnectProvider from '@walletconnect/web3-provider'
+
+const NETWORK_CHAIN_ID = '0x61'; // 97
 
 let web3Object;
 let contractOjbect;
@@ -80,6 +82,7 @@ const walletWindowListener = async () => {
   if (walletTypeObject === 'Metamask') {
     const result = Boolean(ethereum && ethereum.isMetaMask);
     if (result) {
+      console.log('req chain id:', NETWORK_CHAIN_ID, 'eth chainId:', ethereum.chainId);
       if (ethereum.chainId !== NETWORK_CHAIN_ID) {
         try {
           const chain = await ethereum.request({

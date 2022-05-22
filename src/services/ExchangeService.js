@@ -32,6 +32,7 @@ const getPairFromPancakeFactory = async (token1, token2) => {
 };
 
 const getTokenZero = async (currentPairAddress) => {
+  // console.log('pair abi for token 0:', MAIN_CONTRACT_LIST.pair);
   try {
     const contract = await ContractServices.callContract(currentPairAddress, MAIN_CONTRACT_LIST.pair.abi);
     return await contract.methods.token0().call();

@@ -71,6 +71,10 @@ const RemoveLiquidity = (props) => {
 
   const [symbolsArr] = useState(["e", "E", "+", "-"]);
 
+  console.log('#'.repeat(40));
+  console.log('RemoveLiquidity component');
+  console.log('#'.repeat(40));
+
   useEffect(() => {
     setFilteredTokenList(tokenList.filter((token) => token.name.toLowerCase().includes(search.toLowerCase())));
     init();
@@ -123,6 +127,7 @@ const RemoveLiquidity = (props) => {
   }
 
   const onHandleOpenModal = (tokenType) => {
+    console.log('dropdown:', tokenType);
     if (!isUserConnected) {
       return toast.error('Connect wallet first!');
     }
@@ -217,6 +222,7 @@ const RemoveLiquidity = (props) => {
     }
   }
   const handleLiquidityChange = (value, totalValue, type) => {
+    console.log('arguments:', value, totalValue, type);
     if (value > 0) {
       if (value >= totalValue) {
         value = totalValue;
