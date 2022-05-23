@@ -1,15 +1,14 @@
 import create from 'zustand';
-import { actionTypes } from "../actions";
-import { TOKEN_LIST } from "../../assets/tokens";
 import { T_TYPE } from "../../constant";
+import { TOKEN_LIST } from "../../assets/tokens";
 
 
 const useLiquid = create((set, get) => ({
-  
   currentPair: '',
   
   filteredTokenList: [],
   
+  isMax: !0, 
   isFirstLP: !1,
   isLiqConfirmed: !1,
   isApprovalConfirmed: !1,
@@ -42,6 +41,9 @@ const useLiquid = create((set, get) => ({
   token2Currency: 'Select a token',
   token1Currency: TOKEN_LIST[0].symbol,
 
+  setIsMax: isMax => {
+    set(s => ({...s, isMax}));
+  },
   setToken: (x, t) => {
     if(t === T_TYPE.AB)
       set(s => ({...s, token1: x, token2: x}))

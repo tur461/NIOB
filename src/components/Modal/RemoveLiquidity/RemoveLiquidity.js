@@ -26,7 +26,7 @@ const RemoveLiquidity = (props) => {
   const isUserConnected = useSelector(state => state.persist.isUserConnected);
   const tokenList = useSelector(state => state.persist.tokenList);
   const deadline = useSelector(state => state.persist.deadline);
-  const slippagePercentage = useSelector(state => state.persist.slippagePercentage);
+  const slippage = useSelector(state => state.persist.slippage);
   const userLpTokens = useSelector(state => state.persist.userLpTokens);
 
   const [modalCurrency, setModalCurrency] = useState(false);
@@ -416,16 +416,16 @@ const RemoveLiquidity = (props) => {
       value = BigNumber(value).toFixed();
     }
     if (checkBNB) {
-      let amountETHMin = BigNumber(Math.floor(Number(value) - (Number(value) * slippagePercentage / 100))).toFixed();
+      let amountETHMin = BigNumber(Math.floor(Number(value) - (Number(value) * slippage / 100))).toFixed();
 
       let amountTokenMin = '';
       if (tokenOne.address === 'BNB') {
-        let a = tokenTwoValue - (tokenTwoValue * slippagePercentage) / 100;
+        let a = tokenTwoValue - (tokenTwoValue * slippage) / 100;
         a = a * 10 ** tokenTwo.decimals;
         amountTokenMin = BigNumber(Math.floor(a)).toFixed();
       }
       if (tokenTwo.address === 'BNB') {
-        let a = (tokenOneValue - (tokenOneValue * slippagePercentage) / 100);
+        let a = (tokenOneValue - (tokenOneValue * slippage) / 100);
         a = a * 10 ** tokenOne.decimals;
         amountTokenMin = BigNumber(Math.floor(a)).toFixed();
       }
@@ -486,8 +486,8 @@ const RemoveLiquidity = (props) => {
       let amountADesired = tokenOneValue;
       let amountBDesired = tokenTwoValue;
 
-      let amountAMin = amountADesired - (amountADesired * slippagePercentage / 100);
-      let amountBMin = amountBDesired - (amountBDesired * slippagePercentage / 100);
+      let amountAMin = amountADesired - (amountADesired * slippage / 100);
+      let amountBMin = amountBDesired - (amountBDesired * slippage / 100);
 
       amountADesired = BigNumber(Math.floor(amountADesired * 10 ** tokenOne.decimals)).toFixed();
       amountBDesired = BigNumber(Math.floor(amountBDesired * 10 ** tokenTwo.decimals)).toFixed();
@@ -792,7 +792,7 @@ const RemoveLiquidity = (props) => {
                         <h2>{tokenTwo.symbol}</h2>
                       </span>
                     </div>
-                    <p>Output is estimated. If the price changes by more than {slippagePercentage}% your transaction will revert.</p>
+                    <p>Output is estimated. If the price changes by more than {slippage}% your transaction will revert.</p>
                   </li>
                   <li>
                     <li>{tokenOneCurrency} Deposit: <span> {tokenOneValue}</span></li>

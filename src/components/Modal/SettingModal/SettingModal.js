@@ -10,15 +10,15 @@ import { Link } from "react-router-dom";
 const SettingModal = ({ show, handleClose }) => {
   const dispatch = useDispatch();
 
-  const slippagePercentage = useSelector(
-    (state) => state.persist.slippagePercentage
+  const slippage = useSelector(
+    (state) => state.persist.slippage
   );
 
   const MAX_SLIPPAGE = 49000;
   const RISKY_SLIPPAGE_LOW = 50;
   const RISKY_SLIPPAGE_HIGH = 4900;
 
-  const [value, setValue] = useState(slippagePercentage);
+  const [value, setValue] = useState(slippage);
   const [error, setError] = useState(null);
   const [deadline, setDeadline] = useState(20);
   const [deadlineError, setDeadlineError] = useState(null);

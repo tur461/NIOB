@@ -228,38 +228,38 @@ const addLiquidityETH = async (data) => {
   return new Promise(async (resolve, reject) => {
     try {
       let {
-        token,
+        otherTokenzAddr,
         amountTokenDesired,
         amountTokenMin,
         amountETHMin,
         to,
         deadline,
-        value
+        valueOfExact
       } = data;
       const web3 = await ContractServices.callWeb3();
-      value = await web3.utils.toHex(value);
+      valueOfExact = await web3.utils.toHex(valueOfExact);
 
       const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
       const gasPrice = await ContractServices.calculateGasPrice();
-      // value = await web3.utils.toHex(value);
+      // valueOfExact = await web3.utils.toHex(valueOfExact);
 
       const gas = await contract.methods.addLiquidityETH(
-        token,
+        otherTokenzAddr,
         amountTokenDesired,
         amountTokenMin,
         amountETHMin,
         to,
         deadline
-      ).estimateGas({ from: to, value });
+      ).estimateGas({ from: to, valueOfExact });
 
       contract.methods.addLiquidityETH(
-        token,
+        otherTokenzAddr,
         amountTokenDesired,
         amountTokenMin,
         amountETHMin,
         to,
         deadline
-      ).send({ from: to, gasPrice, gas, value })
+      ).send({ from: to, gasPrice, gas, valueOfExact })
         .on('transactionHash', (hash) => {
           resolve(hash);
         })

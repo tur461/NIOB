@@ -10,7 +10,7 @@ const SupplyModal = ({
   liquidityConfirmation,
   tokenOne,
   tokenTwo,
-  slippagePercentage,
+  slippage,
   tokenOneCurrency,
   tokenOneValue,
   tokenTwoCurrency,
@@ -45,7 +45,7 @@ const SupplyModal = ({
               <li>
                 <p className="estimate">
                   Output is estimated. If the price changes by more than{" "}
-                  {slippagePercentage}% your transaction will revert.
+                  {slippage}% your transaction will revert.
                 </p>
               </li>
               <li>

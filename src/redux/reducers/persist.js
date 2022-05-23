@@ -5,7 +5,7 @@ const initialState = {
   walletType: "Metamask",
   isUserConnected: '',
   tokenList: TOKEN_LIST,
-  slippagePercentage: 7.5,
+  slippage: 7.5,
   deadline: 20,
   userInfo: "",
   loggedIn: false,
@@ -46,7 +46,7 @@ const persist = (state = initialState, action) => {
     case actionTypes.SAVE_SLIPPAGE_PERCENTAGE:
       return {
         ...state,
-        slippagePercentage: action.payload,
+        slippage: action.payload,
       };
     case actionTypes.SAVE_DEADLINE:
       return {

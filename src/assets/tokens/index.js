@@ -208,7 +208,7 @@ export const TOKEN_LIST = [
   {
     icon: BUSD,
     name: "BUSD",
-    address: "0x018b32b3cfaA0D74953B50309f82e57B4bAEdaE2",
+    address: "0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee",
     isAdd: false,
     isDel: false,
     decimals: 18,

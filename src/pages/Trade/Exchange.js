@@ -46,7 +46,7 @@ const Exchange = (props) => {
   const isUserConnected = useSelector(state => state.persist.isUserConnected);
   const tokenList = useSelector(state => state.persist.tokenList);
   const deadline = useSelector(state => state.persist.deadline);
-  const slippagePercentage = useSelector(state => state.persist.slippagePercentage);
+  const slippage = useSelector(state => state.persist.slippage);
 
   const [modalCurrency, setModalCurrency] = useState(false);
   const [tokenOne, setTokenOne] = useState(TOKEN_LIST[0]);
@@ -343,7 +343,7 @@ const Exchange = (props) => {
             setTokenTwoValue(a);
             setAmountIn("TK1");
             let amountOut = BigNumber(a * 10 ** tokenTwo.decimals).toFixed();
-            const minimumReceived = Number(amountOut) - (Number(amountOut) * slippagePercentage / 100);
+            const minimumReceived = Number(amountOut) - (Number(amountOut) * slippage / 100);
             setMinReceived(minimumReceived);
             calculatePriceImpact(tokenType, amount, add1ForPriceImpact, add2ForPriceImpact, isPriceImpact);
           }
@@ -398,7 +398,7 @@ const Exchange = (props) => {
             setSharePoolValue(ratio.toFixed(10))
             setAmountIn("TK2");
             let amountOut = BigNumber(a * 10 ** tokenTwo.decimals).toFixed();
-            const minimumReceived = Number(amountOut) - (Number(amountOut) * slippagePercentage / 100);
+            const minimumReceived = Number(amountOut) - (Number(amountOut) * slippage / 100);
             setMinReceived(minimumReceived);
             await calculatePriceImpact(tokenType, a, add2ForPriceImpact, add1ForPriceImpact, isPriceImpact);
           }
@@ -645,7 +645,7 @@ const Exchange = (props) => {
       let amountBDesired = tokenTwoValue * 10 ** tokenTwo.decimals;
 
       amountAMin = BigNumber(amountADesired).toFixed();
-      amountBMin = BigNumber(amountBDesired - (amountBDesired * slippagePercentage / 100)).toFixed();
+      amountBMin = BigNumber(amountBDesired - (amountBDesired * slippage / 100)).toFixed();
     }
 
     if (amountIn == "TK2") {
@@ -653,7 +653,7 @@ const Exchange = (props) => {
       let amountBDesired = tokenTwoValue * 10 ** tokenTwo.decimals;
 
       amountAMin = BigNumber(amountADesired).toFixed();
-      amountBMin = BigNumber(amountBDesired + (amountBDesired * slippagePercentage / 100)).toFixed();
+      amountBMin = BigNumber(amountBDesired + (amountBDesired * slippage / 100)).toFixed();
     }
 
     let dl = Math.floor((new Date()).getTime() / 1000);
@@ -673,7 +673,7 @@ const Exchange = (props) => {
     if (amountIn === "TK1") {
       let amountOut = BigNumber(Math.floor(tokenTwoValue * 10 ** tokenTwo.decimals)).toFixed();
 
-      amountOutMin = BigNumber(Math.floor(Number(amountOut) - (Number(amountOut) * slippagePercentage / 100))).toFixed();
+      amountOutMin = BigNumber(Math.floor(Number(amountOut) - (Number(amountOut) * slippage / 100))).toFixed();
       amountOutMin = amountOutMin.toString();
     }
 
@@ -700,7 +700,7 @@ const Exchange = (props) => {
     if (amountIn === "TK1") {
       let amountOut = tokenTwoValue * 10 ** tokenOne.decimals;
       let amountIn = BigNumber(Math.floor(tokenOneValue * 10 ** tokenOne.decimals)).toFixed();
-      let amountOutMin = BigNumber(Math.floor(amountOut - (amountOut * slippagePercentage / 100))).toFixed();
+      let amountOutMin = BigNumber(Math.floor(amountOut - (amountOut * slippage / 100))).toFixed();
       // const amount = Math.floor(value);
       return {
         amountIn,
@@ -715,7 +715,7 @@ const Exchange = (props) => {
     if (amountIn === "TK2") {
       let amountIn = tokenTwoValue * 10 ** tokenTwo.decimals;
       let amountOut = BigNumber(Math.floor(tokenOneValue * 10 ** tokenOne.decimals)).toFixed();
-      let amountInMax = BigNumber(Math.floor(amountIn + (amountIn * slippagePercentage / 100))).toFixed();
+      let amountInMax = BigNumber(Math.floor(amountIn + (amountIn * slippage / 100))).toFixed();
       // const amount = Math.floor(value);
       return {
         amountOut: amountOut.toString(),
@@ -868,7 +868,7 @@ const Exchange = (props) => {
             max={false}
             defaultValue={tokenTwoValue}
           />
-          {slippagePercentage &&
+          {slippage &&
             <Col className="priceSec_col">
               <div>
                 {(!isDisabled && isUserConnected) && <h5>Price</h5>}
@@ -883,7 +883,7 @@ const Exchange = (props) => {
                     className="ms-2"
                   /> */}
                 </h5>
-                <h5>{`${slippagePercentage}%`}</h5>
+                <h5>{`${slippage}%`}</h5>
               </div>
             </Col>}
           {handleApprovalButton('TK1')}
