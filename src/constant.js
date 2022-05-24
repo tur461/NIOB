@@ -32,6 +32,7 @@ export const TWITTER_LINK = 'https://twitter.com/AnchorSwap';
 export const TELEGRAM_LINK = 'https://t.me/joinchat/KP-_HKro73ViZTZk';
 export const AUDIT_LINK = 'https://docs.anchorswap.finance/audit/';
 
+export const MINIMUM_LIQUIDITY = 10 ** 3;
 
 export const ADDRESS = {
   ZERO: '0x' + '0'.repeat(40),
@@ -43,6 +44,10 @@ export const VAL = {
 
 export const TKN = {
   BNB: 'BNB',
+}
+
+export const STR = {
+  SEL_TKN: 'Select a token',
 }
 
 console.log('process env:', process.env);

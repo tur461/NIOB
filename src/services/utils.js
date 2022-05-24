@@ -1,6 +1,7 @@
 import { ADDRESS } from "../constant";
+import { BigNumber } from "bignumber.js"
 
-export const hasVal = v => v.length && parseFloat(v) > 0;
+export const hasVal = v => typeof v == 'string' && !v.length ? !1 : v === 0 ? !1 : !0;
 
 export const zero = v => !!!v;
 
@@ -8,7 +9,11 @@ export const isDefined = x => !!x;
 
 export const isBnb = x => x === 'BNB';
 
-export const tgl = v => v-1 ? 2 : 1;
+export const tgl = v => v-1 ? 1 : 2;
+
+export const toFlr = v => Math.floor(v);
+
+export const toBgFix = v => BigNumber(v).toFixed();
 
 export const isNonZero = addr => addr !== ADDRESS.ZERO;
 

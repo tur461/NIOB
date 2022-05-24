@@ -3,6 +3,8 @@ import { actionTypes } from "../actions/PersistActions";
 
 const initialState = {
   walletType: "Metamask",
+  priAccount: '',
+  isConnected: '',
   isUserConnected: '',
   tokenList: TOKEN_LIST,
   slippage: 7.5,
@@ -22,6 +24,8 @@ const persist = (state = initialState, action) => {
     case actionTypes.USER_CONNECTED:
       return {
         ...state,
+        priAccount: action.payload.account,
+        isConnected: action.payload.account && action.payload.account.length === 42,
         isUserConnected: action.payload.account,
         walletType: action.payload.walletType,
       };

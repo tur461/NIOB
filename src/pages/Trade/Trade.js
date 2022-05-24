@@ -47,7 +47,6 @@ const Trade = (props) => {
     }
     setLptoken(lp);
   }
-  const [ key, setKey ] = useState('deutsch');
   return (
     <div className="container_wrap trade">
       <Container fluid className="swapScreen comnSection">

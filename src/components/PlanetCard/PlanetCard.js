@@ -20,6 +20,7 @@ import { toast } from "../Toast/Toast";
 import { addTransaction, startLoading, stopLoading } from "../../redux/actions";
 import { addCommas } from "../../constant";
 import NIOB from "../../assets/images/token_icons/NIOB.svg";
+import { isNonZero } from "../../services/utils";
 
 const PlanetCard = (props) => {
   const [classToggle, setClassToggle] = useState(false);
@@ -222,6 +223,7 @@ const PlanetCard = (props) => {
         };
         dispatch(addTransaction(data));
         setApprovalConfirmation(false);
+        console.log('init called planetcard.js in handleTokenApproval');
         init();
       }
       dispatch(stopLoading());
@@ -249,18 +251,15 @@ const PlanetCard = (props) => {
 
   const calPrice = async (pairAddress) => {
     let price = 0;
-
-    if (pairAddress == "0x0000000000000000000000000000000000000000") {
-      return 0;
-    }
-
-    // console.log("pairAddresspairAddress", pairAddress);
+    if (!isNonZero(pairAddress)) return 0;
+    // console.trace('tracing call to callPrice');
     const tokenZero = await ExchangeService.getTokenZero(pairAddress);
     const tokenOne = await ExchangeService.getTokenOne(pairAddress);
     const reserve = await ExchangeService.getReserves(pairAddress);
     const decimalZero = await ContractServices.getDecimals(tokenZero);
     const decimalOne = await ContractServices.getDecimals(tokenOne);
 
+    console.log('callPrice args:', pairAddress);
     console.log(tokenZero, TOKEN_LIST[2].address);
 
     if (tokenZero.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
@@ -432,6 +431,7 @@ const PlanetCard = (props) => {
   };
   useEffect(async () => {
     await getAnchorDollarValue();
+    console.log('init called planetcard.js in useEffet');
     init();
     // console.log('userInfo.amount', userInfo.amount);
   }, [isUserConnected]);
