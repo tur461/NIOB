@@ -379,7 +379,7 @@ const FarmPlanets = (props) => {
                   <h1 className="title_hd">Farm Planets</h1>
                   <p>
                     There is so much to explore! NIOB Swap offers multiple
-                    farming oppurtunities to you. Get amazing rewards by staking
+                    farming opportunities to you. Get amazing rewards by staking
                     your LP tokens in return for additional NIOB Tokens.
                   </p>
                 </div>

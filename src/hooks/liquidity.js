@@ -152,9 +152,10 @@ const useLiquidity = (props) => {
     };
 
     const calculateFraction = tt => {
-        return rDefined(common.token1Value, common.token2Value) ? 
-        !zero(common[`token${tt}Value`]) ? 
-            Number((common[`token${tgl(tt)}Value`] / common[`token${tgl(tt)}Value`]).toFixed(5)) 
+        const tv = [common.token1Value, common.token2Value];
+        return rDefined(...tv) ? 
+        !zero(tv[tt-1]) ? 
+            Number((tv[tgl(tt)-1] / tv[tt-1]).toFixed(5)) 
             : 0 
         : 0;
     };
