@@ -1,70 +1,26 @@
-import React, { useEffect } from "react";
-import { BigNumber } from "bignumber.js"
-import { useDispatch, useSelector } from "react-redux";
-import ButtonPrimary from "../components/Button/Button";
-import { ADDRESS, LIQUIDITY_PROVIDER_FEE, MINIMUM_LIQUIDITY, STR, T_TYPE, VAL } from "../constant";
-import { addTransaction, searchTokenByNameOrAddress, startLoading, stopLoading } from "../redux/actions";
+import React from "react";
 import useCommon from "../redux/volatiles/common"
 import { toast } from "../components/Toast/Toast";
-import { MAIN_CONTRACT_LIST, USD, WETH } from "../assets/tokens";
+import { useDispatch, useSelector } from "react-redux";
+import ButtonPrimary from "../components/Button/Button";
 import { ExchangeService } from "../services/ExchangeService";
 import { ContractServices } from "../services/ContractServices";
+import { MAIN_CONTRACT_LIST, USD, WETH } from "../assets/tokens";
+import { ADDRESS, LIQUIDITY_PROVIDER_FEE, MINIMUM_LIQUIDITY, STR, T_TYPE, VAL } from "../constant";
+import { addTransaction, searchTokenByNameOrAddress, startLoading, stopLoading } from "../redux/actions";
 import { hasVal, isBnb, isDefined, isNonZero, rDefined, rEq, tgl, toBgFix, toDec, zero } from "../services/utils";
-
-
-// const handleTokenValue = async (amount, tokenType) => {
-    
-//     try {
-//         if (!isUserConnected) {
-//         return;
-//         }
-        
-//         let add1ForPriceImpact, add2ForPriceImpact;
-        
-//         if (tokenOne.address && tokenTwo.address) {
-//         let a1 = add1ForPriceImpact, a2 = add2ForPriceImpact;
-//         let currentPairAddress;
-//         if (a1 === 'BNB') {
-//             a1 = WETH;//WETH
-//             currentPairAddress = await ExchangeService.getPair(a1, a2);
-//         } else if (a2 === 'BNB') {
-//             a2 = WETH;//WETH
-//             currentPairAddress = await ExchangeService.getPair(a1, a2);
-
-//         } else {
-//             currentPairAddress = await ExchangeService.getPair(a1, a2);
-//         }
-//         if (currentPairAddress !== '0x0000000000000000000000000000000000000000') {
-//             setCurrentPairAddress(currentPairAddress);
-//             console.log('a1 and a2', a1, a2);
-//             console.log('token balance, cpa, isuser', currentPairAddress, isUserConnected);
-//             const lpTokenBalance = await ContractServices.getTokenBalance(currentPairAddress, isUserConnected);
-//             setLpTokenBalance(lpTokenBalance);
-//             //const reserves = await ExchangeService.getReserves(currentPairAddress);
-//             //setSharePoolValue(ratio.toFixed(2));
-//             setFirstProvider(false);
-//             setShowPoolShare(true);
-//             setDisabled(false);
-//         } else {
-//             setCurrentPairAddress('');
-//             setFirstProvider(true);
-//             setShowPoolShare(true);
-//             setLpTokenBalance(0);
-//             setDisabled(true);
-//         }
-//         }
-
-//     } catch (e) {
-//         console.log(e);
-//         toast.error("Something went wrong!");
-//     }
-// }
-
 
 const useCommonTrade = (props) => {
     const dsp = useDispatch();
     const common = useCommon(s => s);
     const P = useSelector(s => s.persist);
+
+
+    const handleShow1 = () => common.setShow1(!0);
+    const handleClose1 = () => common.setShow1(!1);
+    const settingClose = () => common.setSettingShow(!1);
+    const handleCloseRecent = () => common.setShowRecent(!1);
+    const settingHandleShow = () => common.setSettingShow(!0);
 
     const onHandleOpenModal = (tt) => {
         console.log('dropdown:', tt);
@@ -455,13 +411,18 @@ const useCommonTrade = (props) => {
 
     const cTrade = {
         handleClose,
+        handleShow1,
         checkBalance,
+        settingClose,
+        handleClose1,
         handleBalance,
         handleMaxBalance,
         handleTokenValue,
         handleSearchToken,
+        handleCloseRecent,
         onHandleOpenModal,
         checkForAllowance,
+        settingHandleShow,
         getApprovalButton,
         handleTokenApproval,
         calculatePriceImpact,

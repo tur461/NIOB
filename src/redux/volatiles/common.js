@@ -32,7 +32,10 @@ const useCommon = create((set, get) => ({
     poolShareShown: !1,
     
     show: !1,
+    show1: !1,
     search: '',
+    showRecent: !1,
+    settingShow: !1,
     showSupplyModal: !1,
     sharePoolValue: 100,
     selectedCurrency: '',
@@ -66,6 +69,9 @@ const useCommon = create((set, get) => ({
     },
     setHasPriceImpact: hasPriceImpact => {
         set(s => ({...s, hasPriceImpact}));
+    },
+    setShowRecent: show => {
+        set(s => ({...s, showRecent: show}));
     },
     setDisabled: disabled => {
         set(s => ({...s, disabled}));
@@ -156,6 +162,12 @@ const useCommon = create((set, get) => ({
     },
     setTxHash: txHash => {
         set(s => ({...s, txHash}));
+    },
+    setShow1: show => {
+        set(s => ({...s, show1: show}));
+    },
+    setSettingShow: show => {
+        set(s => ({...s, settingShow: show}));
     },
     showTransactionModal: transactionModalShown => {
         set(s => ({...s, transactionModalShown}));

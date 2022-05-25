@@ -1,13 +1,10 @@
 import "./Trade.scss";
 import { T_TYPE } from "../../constant";
-import { BigNumber } from "bignumber.js"
-import {WETH} from '../../assets/tokens'
 import { Container, Col } from 'react-bootstrap'
 import React, { useState, useEffect } from "react";
-import { toast } from '../../components/Toast/Toast';
 import useCommonTrade from "../../hooks/CommonTrade";
 import useCommon from "../../redux/volatiles/common";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import ButtonPrimary from "../../components/Button/Button";
 import SwapModal from "../../components/SwapModal/SwapModal";
 import SelectCoin from "../../components/selectCoin/SelectCoin";
@@ -15,36 +12,23 @@ import iconTimer from '../../assets/images/ionic-ios-timer.svg'
 import CardCustom from "../../components/cardCustom/CardCustom";
 import ArrowDown from "../../assets/images/Arrow-Down-Icon.svg";
 import SettingIcon from "../../assets/images/Settings-Icon.svg";
-import { ExchangeService } from "../../services/ExchangeService"
 import { ContractServices } from "../../services/ContractServices"
 import ConnectWallet from "../../components/ConnectWallet/ConnectWallet";
 import SettingModal from "../../components/Modal/SettingModal/SettingModal";
 import ModalCurrency from "../../components/Modal/ModalCurrency/ModalCurrency";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
-import { addTransaction, startLoading, stopLoading } from "../../redux/actions"
-import { isBnb, isDefined, isNonZero, rEq, tgl, toBgFix, toDec, toFlr, tStamp } from "../../services/utils";
+import useSwap from "../../redux/volatiles/swap";
+import useXchange from "../../hooks/exchange";
 
 const Exchange = (props) => {
-  const dispatch = useDispatch();
+  const swap = useSwap(s => s);
   const common = useCommon(s => s);
   const cTrade = useCommonTrade({});
+  const Xchange = useXchange({});
   const P = useSelector(state => state.persist);
 
-  const [show1, setShow1] = useState(!1);
-  const handleClose1 = () => setShow1(!1);
-  const handleShow1 = () => setShow1(!0);
-  const [settingShow, setsettingShow] = useState(!1);
-  const settingClose = () => setsettingShow(!1);
-  const settinghandleShow = () => setsettingShow(!0);
-
-
-  const [showTransactionModal, setShowTransactionModal] = useState(!1);
   const [walletShow, setWalletShow] = useState(!1);
-
-  const [showRecent, setShowRecent] = useState(!1);
-  const [openSwapModal, setSwapModal] = useState(!1);
-  const [minimumReceived, setMinReceived] = useState(0);
 
   useEffect(() => {
     common.setFilteredTokenList(
@@ -74,212 +58,7 @@ const Exchange = (props) => {
       common.setTokenBalance(await ContractServices.getBNBBalance(P.priAccount), T_TYPE.A);
   };
 
-  const handleCloseRecent = () => setShowRecent(!1);
   
-
-  const handleSwap = async () => {
-    const acc = await ContractServices.getDefaultAccount();
-    if (isDefined(acc) && !rEq(acc, P.priAccount))  return toast.error('Wallet address doesn`t match!');
-    setSwapModal(!1);
-
-    let dl = tStamp(P.deadline * 60);
-
-    let addr = [common.token1.address, common.token2.address];
-
-    let [a1, v1, bnb1]= isBnb(addr[0]) ? [WETH, !0, common.token1Value] : [addr[0], !1, 0];
-    let [a2, v2, bnb2]= isBnb(addr[1]) ? [WETH, !0, common.token2Value] : [addr[1], !1, 0];
-    let value = bnb1 ? v1 : bnb2 ? v2 : 0; 
-    value = value > 0 ? BigNumber(value * 10 ** 18).toFixed() : 0;
-    console.log('a1, a2, value', a1, a2, value);
-    if (bnb1) {
-      dispatch(startLoading());
-      const data = await handleBNBSwapForTK1(dl, value);
-      try {
-        const result = common.exact === T_TYPE.A ?
-
-          await ExchangeService.swapExactETHForTokens(data, cTrade.handleBalance) :
-
-          await ExchangeService.swapETHForExactTokens(data);
-
-        dispatch(stopLoading());
-        if (result) {
-          common.setTxHash(result);
-          setShowTransactionModal(!0);
-          common.setShowSupplyModal(!1);
-
-
-          const data = {
-            message: `Swap ${common.token1.symbol} and ${common.token2.symbol}`,
-            tx: result
-          };
-          dispatch(addTransaction(data));
-        }
-        common.setLiqConfirmed(!1);
-
-      } catch (err) {
-        dispatch(stopLoading());
-        const message = await ContractServices.web3ErrorHandle(err);
-        toast.error(message);
-        common.setLiqConfirmed(!1);
-      }
-    } else if (bnb2) {
-      dispatch(startLoading());
-      const data = await handleBNBSwapForTK2(dl, value);
-      try {
-        const result = common.exact === T_TYPE.A ?
-
-          await ExchangeService.swapExactTokensForETH(data, a1, a2) :
-
-          await ExchangeService.swapTokensForExactETH(data, a1, a2);
-
-        dispatch(stopLoading());
-
-        if (result) {
-          common.setTxHash(result);
-          setShowTransactionModal(!0);
-          common.setShowSupplyModal(!1);
-          const data = {
-            message: `Swap ${common.token1.symbol} and ${common.token2.symbol}`,
-            tx: result
-          };
-          dispatch(addTransaction(data));
-        }
-        common.setLiqConfirmed(!1);
-
-      } catch (err) {
-        dispatch(stopLoading());
-        const message = await ContractServices.web3ErrorHandle(err);
-        toast.error(message);
-        common.setLiqConfirmed(!1);
-      }
-    } else {
-      dispatch(startLoading());
-      let pair;
-      const cPair = await ExchangeService.getPair(a1, a2);
-
-      if (isNonZero(cPair)) {
-        pair = [a1, a2];
-      } else {
-        const pairs = await cTrade.checkPairWithBNBOrUSDT(a1, a2);
-        if (pairs) {
-          pair = pairs;
-        }
-      }
-      let data = await handleSwapAmountIn(dl, value);
-      data.path = pair;
-      try {
-        const result = common.exact === T_TYPE.A ?
-
-          await ExchangeService.swapExactTokensForTokens(data, a1, a2) :
-
-          await ExchangeService.swapTokensForExactTokens(data, a1, a2);
-
-        dispatch(stopLoading());
-
-        if (result) {
-          common.setTxHash(result);
-          setShowTransactionModal(!0);
-          common.setShowSupplyModal(!1);
-
-          const data = {
-            message: `Swap ${common.token1.symbol} and ${common.token2.symbol}`,
-            tx: result
-          };
-          dispatch(addTransaction(data));
-        }
-        common.setLiqConfirmed(!1);
-
-      } catch (err) {
-        dispatch(stopLoading());
-        const message = await ContractServices.web3ErrorHandle(err);
-        toast.error(message);
-        common.setLiqConfirmed(!1);
-      }
-    }
-  }
-
-  const handleSwapAmountIn = async (dl, v) => {
-    let i = common.exact, x = [
-      toDec(common[`token${i}Value`], common[`token${i}`].decimals),
-      toDec(common[`token${tgl(i)}Value`], common[`token${tgl(i)}`].decimals),
-    ], d = {
-      value: v,
-      path: [],
-      deadline: dl,
-      to: P.priAccount,
-      amountIn: toBgFix(x[i-1]).toString(),
-      amountOutMin: toBgFix(x[tgl(i)-1] + (x[tgl(i)-1] * P.slippage / 100)).toString(),
-    };
-    console.log('[swap] handle amountIn:', v, i, d);
-    return {...d}; 
-  }
-
-  const handleBNBSwapForTK1 = async (dl, v) => {
-    let tv = common[`token${tgl(common.exact)}Value`]
-    let dec = common[`token${tgl(common.exact)}`].decimals;
-    let x = toBgFix(toFlr(toDec(tv, dec)));
-    let d = {
-      value: v,
-      deadline: dl,
-      to: P.priAccount,
-      path: [WETH, common.token2.address],
-      amountOutMin: toBgFix(toFlr(Number(x) - (Number(x) * P.slippage / 100))).toString(),
-    };
-    console.log('[swap] handle bnb for tk1:', v, common.exact, d);
-    return {...d};
-  }
-
-  const handleBNBSwapForTK2 = async (dl, v) => {
-    let i = common.exact, 
-        d = {
-          value: v,  
-          deadline: dl,
-          to: P.priAccount,
-          path: [common.token1.address, WETH],
-        };
-    
-    let x = toDec(common[`token${i}Value`],  common[`token${i}`].decimals); 
-    let y = toDec(common[`token${tgl(i)}Value`], common[`token${tgl(i)}`].decimals);
-    
-    if (!(i-1)) {
-      d['amountIn'] = toBgFix(toFlr(x));
-      d['amountOutMin'] = toBgFix(toFlr(y - (y * P.slippage / 100)));
-    }
-
-    if (i-1) {
-      d['amountOut'] = toBgFix(toFlr(y));
-      d['amountInMax'] = toBgFix(toFlr(x + (x * P.slippage / 100)));
-    }
-    console.log('[swap] handle bnb for tk2:', v, i, d);
-    return {...d};
-  }
-
-  const handleSwitchCurrencies = () => {
-    common.setExact(tgl(common.exact));
-    common.setToken(common.token1, T_TYPE.B);
-    common.setToken(common.token2, T_TYPE.A);
-    common.setTokenIcon(common.token1Icon, T_TYPE.B);
-    common.setTokenIcon(common.token2Icon, T_TYPE.A);
-    common.setTokenValue(common.token1Value, T_TYPE.B);
-    common.setTokenValue(common.token2Value, T_TYPE.A);
-    common.setTokenBalance(common.token1Balance, T_TYPE.B);
-    common.setTokenBalance(common.token2Balance, T_TYPE.A);
-    common.setTokenCurrency(common.token1Currency, T_TYPE.B);
-    common.setTokenCurrency(common.token2Currency, T_TYPE.A);
-  }
-  
-  const closeTransactionModal = () => {
-    setShowTransactionModal(!1);
-  }
-
-  const liquidityProviderFee = () => {
-    const value = common.exact === T_TYPE.A ? common.token1Value : common.token2Value;
-    const tknCurrency = common.exact === T_TYPE.A ? common.token1Currency : common.token2Currency;
-    let lpf = (value * 2) / 1000;
-    lpf = BigNumber(lpf).toFixed();
-    const calLpf = lpf + ' ' + tknCurrency
-    return calLpf;
-  }
   return (
     <>
       <Container fluid className="swapScreen comnSection">
@@ -287,8 +66,8 @@ const Exchange = (props) => {
           <div className="settingSec">
             <h4>Exchange</h4>
             <div className="settingIcon">
-              <img src={iconTimer} onClick={() => setShowRecent(!0)} className="timerImg" />
-              <img src={SettingIcon} onClick={() => settinghandleShow(!0)} />
+              <img src={iconTimer} onClick={() => cTrade.setShowRecent(!0)} className="timerImg" alt="icon 01"/>
+              <img src={SettingIcon} onClick={() => cTrade.settingHandleShow(!0)} alt="icon 02"/>
             </div>
           </div>
           <SelectCoin
@@ -306,7 +85,7 @@ const Exchange = (props) => {
           />
           <div 
             className="convert_plus" 
-            onClick={handleSwitchCurrencies}
+            onClick={Xchange.handleSwitchCurrencies}
           > <img src={ArrowDown} alt='icon 10'/> </div>
           <SelectCoin
             max={!1}
@@ -357,7 +136,7 @@ const Exchange = (props) => {
             {
               (
                 !common.disabled && P.priAccount
-              ) && <ButtonPrimary className="swapBtn" onClick={() => setSwapModal(!openSwapModal)} title={common.btnText || 'Swap'} />
+              ) && <ButtonPrimary className="swapBtn" onClick={() => swap.setSwapModal(!swap.openSwapModal)} title={common.btnText || 'Swap'} />
             }
           </Col>
         </CardCustom>
@@ -366,7 +145,7 @@ const Exchange = (props) => {
             <ul>
               <li>Minimum received:<span>{common.minReceived / 10 ** 18}</span></li>
               <li>Price impact:<span>{common.priceImpact}%</span></li>
-              <li>Liquidity provider fee:<span>{liquidityProviderFee()}</span></li>
+              <li>Liquidity provider fee:<span>{Xchange.liquidityProviderFee()}</span></li>
             </ul>
           </div>}
       </Container>
@@ -384,17 +163,17 @@ const Exchange = (props) => {
       />
       <ConnectWallet
         show={walletShow}
-        handleShow={handleShow1}
-        handleClose={handleClose1}
+        handleShow={cTrade.handleShow1}
+        handleClose={cTrade.handleClose1}
       />
       <SettingModal
-        show={settingShow}
-        handleShow={settinghandleShow}
-        handleClose={settingClose}
+        show={common.settingShow}
+        handleShow={cTrade.settingHandleShow}
+        handleClose={cTrade.settingClose}
       />
-      {openSwapModal && <SwapModal
-        show={openSwapModal}
-        handleSwap={handleSwap}
+      {swap.openSwapModal && <SwapModal
+        show={swap.openSwapModal}
+        handleSwap={Xchange.handleSwap}
         priceImpact={common.priceImpact}
         token1Value={common.token1Value}
         tokenTwoValue={common.token2Value}
@@ -403,17 +182,17 @@ const Exchange = (props) => {
         sharePoolValue={common.sharePoolValue}
         tokenOneCurrency={common.token1Currency}
         tokenTwoCurrency={common.token2Currency}
-        liquidityProviderFee={liquidityProviderFee()}
-        closeModal={() => setSwapModal(!openSwapModal)}
+        liquidityProviderFee={Xchange.liquidityProviderFee()}
+        closeModal={() => swap.setSwapModal(!swap.openSwapModal)}
       />}
       <RecentTransactions
-        show={showRecent}
-        handleClose={handleCloseRecent}
+        show={common.showRecent}
+        handleClose={cTrade.handleCloseRecent}
       />
       <TransactionalModal 
         txHash={common.txHash} 
-        show={showTransactionModal} 
-        handleClose={closeTransactionModal} 
+        show={common.transactionModalShown} 
+        handleClose={common.showTransactionModal} 
       />
     </>
 

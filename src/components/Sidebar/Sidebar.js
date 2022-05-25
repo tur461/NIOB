@@ -213,38 +213,38 @@ const Sidebar = (props) => {
       <SidebarFooter className="sidebar_footer">
         <ul className="token-language">
           <li className="token_list">
-            <Link>
-              <img src={NIOBtoken} /> <span>${NiobBusdValue ? NiobBusdValue.toFixed(4) : "0"}</span>
+            <Link to='#'>
+              <img alt="icon 1" src={NIOBtoken} /> <span>${NiobBusdValue ? NiobBusdValue.toFixed(4) : "0"}</span>
             </Link>
           </li>
           <li className="lang_list">
-            <img src={Globe} /> <span className="lang_text">EN</span>
+            <img alt="icon 1" src={Globe} /> <span className="lang_text">EN</span>
           </li>
         </ul>
         <ul className="social_links">
           <li>
-            <Link>
-              <img src={Github} />
+            <Link to='#'>
+              <img alt="icon 1" src={Github} />
             </Link>
           </li>
           <li>
             <a href="https://docs.niob.finance" target="_blank">
-              <img src={Docs} />
+              <img alt="icon 1" src={Docs} />
             </a>
           </li>
           <li>
-            <Link>
-              <img src={Medium} />
+            <Link to='#'>
+              <img alt="icon 1" src={Medium} />
             </Link>
           </li>
           <li>
             <a href="https://twitter.com/niobfinance" target="_blank">
-              <img src={Twitter} />
+              <img alt="icon 1" src={Twitter} />
             </a>
           </li>
           <li>
             <a href="https://t.me/niobofficial" target="_blank">
-              <img src={Telegram} />
+              <img alt="icon 1" src={Telegram} />
             </a>
           </li>
         </ul>

@@ -1,6 +1,6 @@
 import create from 'zustand';
 
-const useLiquid = create((set, get) => ({
+const useFarming = create((set, get) => ({
     someState: 'initial value',
 
     setSomeState: val => {
@@ -8,4 +8,4 @@ const useLiquid = create((set, get) => ({
     },
 }))
 
-export default useLiquid;
+export default useFarming;

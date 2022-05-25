@@ -82,8 +82,8 @@ const Referral = () => {
                                     <div className="share_anyone">
                                         <p>Share</p>
                                         <ul class="shareable">
-                                            <li><Link><img src={Twitter} /></Link></li>
-                                            <li><Link><img src={Telegram} /></Link></li>
+                                            <li><Link to="#"><img src={Twitter} /></Link></li>
+                                            <li><Link to="#"><img src={Telegram} /></Link></li>
                                         </ul>
                                     </div> </>
                                     :

@@ -1,22 +1,36 @@
-import { actionTypes } from "../actions";
+import create from 'zustand';
+import { T_TYPE } from "../../constant";
 
-const initialState = {
-  loading: false,
-  poolLength:0
-};
 
-const farmReducer = (state = initialState, action) => {
-  switch (action.type) {
-    case actionTypes.SAVE_POOL_LENGTH:
-      return {
-          ...state,
-          loading: false,
-          poolLength: action.payload
-      };
 
-    default:
-      return state;
-  }
-};
+const useSwap = create((set, get) => ({
 
-export default farmReducer;
+    exact: T_TYPE.A,
+
+    hasPriceImpact: !1,
+    
+    minReceived: 0,
+
+    openSwapModal: !1,
+
+    priceImpact: 0,
+    
+    
+    setSwapModel: s => {
+        set(s => ({...s, openSwapModal: s}));
+    },
+    setPriceImpact: priceImpact => {
+        set(s => ({...s, priceImpact}));
+    },
+    setHasPriceImpact: hasPriceImpact => {
+        set(s => ({...s, hasPriceImpact}));
+    },
+    setExact: tt => {
+        set(s => ({...s, exact: tt}));
+    },
+    setMinReceived: mr => {
+        set(s => ({...s, minReceived: mr}));
+    },
+}))
+
+export default useSwap;
