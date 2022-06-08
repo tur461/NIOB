@@ -178,14 +178,10 @@ const Web_3 = _ => {
 };
 
 const getContract = (_ => {
-  let _instance = null;
-  
-  return (addr, abi) => {
+  return (a, abi) => {
     let w = Web_3();
-    _instance = _instance ? _instance : new w.eth.Contract(abi, addr);
-    return _instance;
+    return new w.eth.Contract(abi, a);
   }
-
 })();
 
 class TokenContract {
