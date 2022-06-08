@@ -69,7 +69,7 @@ const ModalCurrency = ({ show, handleClose, tokenList, searchByName, searchToken
           {tokenList && tokenList.length ? tokenList.map((token, index) =>
             <Col key={index}>
               {currencyName === token.symbol ?
-                <CoinItem className="active" iconImage={token.icon} title={token.name} tokenDetails={token} />
+                <CoinItem onClick={() => selectCurrency(token, tokenType)} className="active" iconImage={token.icon} title={token.name} tokenDetails={token} />
                 :
                 <CoinItem onClick={() => selectCurrency(token, tokenType)} iconImage={token.icon} title={token.name} tokenDetails={token} />
               }

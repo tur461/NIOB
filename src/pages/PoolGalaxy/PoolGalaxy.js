@@ -28,7 +28,7 @@ import GetLPToken from "../../components/GetLPToken/GetLPToken";
 import WithDrawLPToken from "../../components/GetLPToken/WithDrawLPToken";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
 import ReturnInvest from "../../components/ReturnInvest/ReturnInvest"
-import { TOKEN_LIST, ANCHOR_BUSD_LP } from "../../assets/tokens";
+import { ANCHOR_BUSD_LP } from "../../assets/tokens";
 
 function PoolGalaxy(props) {
   const {
@@ -36,6 +36,7 @@ function PoolGalaxy(props) {
     history,
   } = props;
   const { tab } = params;
+  const P = useSelector(s => s.persist);
   // const handleTab = (data) => {
   //   history.push(`${rootName}/farmplanets/${data}`);
   // };
@@ -44,8 +45,6 @@ function PoolGalaxy(props) {
   const handleWithdrawClose = () => { setStakeValue(null); setShowStakeWithdraw(false) };
 
   const dispatch = useDispatch();
-  const isUserConnected = useSelector(state => state.persist.isUserConnected);
-  const referralAddress = useSelector(state => state.persist.referralAddress);
 
   const [checked, setChecked] = useState(false);
   const [active, setActive] = useState(true);
@@ -138,15 +137,15 @@ function PoolGalaxy(props) {
       setFarms([]);
       setInactiveFarms([]);
     }
-  }, [isUserConnected]);
+  }, [P.isConnected]);
 
   const init = async () => {
     try {
       dispatch(startLoading());
-      let ref = await ReferralsServices.getReferrer(isUserConnected);
+      let ref = await ReferralsServices.getReferrer(P.priAccount);
       if (ref === '0x0000000000000000000000000000000000000000') {
-        if (referralAddress && referralAddress !== '0x0000000000000000000000000000000000000000') {
-          ref = referralAddress;
+        if (P.referralAddress && P.referralAddress !== '0x0000000000000000000000000000000000000000') {
+          ref = P.referralAddress;
         }
         setReferrer(ref);
       }
@@ -155,13 +154,11 @@ function PoolGalaxy(props) {
       setPoolLength(pL);
       // let farmsTemp = [];
       dispatch(stopLoading());
-      let activePoolsToSort = [];
-      let stakingOnlyArrayToSort = [];
       for (let i = 0; i < pL; i++) {
 
         const poolInfo = await FarmService.poolInfo(i, '2');
         const niobId = await FarmService.niobId();
-        const userInfo = await FarmService.userInfo(i, isUserConnected);
+        const userInfo = await FarmService.userInfo(i, P.priAccount);
         const dollarVal = await getValue(poolInfo.lpToken);
         if (poolInfo) {
           if (Number(poolInfo.allocPoint) === 0) {
@@ -176,38 +173,6 @@ function PoolGalaxy(props) {
           }
         }
       }
-
-      // // this x is the current postion of lockedNiobPool which we use to change it's position up to second later
-      // let lockedNiobIndex =  activePoolsToSort.findIndex(x => x.pid == x.niobId)
-      // // this will change position of lockedNiobPool to index 1
-      // let sortedAllPools = getSortedPools(activePoolsToSort, lockedNiobIndex, 1);
-      // //Now get unlocked niob pool details
-      // const unlockedNiobPool = sortedAllPools.find(pool => pool.pid == '6');
-      // // again get index of lockedNiobPool
-      // let newlockedNiobIndex =  sortedAllPools.findIndex(x => x.pid == x.niobId)
-      // //firstly lets fix realAllocPoint of lockedNiobPool 
-      // let realAllocPointOfLockedPool = sortedAllPools[newlockedNiobIndex].poolInfo.allocPoint; 
-
-      // //Now attach unlockedNiob pool's allocPoint to lockedNiobPool
-      // sortedAllPools[newlockedNiobIndex].poolInfo.allocPoint = unlockedNiobPool.poolInfo.allocPoint; 
-      // sortedAllPools[newlockedNiobIndex].poolInfo.displayAllocPoint = realAllocPointOfLockedPool; 
-      // // these are the total (also active) farms
-      // // setFarms(sortedAllPools);
-
-      // // these are the staked pools
-      // let lockedNiobIndexStakedOnly =  stakingOnlyArrayToSort.findIndex(x => x.pid == x.niobId);
-      // // this will change position of lockedNiobPool to index 1
-      // // check if user has staked locked pool, if yes only then sort the pools
-      // let sortedStakingOnlyPools;
-      // if (lockedNiobIndexStakedOnly !== -1 && stakingOnlyArrayToSort.length > 1) {
-      //      sortedStakingOnlyPools = getSortedPools(stakingOnlyArrayToSort, lockedNiobIndexStakedOnly, 1);
-      //     //  setStakingOnly(sortedStakingOnlyPools);
-      // }
-      // // else set the stakingOnly array as it is
-      // else {
-      //   // setStakingOnly(stakingOnlyArrayToSort);
-      // }
-
       // these are the inactive pools
 
     } catch (err) {
@@ -245,7 +210,7 @@ function PoolGalaxy(props) {
 
   const harvest = async (pid, lpTokenName) => {
     const acc = await ContractServices.getDefaultAccount();
-    if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
+    if (acc && acc.toLowerCase() !== P.priAccount.toLowerCase()) {
       return toast.error('Wallet address doesn`t match!');
     }
 
@@ -257,7 +222,7 @@ function PoolGalaxy(props) {
       pid: pid.toString(),
       amount: 0,
       referrer: referrer,
-      from: isUserConnected
+      from: P.isConnected
     }
     try {
       dispatch(startLoading());
@@ -287,7 +252,7 @@ function PoolGalaxy(props) {
 
   const depositWithdraw = async (type, isLocked) => {
     const acc = await ContractServices.getDefaultAccount();
-    if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
+    if (acc && acc.toLowerCase() !== P.isConnected.toLowerCase()) {
       return toast.error('Wallet address doesn`t match!');
     }
     const value = Number(stakeValue);
@@ -315,7 +280,7 @@ function PoolGalaxy(props) {
         pid: stakeData.pid.toString(),
         amount,
         referrer: referrer,
-        from: isUserConnected,
+        from: P.isConnected,
       }
       // console.log(data, 'before deposit----------farm--------------');
       try {
@@ -350,7 +315,7 @@ function PoolGalaxy(props) {
       const data = {
         pid: stakeData.pid.toString(),
         amount,
-        from: isUserConnected
+        from: P.isConnected
       }
       // console.log(data, 'before withdraw----------farm--------------');
       try {
@@ -387,6 +352,7 @@ function PoolGalaxy(props) {
       }
     }
   }
+  
   return (
     <div className="container_wrap farmpln poolGalaxy_cont">
       <div className="upper_text">
@@ -546,7 +512,7 @@ function PoolGalaxy(props) {
         </Container>
       </div>
       <GetLPToken stakeValue={stakeValue} stakeData={stakeData} stakeConfirmation={stakeConfirmation} handleStakeValue={handleStakeValue} depositWithdraw={depositWithdraw} setMaxValue={setMaxValue} show={showStake} closeStakeModal={handleClose} />
-      <WithDrawLPToken stakeValue={stakeValue} stakeData={stakeData} stakeConfirmation={stakeConfirmation} handleStakeValue={handleStakeValue} depositWithdraw={depositWithdraw} setMaxValue={setMaxValue} show={showStakeWithdraw} closeStakeModal={handleWithdrawClose} address={isUserConnected} isNiobWithdrawabe={true} />
+      <WithDrawLPToken stakeValue={stakeValue} stakeData={stakeData} stakeConfirmation={stakeConfirmation} handleStakeValue={handleStakeValue} depositWithdraw={depositWithdraw} setMaxValue={setMaxValue} show={showStakeWithdraw} closeStakeModal={handleWithdrawClose} address={P.isConnected} isNiobWithdrawabe={true} />
       <TransactionalModal show={showTransactionModal} handleClose={closeTransactionModal} txHash={txHash} />
       {showAPY && <ReturnInvest
         show={showAPY}

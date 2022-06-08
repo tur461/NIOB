@@ -17,7 +17,7 @@ import Github from "../../assets/images/git.svg";
 import Globe from "../../assets/images/language-switcher-icon.svg";
 import "./Sidebar.scss";
 import useWindowDimensions from "../../hooks/getWindowDimensions";
-import { ANCHOR_BUSD_LP, AUDIT, DOCS, INSURANCE_FUND, LOTTERY, NIOB_SHARING, PREDICTION_TRAINING, TRADING_FEE_CASHBACK } from "../../assets/tokens";
+import { ANCHOR_BUSD_LP, DOCS } from "../../assets/tokens";
 import { ExchangeService } from "../../services/ExchangeService";
 
 const Sidebar = (props) => {
@@ -69,14 +69,6 @@ const Sidebar = (props) => {
         >
           <Link to="/home">Homebase</Link>
         </MenuItem>
-        <MenuItem
-          onClick={() => { closeSidebar(); setSideBarOption("") }}
-          className={splitLocation[1] === "home" ? "active" : ""}
-          icon={<i className="pred_nav_icon"></i>}
-        >
-          <Link to="/home">Prediction Trading</Link>
-          <a href={"https://prdt.niob.app"} target="_blank">Prediction Trading</a>
-        </MenuItem>
         <SubMenu
           title="Trade"
           open={selectedOption == "Trade"}
@@ -106,106 +98,6 @@ const Sidebar = (props) => {
         >
           <Link to="/poolgalaxy">Pool Galaxy</Link>
         </MenuItem>
-        {/* <MenuItem onClick={()=>setSideBarOption("")} icon={<i className="lottery_nav_icon"></i>}><Link to="/lottery">Lottery</Link></MenuItem> */}
-        <MenuItem
-          onClick={() => { closeSidebar(); setSideBarOption("") }}
-          className={splitLocation[1] === "referral" ? "active" : ""}
-          icon={<i className="referrals_nav_icon"></i>}
-        >
-          <Link to="/referral">Referral</Link>
-        </MenuItem>
-        <MenuItem
-          onClick={() => { setSideBarOption(""); closeSidebar() }}
-          icon={<i className="audits_nav_icon"></i>}
-        >
-          <a href={AUDIT} target="_blank">Audits</a>
-        </MenuItem>
-        <SubMenu
-          title="Features"
-          open={selectedOption == "Features"}
-          onOpenChange={() => setSideBarOption("Features")}
-          icon={<i className="features_nav_icon"></i>}
-        >
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <a href={LOTTERY} target="_blank">Lottery</a>
-          </MenuItem>
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <a href={NIOB_SHARING} target="_blank">Niob-Sharing</a>
-          </MenuItem>
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <a href={PREDICTION_TRAINING} target="_blank">Prediction Trading</a>
-          </MenuItem>
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <a href={INSURANCE_FUND} target="_blank">Insurance Fund</a>
-          </MenuItem>
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <a href={TRADING_FEE_CASHBACK} target="_blank">Trading-Fee Cashback</a>
-          </MenuItem>
-        </SubMenu>
-
-        {/* <SubMenu
-          title="Listings"
-          open={selectedOption == "Listings"}
-          onOpenChange={() => setSideBarOption("Listings")}
-          icon={<i className="listings_nav_icon"></i>}
-        >
-          <MenuItem
-            onClick={() => {closeSidebar()}}
-          >
-            <Link to="/">Listing A</Link>
-          </MenuItem>
-          <MenuItem
-            onClick={() => {closeSidebar()}}
-          >
-            <Link to="/">Listing B</Link>
-          </MenuItem>
-        </SubMenu> */}
-
-        <SubMenu
-          title="Analytics"
-          open={selectedOption == "Analytics"}
-          onOpenChange={() => setSideBarOption("Analytics")}
-          icon={<i className="analytics_nav_icon"></i>}
-        >
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <Link to="/">Analytic A</Link>
-          </MenuItem>
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <Link to="/">Analytic B</Link>
-          </MenuItem>
-        </SubMenu>
-
-        <SubMenu
-          title="More"
-          open={selectedOption == "More"}
-          onOpenChange={() => setSideBarOption("More")}
-          icon={<i className="more_nav_icon"></i>}
-        >
-          <MenuItem
-            onClick={() => { closeSidebar() }}
-          >
-            <a href={DOCS} target="_blank">Docs</a>
-          </MenuItem>
-          {/* <MenuItem
-            onClick={() => {closeSidebar()}}
-          >
-            <Link to="/">Blog</Link>
-          </MenuItem> */}
-        </SubMenu>
       </Menu>
       {/* {props.showSocial ? (
         <></>

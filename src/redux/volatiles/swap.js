@@ -11,13 +11,16 @@ const useSwap = create((set, get) => ({
     
     minReceived: 0,
 
-    openSwapModal: !1,
+    isSwapModalOpen: !1,
 
     priceImpact: 0,
     
     
-    setSwapModel: s => {
-        set(s => ({...s, openSwapModal: s}));
+    openSwapModal: _ => {
+        set(s => ({...s, isSwapModalOpen: !0}));
+    },
+    closeSwapModal: _ => {
+        set(s => ({...s, isSwapModalOpen: !1}));
     },
     setPriceImpact: priceImpact => {
         set(s => ({...s, priceImpact}));

@@ -2,11 +2,38 @@
 import { MAIN_CONTRACT_LIST, WETH, BURN_ADDRESS, DEFLATIONNARY_TOKENS, TOKEN_LIST, pancakeFactory } from "../assets/tokens"
 import { toast } from "../components/Toast/Toast";
 import { ContractServices } from "./ContractServices";
-import { BigNumber } from "bignumber.js"
+import { BigNumber } from "bignumber.js";
+
+const PairContract = (_ => {
+  let inst = null;
+  return a => {
+    if(a) return ContractServices.getContract(a, MAIN_CONTRACT_LIST.pair.abi)
+    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.pair.address, MAIN_CONTRACT_LIST.pair.abi);
+    return inst;
+  }
+})();
+
+const RouterContract = (_ => {
+  let inst = null;
+  return a => {
+    if(a) return ContractServices.getContract(a, MAIN_CONTRACT_LIST.router.abi)
+    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+    return inst;
+  }
+})();
+
+const FactoryContract = (_ => {
+  let inst = null;
+  return a => {
+    if(a) return ContractServices.getContract(a, MAIN_CONTRACT_LIST.factory.abi)
+    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.factory.address, MAIN_CONTRACT_LIST.factory.abi);
+    return inst;
+  }
+})();
 
 const allPairs = async () => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.factory.address, MAIN_CONTRACT_LIST.factory.abi);
+    const contract = FactoryContract;
     return await contract.methods.allPairs().call();
   } catch (error) {
     return error;
@@ -15,7 +42,7 @@ const allPairs = async () => {
 
 const getPair = async (token1, token2) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.factory.address, MAIN_CONTRACT_LIST.factory.abi);
+    const contract = FactoryContract;
     return await contract.methods.getPair(token1, token2).call();
   } catch (error) {
     return error;
@@ -24,17 +51,26 @@ const getPair = async (token1, token2) => {
 
 const getPairFromPancakeFactory = async (token1, token2) => {
   try {
-    const contract = await ContractServices.callContract(pancakeFactory, MAIN_CONTRACT_LIST.factory.abi);
+    const contract = FactoryContract(pancakeFactory);
     return await contract.methods.getPair(token1, token2).call();
   } catch (error) {
     return error;
   }
 };
 
-const getTokenZero = async (currentPairAddress) => {
+const getTokens = async (currentPairAddress) => {
   // console.log('pair abi for token 0:', MAIN_CONTRACT_LIST.pair);
   try {
-    const contract = await ContractServices.callContract(currentPairAddress, MAIN_CONTRACT_LIST.pair.abi);
+    const contract = PairContract(currentPairAddress);
+    return Promise.all([contract.methods.token0().call(), contract.methods.token1().call()]);
+  } catch (error) {
+    return error;
+  }
+};
+
+const getTokenZero = async (currentPairAddress) => {
+  try {
+    const contract = PairContract(currentPairAddress);
     return await contract.methods.token0().call();
   } catch (error) {
     return error;
@@ -43,7 +79,7 @@ const getTokenZero = async (currentPairAddress) => {
 
 const getTokenOne = async (currentPairAddress) => {
   try {
-    const contract = await ContractServices.callContract(currentPairAddress, MAIN_CONTRACT_LIST.pair.abi);
+    const contract = PairContract(currentPairAddress);
     return await contract.methods.token1().call();
   } catch (error) {
     return error;
@@ -60,16 +96,17 @@ const getAmountsOut = async (amountIn, pair) => {
     calAmount.toString();
     let contract;
     if ((pair[0].toLowerCase() === TOKEN_LIST[1].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[1].address.toLowerCase())) {
-      contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      contract = RouterContract();
     } else if (
       ((pair[0].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[0].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
       ) && ((pair[1].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
       )) {
-      contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      contract = RouterContract();
     }
     else {
-      contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.panCakeRouter.address, MAIN_CONTRACT_LIST.router.abi);
+      contract = RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
     }
+    console.log('router contract:', contract);
 
     const result = await contract.methods.getAmountsOut(calAmount, pair).call();
 
@@ -94,14 +131,14 @@ const getAmountsIn = async (amountOut, pair) => {
     calAmount.toString();
     let contract;
     if ((pair[0].toLowerCase() === TOKEN_LIST[1].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[1].address.toLowerCase())) {
-      contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      contract = RouterContract();
     } else if (
       ((pair[0].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[0].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
       ) && ((pair[1].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
       )) {
-      contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      contract = RouterContract();
     } else {
-      contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.panCakeRouter.address, MAIN_CONTRACT_LIST.router.abi);
+      contract = RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
     }
     const result = await contract.methods.getAmountsIn(calAmount, pair).call();
     let pushArray = [];
@@ -118,7 +155,7 @@ const getAmountsIn = async (amountOut, pair) => {
 
 const getReserves = async (pairAddress) => {
   try {
-    const contract = await ContractServices.callContract(pairAddress, MAIN_CONTRACT_LIST.pair.abi);
+    const contract = PairContract(pairAddress);
     return await contract.methods.getReserves().call();
   } catch (error) {
     return error;
@@ -127,7 +164,7 @@ const getReserves = async (pairAddress) => {
 
 const getTotalSupply = async (pairAddress) => {
   try {
-    const contract = await ContractServices.callContract(pairAddress, MAIN_CONTRACT_LIST.pair.abi);
+    const contract = PairContract(pairAddress);
     const decimals = await contract.methods.decimals().call();
     let result = await contract.methods.totalSupply().call();
     result = (Number(result) / 10 ** decimals).toFixed(5);
@@ -140,7 +177,7 @@ const getTotalSupply = async (pairAddress) => {
 
 const getTokenStaked = async (pairAddress) => {
   try {
-    const contract = await ContractServices.callTokenContract(pairAddress);
+    const contract = ContractServices.TokenContract.instance(pairAddress);
     const decimals = await contract.methods.decimals().call();
 
     let result = await contract.methods.balanceOf(MAIN_CONTRACT_LIST.farm.address).call();
@@ -154,7 +191,7 @@ const getTokenStaked = async (pairAddress) => {
 
 const getBurnedToken = async () => {
   try {
-    const contract = await ContractServices.callTokenContract(MAIN_CONTRACT_LIST.anchorNew.address);
+    const contract = ContractServices.TokenContract.instance(MAIN_CONTRACT_LIST.anchorNew.address);
     if (contract) {
       const decimals = await contract.methods.decimals().call();
 
@@ -184,8 +221,8 @@ const addLiquidity = async (data) => {
         deadline,
         value
       } = data;
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
 
       const gas = await contract.methods.addLiquidity(
@@ -236,10 +273,10 @@ const addLiquidityETH = async (data) => {
         deadline,
         valueOfExact
       } = data;
-      const web3 = await ContractServices.callWeb3();
+      const web3 = ContractServices.Web_3();
       valueOfExact = await web3.utils.toHex(valueOfExact);
 
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
       // valueOfExact = await web3.utils.toHex(valueOfExact);
 
@@ -289,8 +326,8 @@ const removeLiquidityWithPermit = async (data) => {
         approveMax,
         v, r, s, checkSignature
       } = data;
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
 
       if (checkSignature) {
@@ -381,7 +418,7 @@ const removeLiquidityETHWithPermit = async (data) => {
       } = data;
       value = '0';
 
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
 
       if (checkSignature) {
@@ -534,8 +571,8 @@ const swapExactTokensForTokens = async (data, a1, a2) => {
       value
     } = data;
 
-    const web3 = await ContractServices.callWeb3();
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+    const web3 = ContractServices.Web_3();
+    const contract = RouterContract();
     const gasPrice = await ContractServices.calculateGasPrice();
     const checkDeflationnaryTokens = DEFLATIONNARY_TOKENS.find(element => element.toLowerCase() === a1.toLowerCase());
 
@@ -620,8 +657,8 @@ const swapTokensForExactTokens = async (data) => {
         value
       } = data;
 
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
       const gas = await contract.methods.swapTokensForExactTokens(
         amountIn,
@@ -664,8 +701,8 @@ const swapExactETHForTokens = async (data, handleBalance) => {
         deadline,
         value
       } = data;
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
       const gas = await contract.methods.swapExactETHForTokens(
         amountOutMin,
@@ -707,8 +744,8 @@ const swapETHForExactTokens = async (data) => {
         deadline,
         value
       } = data;
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
       value = await web3.utils.toHex(value);
       console.log("Checking here:", data);
@@ -741,7 +778,7 @@ const swapETHForExactTokens = async (data) => {
 }
 const getPairNonces = async (pair, address) => {
   try {
-    const contract = await ContractServices.callContract(pair, MAIN_CONTRACT_LIST.pair.abi);
+    const contract = PairContract(pair);
     return contract.methods.nonces(address).call();
   } catch (err) {
     return err;
@@ -751,7 +788,7 @@ const getPairNonces = async (pair, address) => {
 const signRemoveTransaction = async (d, pair) => {
   try {
     const { owner, spender, deadline, value } = d;
-    const web3 = await ContractServices.callWeb3();
+    const web3 = ContractServices.Web_3();
 
     let chainId = await web3.currentProvider.chainId;
     chainId = await web3.utils.hexToNumber(chainId);
@@ -1126,8 +1163,8 @@ const swapTokensForExactETH = async (data) => {
         deadline,
         value
       } = data;
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
       value = await web3.utils.toHex(value);
 
@@ -1172,8 +1209,8 @@ const swapExactTokensForETH = async (data, a1, a2) => {
         deadline,
         value
       } = data;
-      const web3 = await ContractServices.callWeb3();
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+      const web3 = ContractServices.Web_3();
+      const contract = RouterContract();
       const gasPrice = await ContractServices.calculateGasPrice();
       value = await web3.utils.toHex(value);
 
@@ -1252,25 +1289,26 @@ const swapExactTokensForETH = async (data, a1, a2) => {
 //exporting functions
 export const ExchangeService = {
   getPair,
-  getAmountsOut,
-  getReserves,
-  addLiquidity,
-  addLiquidityETH,
-  removeLiquidityWithPermit,
-  removeLiquidityETHWithPermit,
   allPairs,
-  swapExactTokensForTokens,
-  swapTokensForExactTokens,
+  getTokens,
+  getTokenOne,
+  getReserves,
+  getAmountsIn,
+  getTokenZero,
+  addLiquidity,
+  getAmountsOut,
+  getTotalSupply,
+  getTokenStaked,
+  getBurnedToken,
+  addLiquidityETH,
   swapExactETHForTokens,
   swapETHForExactTokens,
   signRemoveTransaction,
   swapTokensForExactETH,
   swapExactTokensForETH,
-  getTokenZero,
-  getTokenOne,
-  getTotalSupply,
-  getTokenStaked,
-  getBurnedToken,
-  getAmountsIn,
-  getPairFromPancakeFactory
+  swapExactTokensForTokens,
+  swapTokensForExactTokens,
+  removeLiquidityWithPermit,
+  getPairFromPancakeFactory,
+  removeLiquidityETHWithPermit,
 }

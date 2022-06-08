@@ -14,6 +14,7 @@ const useCommon = create((set, get) => ({
     
     exact: T_TYPE.A,
 
+    isFetching: !1,
     filteredTokenList: [],
     
     hasPriceImpact: !1,
@@ -37,7 +38,7 @@ const useCommon = create((set, get) => ({
     showRecent: !1,
     settingShow: !1,
     showSupplyModal: !1,
-    sharePoolValue: 100,
+    sharePoolValue: '100',
     selectedCurrency: '',
     transactionModalShown: !1,
     
@@ -75,6 +76,9 @@ const useCommon = create((set, get) => ({
     },
     setDisabled: disabled => {
         set(s => ({...s, disabled}));
+    },
+    setFetching: isFetching => {
+        set(s => ({...s, isFetching}));
     },
     setSearch: search => {
         set(s => ({...s, search}));

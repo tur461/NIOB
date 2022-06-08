@@ -20,6 +20,7 @@ import RecentTransactions from "../../components/RecentTransactions/RecentTransa
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
 import useSwap from "../../redux/volatiles/swap";
 import useXchange from "../../hooks/exchange";
+import Loader from "../../components/Loader";
 
 const Exchange = (props) => {
   const swap = useSwap(s => s);
@@ -43,7 +44,7 @@ const Exchange = (props) => {
 
   useEffect(() => {
     if (common.token1Value) {
-      cTrade.handleTokenValue(common.token1Value, T_TYPE.A, !0);
+      cTrade.handleInput(common.token1Value, T_TYPE.A, !0);
     }
   }, [
     common.token2, 
@@ -78,10 +79,11 @@ const Exchange = (props) => {
             value={common.token1Currency}
             coinImage={common.token1?.icon}
             tokenValue={common.token1Value}
+            disabled={common.isFetching && common.exact-1}
             label={`Balance: ${common.token1Balance}`}
             onMax={() => cTrade.handleMaxBalance(T_TYPE.A)}
             onClick={() => cTrade.onHandleOpenModal(T_TYPE.A)}
-            onChange={e => cTrade.handleTokenValue(e.target.value, T_TYPE.A, !0)}
+            onChange={e => cTrade.handleInput(e.target.value, T_TYPE.A, !0)}
           />
           <div 
             className="convert_plus" 
@@ -95,11 +97,13 @@ const Exchange = (props) => {
             value={common.token2Currency}
             coinImage={common.token2?.icon}
             tokenValue={common.token2Value}
+            disabled={common.isFetching && !(common.exact-1)}
             label={`Balance: ${common.token2Balance}`}
             onClick={() => cTrade.onHandleOpenModal(T_TYPE.B)}
-            onChange={e => cTrade.handleTokenValue(e.target.value, T_TYPE.B, !0)}
+            onChange={e => cTrade.handleInput(e.target.value, T_TYPE.B, !0)}
           />
-          {P.slippage &&
+          {P.slippage ?
+            common.isFetching ? <Loader stroke='white' text='Fetching prices..'/> :
             <Col className="priceSec_col">
               <div>
                 {
@@ -119,7 +123,7 @@ const Exchange = (props) => {
                 </h5>
                 <h5>{`${P.slippage}%`}</h5>
               </div>
-            </Col>}
+            </Col> : <></>}
           {!common.token1Approved ? cTrade.getApprovalButton(T_TYPE.A) : <></>}
           {!common.token2Approved ? cTrade.getApprovalButton(T_TYPE.B) : <></>}
           <Col className="swapBtn_col">
@@ -131,12 +135,12 @@ const Exchange = (props) => {
             {
               (
                 common.disabled && P.priAccount
-              ) && <ButtonPrimary disabled={common.disabled} className="swapBtn" title={common.btnText} />
+              ) && <ButtonPrimary disabled={common.disabled} className="swapBtn" title={common.btnText || 'Swap'} />
             }
             {
               (
                 !common.disabled && P.priAccount
-              ) && <ButtonPrimary className="swapBtn" onClick={() => swap.setSwapModal(!swap.openSwapModal)} title={common.btnText || 'Swap'} />
+              ) && <ButtonPrimary className="swapBtn" onClick={() => swap.openSwapModal()} title={common.btnText || 'Swap'} />
             }
           </Col>
         </CardCustom>
@@ -150,12 +154,11 @@ const Exchange = (props) => {
           </div>}
       </Container>
       <ModalCurrency
-        show={common.modalCurrency}
+        show={common.show}
+        handleClose={cTrade.handleClose}
         tokenType={common.tokenType}
         searchByName={common.setSearch}
-        handleShow={common.setModalCurrency}
         tokenList={common.filteredTokenList}
-        handleClose={common.setModalCurrency}
         searchToken={cTrade.handleSearchToken}
         currencyName={common.selectedCurrency}
         handleOrder={common.setFilteredTokenList}
@@ -171,11 +174,11 @@ const Exchange = (props) => {
         handleShow={cTrade.settingHandleShow}
         handleClose={cTrade.settingClose}
       />
-      {swap.openSwapModal && <SwapModal
-        show={swap.openSwapModal}
+      {swap.isSwapModalOpen && <SwapModal
+        show={swap.isSwapModalOpen}
         handleSwap={Xchange.handleSwap}
         priceImpact={common.priceImpact}
-        token1Value={common.token1Value}
+        tokenOneValue={common.token1Value}
         tokenTwoValue={common.token2Value}
         tokenOneIcon={common.token1?.icon}
         tokenTwoIcon={common.token2?.icon}
@@ -183,7 +186,7 @@ const Exchange = (props) => {
         tokenOneCurrency={common.token1Currency}
         tokenTwoCurrency={common.token2Currency}
         liquidityProviderFee={Xchange.liquidityProviderFee()}
-        closeModal={() => swap.setSwapModal(!swap.openSwapModal)}
+        closeModal={() => swap.closeSwapModal()}
       />}
       <RecentTransactions
         show={common.showRecent}

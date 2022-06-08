@@ -1,17 +1,16 @@
+import './FarmCard.scss'
 import React from 'react'
 import { Card } from 'react-bootstrap'
-import ButtonLink from "../buttonLink/ButtonLink";
-import { rootName } from "../../constant";
-import farmicon from "../../assets/images/farm-button-icon.png";
-import './FarmCard.scss'
 import { useHistory } from 'react-router';
+import ButtonLink from "../buttonLink/ButtonLink";
+import farmicon from "../../assets/images/farm-button-icon.png";
 
 const FarmCard = props => {
     const history = useHistory();
 
     return (
-       <Card className="farmcard">
-           <div className="d-flex">
+        <Card className="farmcard">
+            <div className="d-flex">
                 <div className="cions">
                     <span className="coin_imgs uppr"><img src={props.icon1} alt={"icon"}/></span>
                     <span className="coin_imgs dwn"><img src={props.icon2} alt={"icon"}/></span>
@@ -25,7 +24,7 @@ const FarmCard = props => {
                 <h3>APR {props.apy}</h3>
                 <ButtonLink title="Farm" icon={farmicon} link="/farmplanets/active" />
             </div>
-       </Card>
+        </Card>
     )
 }
 

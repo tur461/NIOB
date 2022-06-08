@@ -104,7 +104,7 @@ const AddLiquidity = (props) => {
                 label={`Balance: ${common.token1Balance}`}
                 onMax={() => cTrade.handleMaxBalance(T_TYPE.A)}
                 onClick={() => cTrade.onHandleOpenModal(T_TYPE.A)}
-                onChange={(e) => cTrade.handleTokenValue(e.target.value, T_TYPE.A)}
+                onChange={(e) => cTrade.handleInput(e.target.value, T_TYPE.A)}
               />
             }
             <div className="convert_plus">
@@ -125,7 +125,7 @@ const AddLiquidity = (props) => {
                 tokenValue={common.token2Value}
                 label={`Balance: ${common.token2Balance}`}
                 onClick={() => cTrade.onHandleOpenModal(T_TYPE.B)}
-                onChange={(e) => cTrade.handleTokenValue(e.target.value, T_TYPE.B)}
+                onChange={(e) => cTrade.handleInput(e.target.value, T_TYPE.B)}
               />
             }
             {common.poolShareShown && (

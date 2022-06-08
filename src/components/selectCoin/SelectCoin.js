@@ -15,6 +15,7 @@ const SelectCoin = (props) => {
           <label>{props.inputLabel}</label>
           <input
             type="number"
+            disabled={props.disabled}
             onKeyDown={(evt) => { symbolsArr.includes(evt.key) && evt.preventDefault() }}
             onChange={props.onChange}
             placeholder={props.placeholder}

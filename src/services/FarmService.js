@@ -2,10 +2,18 @@ import { MAIN_CONTRACT_LIST } from "../assets/tokens";
 import { toast } from "../components/Toast/Toast";
 import { ContractServices } from "./ContractServices";
 
+const FarmContract = (_ => {
+  let inst = null;
+  return _ => {
+    inst = inst ? inst : ContractServices.getContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    return inst;
+  }
+})();
+
 
 const poolLength = async () => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     return await contract.methods.poolLength().call();
   } catch (error) {
     return error;
@@ -14,7 +22,7 @@ const poolLength = async () => {
 
 const poolInfo = async (index, type) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     const result = await contract.methods.poolInfo(index).call();
     const poolType = await contract.methods.poolType(result.lpToken).call();
     if (poolType === type) {
@@ -28,7 +36,7 @@ const poolInfo = async (index, type) => {
 
 const niobId = async () => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     return await contract.methods.niobId().call();
   } catch (error) {
     return error;
@@ -38,7 +46,7 @@ const niobId = async () => {
 
 const farmAndPoolInfo = async (index) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     const result = await contract.methods.poolInfo(index).call();
     const poolType = await contract.methods.poolType(result.lpToken).call();
 
@@ -55,7 +63,7 @@ const farmAndPoolInfo = async (index) => {
 };
 const totalPoolInfo = async (index, type) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     const result = await contract.methods.poolInfo(index).call();
     const web3 = await ContractServices.callWeb3();
     const latest = await web3.eth.getBlockNumber();
@@ -67,7 +75,7 @@ const totalPoolInfo = async (index, type) => {
 
 const getLpTokenDetails = async (lpToken) => {
   try {
-    const contract = await ContractServices.callContract(lpToken, MAIN_CONTRACT_LIST.pair.abi);
+    const contract = await ContractServices.getContract(lpToken, MAIN_CONTRACT_LIST.pair.abi);
     const decimals = await contract.methods.decimals().call();
     const token0 = await contract.methods.token0().call();
     const token1 = await contract.methods.token1().call();
@@ -115,7 +123,7 @@ const getPoolTokenDetails = async (lpToken) => {
 }
 const userInfo = async (index, address) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     return await contract.methods.userInfo(index, address).call();
   } catch (err) {
     console.log("Error:", err);
@@ -125,7 +133,7 @@ const userInfo = async (index, address) => {
 
 const poolInfoo = async (index, address) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     return await contract.methods.niob().call();
   } catch (err) {
     return err;
@@ -143,7 +151,7 @@ const deposit = async (data) => {
         referrer,
         from
       } = data;
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+      const contract = FarmContract();
       const gasPrice = await ContractServices.calculateGasPrice();
 
       const gas = await contract.methods.deposit(
@@ -181,7 +189,7 @@ const withdraw = async (data) => {
         amount,
         from
       } = data;
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+      const contract = FarmContract();
       const gasPrice = await ContractServices.calculateGasPrice();
 
       const gas = await contract.methods.withdraw(
@@ -215,7 +223,7 @@ const withdrawNiob = async (data) => {
         amount,
         from
       } = data;
-      const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+      const contract = FarmContract();
       const gasPrice = await ContractServices.calculateGasPrice();
 
       const gas = await contract.methods.withdrawNiob(
@@ -241,7 +249,7 @@ const withdrawNiob = async (data) => {
 }
 const canHarvest = async (pid, address) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     return await contract.methods.canHarvest(pid, address).call();
   } catch (err) {
     return err;
@@ -249,7 +257,7 @@ const canHarvest = async (pid, address) => {
 }
 const pendingPanther = async (pid, address) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     return await contract.methods.pendingNiob(pid, address).call();
   } catch (err) {
     return err;
@@ -258,7 +266,7 @@ const pendingPanther = async (pid, address) => {
 
 const totalAllocationPoint = async () => {
   try {
-    const contractFarm = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contractFarm = FarmContract();
     return await contractFarm.methods.totalAllocPoint().call();
   } catch (err) {
     return err;
@@ -266,7 +274,7 @@ const totalAllocationPoint = async () => {
 }
 const pantherPerBlock = async () => {
   try {
-    const contractFarm = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contractFarm = FarmContract();
     return await contractFarm.methods.niobPerBlock().call();
   } catch (err) {
     return err;
@@ -274,7 +282,7 @@ const pantherPerBlock = async () => {
 }
 const getNiob = async (address) => {
   try {
-    const contract = await ContractServices.callContract(MAIN_CONTRACT_LIST.farm.address, MAIN_CONTRACT_LIST.farm.abi);
+    const contract = FarmContract();
     //const decimals = await ContractServices.getDecimals(address);
     const res = await contract.methods.getWithdrawableNiob(address).call();
     let niobTokens = 0;

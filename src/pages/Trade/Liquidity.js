@@ -71,8 +71,9 @@ const Liquidity = ({ handleAddLiquidity, handleRemove }) => {
                 src={TimerIcon}
                 onClick={() => setShowRecent(true)}
                 className="timerImg"
+                alt="icon"
               />
-              <img src={SettingIcon} onClick={() => settinghandleShow(true)} />
+              <img src={SettingIcon} onClick={() => settinghandleShow(true)} alt='icon'/>
             </div>
           </div>
 

@@ -44,12 +44,7 @@ export const WETH = "0x31BBA4f3f2Ec07Db6CFB2D959C72CcAB2bFD0e8A";
 export const USD = "0x2Dd65fFe5F1B2D8a745b7194cCa59B451C5986D2";
 export const pancakeFactory = "0x6725F303b657a9451d8BA641348b6761A6CC7a17";
 
-export const AUDIT = "https://docs.niob.finance/audits";
-export const LOTTERY = "https://docs.niob.finance/products/#niob-lottery";
-export const NIOB_SHARING = "https://docs.niob.finance/products/#niob-sharing-season";
-export const PREDICTION_TRAINING = "https://docs.niob.finance/products/#prediction-trading";
-export const INSURANCE_FUND = "https://docs.niob.finance/products/#niob-insurance-fund";
-export const TRADING_FEE_CASHBACK = "https://docs.niob.finance/products/#trading-fee-cashback";
+// urls
 export const DOCS = "https://docs.niob.finance";
 
 // ******** BSC_MAIN_NET Token List **********
@@ -208,7 +203,7 @@ export const TOKEN_LIST = [
   {
     icon: BUSD,
     name: "BUSD",
-    address: "0xed24fc36d5ee211ea25a80239fb8c4cfd80f12ee",
+    address: "0x781F761139BB3B776DB8fD73DA5524E8eE458a97",
     isAdd: false,
     isDel: false,
     decimals: 18,

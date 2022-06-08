@@ -4,7 +4,6 @@ import { useLocation, withRouter } from "react-router";
 import Header from "../../components/Header/Header";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import Home from "../../pages/Home/Home";
-import Referral from "../../pages/Referral/Referral";
 import FarmPlanets from "../../pages/FarmPlanets/FarmPlanets";
 import Footer from "../../components/Footer/Footer";
 import Trade from "../../pages/Trade/Trade";
@@ -80,7 +79,6 @@ const PublicRoutes = () => {
         <Route path={"/"} component={Home} exact={true} />
         <Route path={"/home"} component={Home} exact={true} />
         <Route path={"/r/:ref"} component={Home} />
-        <Route path={"/referral"} component={Referral} exact={true} />
         <Route
           path={"/farmplanets/:tab"}
           component={FarmPlanets}

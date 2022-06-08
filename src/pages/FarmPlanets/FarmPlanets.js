@@ -1,368 +1,69 @@
-import Button from "@restart/ui/esm/Button";
-import React, { useEffect, useState } from "react";
-import {
-  Container,
-  Col,
-  Row,
-  Form,
-  InputGroup,
-  FormControl,
-} from "react-bootstrap";
-import {
-  addTransaction,
-  searchTokenByNameOrAddress,
-  startLoading,
-  stopLoading,
-} from "../../redux/actions";
-import { ReferralsServices } from "../../services/ReferralsServices";
-import { FarmService } from "../../services/FarmService";
-import { toast } from "../../components/Toast/Toast";
-import { ContractServices } from "../../services/ContractServices";
-import BigNumber from "bignumber.js";
-import GetLPToken from "../../components/GetLPToken/GetLPToken";
-
-import { Tabs, Tab } from "react-bootstrap";
-import { rootName } from "../../constant";
-import Searchicon from "../../assets/images/search.png";
-import FarmIcon from "../../assets/images/Farm-Header-Logo.svg";
 import "./FarmPlanets.scss";
-import PlanetCard from "../../components/PlanetCard/PlanetCard";
+import React, { useEffect } from "react";
+import useFarmer from "../../hooks/farming";
+import Button from "@restart/ui/esm/Button";
+import { Tabs, Tab } from "react-bootstrap";
+import useCommon from "../../redux/volatiles/common";
+import { useDispatch, useSelector } from "react-redux";
+import useFarming from "../../redux/volatiles/farming";
+import Searchicon from "../../assets/images/search.png";
+import { FarmService } from "../../services/FarmService";
 import NIOB from "../../assets/images/token_icons/NIOB.svg";
+import { startLoading, stopLoading } from "../../redux/actions";
+import GetLPToken from "../../components/GetLPToken/GetLPToken";
+import FarmIcon from "../../assets/images/Farm-Header-Logo.svg";
+import PlanetCard from "../../components/PlanetCard/PlanetCard";
 import BUSD from "../../assets/images/token_icons/BUSD-Token.svg";
-import ANCHOR from "../../assets/images/token_icons/ANCHOR-Token.svg";
-import { useDispatch } from "react-redux";
-import { useSelector } from "react-redux";
+import { ReferralsServices } from "../../services/ReferralsServices";
 import WithDrawLPToken from "../../components/GetLPToken/WithDrawLPToken";
+import { Container, Col, Row, Form, InputGroup, FormControl } from "react-bootstrap";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
-import TransactionModal from "../../components/TransactionModal/TransactionModal";
+import { isAddr, isZero, zero } from "../../services/utils";
+import { toast } from "../../components/Toast/Toast";
 
 const FarmPlanets = (props) => {
-  const {
-    match: { params },
-    history,
-  } = props;
-  const { tab } = params;
-  const handleTab = (data) => {
-    history.push(`${rootName}/farmplanets/${data}`);
-  };
-
-  const handleClose = () => {
-    setStakeValue(null);
-    setShowStake(false);
-  };
-  const handleWithdrawClose = () => {
-    setStakeValue(null);
-    setShowStakeWithdraw(false);
-  };
-
-  const dispatch = useDispatch();
-  const isUserConnected = useSelector((state) => state.persist.isUserConnected);
-  const referralAddress = useSelector((state) => state.persist.referralAddress);
-
-  const [checked, setChecked] = useState(false);
-  const [active, setActive] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(-1);
-  const [showStake, setShowStake] = useState(false);
-  const [showStakeWithdraw, setShowStakeWithdraw] = useState(false);
-  const [showAPY, setShowAPY] = useState(false);
-  const [roiModalData, setRoiModalData] = useState(null);
-
-  const [poolLength, setPoolLength] = useState(0);
-  const [farms, setFarms] = useState([]);
-  const [inactiveFarms, setInactiveFarms] = useState([]);
-  const [stakingOnly, setStakingOnly] = useState([]);
-  const [stakeData, setStakeData] = useState(null);
-  const [stakeValue, setStakeValue] = useState(0);
-  const [referrer, setReferrer] = useState(
-    "0x0000000000000000000000000000000000000000"
-  );
-
-  const [stakeConfirmation, setStakeConfimation] = useState(0);
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [txHash, setTxHash] = useState("");
-  const [lpDetails, setLpTokenDetails] = useState(null);
-  const [selectedPairId, setSelectedPairId] = useState();
-
-  //staking only
-  const handleChange = () => setChecked(!checked);
-
-  const closeTransactionModal = () => {
-    setShowTransactionModal(false);
-    setFarms([]);
-    setInactiveFarms([]);
-    setStakingOnly([]);
-    init();
-    window.location.reload();
-  };
-
-  const cloaseRoiModal = () => {
-    setShowAPY(false);
-  };
-  const handleRoiModal = (data, lpDetails) => {
-    setRoiModalData(data);
-    setLpTokenDetails(lpDetails);
-    setShowAPY(true);
-  };
-
-  const handleIndex = (index) => {
-    if (currentIndex === index) {
-      setCurrentIndex(-1);
-    } else {
-      setCurrentIndex(index);
-    }
-  };
-
+  const { tab } = props.match.params;
+  
+  const dsp = useDispatch();
+  const common = useCommon(s => s);
+  const farming = useFarming(s => s);
+  const P = useSelector(s => s.persist);
+  console.log('persist:', P);
+  const Farmer = useFarmer({init, history: props.history});
+  
   useEffect(() => {
     init();
     return () => {
-      setFarms([]);
-      setInactiveFarms([]);
+      farming.setFarms([]);
+      farming.setInactiveFarms([]);
     };
-  }, [isUserConnected]);
+  }, [P.isConnected]);
 
-  const init = async () => {
+  async function init() {
+    if(!P.isConnected) return toast.error('please connect wallet!');
     try {
-      dispatch(startLoading());
-      let ref = await ReferralsServices.getReferrer(isUserConnected);
-      if (ref === "0x0000000000000000000000000000000000000000") {
-        if (
-          referralAddress &&
-          referralAddress !== "0x0000000000000000000000000000000000000000"
-        ) {
-          ref = referralAddress;
-        }
-        setReferrer(ref);
-      }
+      dsp(startLoading());
+      let ref = await ReferralsServices.getReferrer(P.priAccount);
+      farming.setReferrer(isZero(ref) && isAddr(P.referralAddress) ? P.referralAddress : ref);
       const pL = Number(await FarmService.poolLength());
-      setPoolLength(pL);
-      dispatch(stopLoading());
-      for (let i = 0; i < pL; i++) {
-        const poolInfo = await FarmService.poolInfo(i, "1");
-        const userInfo = await FarmService.userInfo(i, isUserConnected);
-        // console.log(userInfo, '------i------', i);
+      farming.setPoolLength(pL);
+      for (let i = 0; i < pL; ++i) {
+        const poolInfo = await FarmService.poolInfo(i, '1');
+        console.log('farm planets, poolinfo:', poolInfo);
+        const userInfo = await FarmService.userInfo(i, P.priAccount);
         if (poolInfo) {
-          if (Number(poolInfo.allocPoint) === 0) {
-            setInactiveFarms((inactiveFarms) => [
-              ...inactiveFarms,
-              { poolInfo, userInfo, pid: i },
-            ]);
-          } else {
-            if (Number(userInfo.amount) > 0) {
-              // console.log('index', i);
-              setStakingOnly((stakingOnly) => [...stakingOnly, { poolInfo, userInfo, pid: i }]);
-            }
-            setFarms((farms) => [...farms, { poolInfo, userInfo, pid: i }]);
+          let p = { poolInfo, userInfo, pid: i };
+          if (zero(Number(poolInfo.allocPoint))) farming.setInactiveFarms(p);
+          else {
+            Number(userInfo.amount) > 0 &&
+            farming.setStakingOnly(p)
+            farming.setFarms(p);
           }
         }
       }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const closeStakeModal = () => {
-    setShowStakeWithdraw(false);
-    setShowStake(false);
-    setStakeData(null);
-    setStakeValue(0);
-  };
-
-  const stakeHandle = (data, type) => {
-    // setSelectedPairId is used for getting the id of the farm that user clicked (and staked) to
-    // change the values of only single farm --will be implemented in future
-    setSelectedPairId(data.pid);
-    if (type === "withdraw") {
-      setStakeData(data);
-      setShowStakeWithdraw(true);
-    }
-    if (type === "deposit") {
-      setStakeData(data);
-      setShowStake(true);
-    }
-  };
-
-  const handleStakeValue = (e) => {
-    const value = e.target.value;
-    setStakeValue(value);
-  };
-  const setMaxValue = () => setStakeValue(stakeData.balance);
-
-  const harvest = async (pid, lpTokenName) => {
-    const acc = await ContractServices.getDefaultAccount();
-    if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
-      return toast.error("Wallet address doesn`t match!");
-    }
-
-    if (stakeConfirmation) {
-      return toast.info("Transaction is processing!");
-    }
-    setStakeConfimation(true);
-    const data = {
-      pid: pid.toString(),
-      amount: 0,
-      referrer: referrer,
-      from: isUserConnected,
-    };
-    try {
-      dispatch(startLoading());
-      const result = await FarmService.deposit(data);
-      dispatch(stopLoading());
-      setStakeConfimation(false);
-
-      if (result) {
-        setTxHash(result);
-        setShowTransactionModal(true);
-
-        const data = {
-          message: `Harvest ${lpTokenName}`,
-          tx: result,
-        };
-        dispatch(addTransaction(data));
-      }
-    } catch (err) {
-      console.log(err, "lp harvest");
-      dispatch(stopLoading());
-      setStakeConfimation(false);
-
-      const message = await ContractServices.web3ErrorHandle(err);
-      toast.error(message);
-    }
-  };
-
-  // // this function will be used to change the values of single farm that user clicked and staked
-  // const refreshChangedItem = async () => {
-  //   try {
-  //     dispatch(startLoading());
-  //     let ref = await ReferralsServices.getReferrer(isUserConnected);
-  //     if (ref === '0x0000000000000000000000000000000000000000') {
-  //       if (referralAddress && referralAddress !== '0x0000000000000000000000000000000000000000') {
-  //         ref = referralAddress;
-  //       }
-  //       setReferrer(ref);
-  //     }
-  //     const pL = Number(await FarmService.poolLength());
-  //     setPoolLength(pL);
-  //     // let farmsTemp = [];
-  //     dispatch(stopLoading());
-  //     for (let i = 0; i < pL; i++) {
-  //       const poolInfo = await FarmService.poolInfo(i, '1');
-  //       const userInfo = await FarmService.userInfo(i, isUserConnected);
-  //       // console.log(userInfo, '------i------', i);
-  //       if (poolInfo) {
-  //         if (Number(poolInfo.allocPoint) === 0) {
-  //           setInactiveFarms(inactiveFarms => [...inactiveFarms, { poolInfo, userInfo, pid: i }]);
-  //         } else {
-  //           if (Number(userInfo.amount) > 0) {
-  //             console.log('index', i);
-  //           }
-  //           // setStakingOnly(stakingOnly => stakingOnly.pid === selectedPairId ?  { poolInfo, userInfo, pid: i }: stakingOnly);
-  //           // setFarms(farms => [...farms, { poolInfo, userInfo, pid: i }]);
-  //           let newArr = [...farms]; // copying the old farms
-  //           newArr[selectedPairId] = { poolInfo, userInfo, pid: selectedPairId };
-  //           setFarms(newArr);
-  //         }
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
-
-  const depositWithdraw = async (type) => {
-    const acc = await ContractServices.getDefaultAccount();
-    if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
-      return toast.error("Wallet address doesn`t match!");
-    }
-    const value = Number(stakeValue);
-    if (isNaN(value)) {
-      return toast.error("Enter vaild amount!");
-    }
-    if (value <= 0) {
-      return toast.error("Enter amount greater than zero!");
-    }
-    if (value > stakeData.balance) {
-      return toast.error("Value is greater than max value!");
-    }
-    if (!stakeData) {
-      return toast.info("Reload page try again!");
-    }
-    if (stakeConfirmation) {
-      return toast.info("Transaction is processing!");
-    }
-    setStakeConfimation(true);
-    if (type === "deposit") {
-      const amount = BigNumber(
-        value * 10 ** stakeData.lpTokenDetails.decimals
-      ).toFixed();
-
-      const data = {
-        pid: stakeData.pid.toString(),
-        amount,
-        referrer: referrer,
-        from: isUserConnected,
-      };
-      // console.log('sending this deposit data' ,data);
-      try {
-        closeStakeModal();
-        dispatch(startLoading());
-        const result = await FarmService.deposit(data);
-        setStakeConfimation(false);
-        dispatch(stopLoading());
-
-        if (result) {
-          setTxHash(result);
-          setShowTransactionModal(true);
-
-          const data = {
-            message: `Deposit ${stakeData.lpTokenDetails.lpTokenName}`,
-            tx: result,
-          };
-          dispatch(addTransaction(data));
-        }
-      } catch (err) {
-        console.log(err, "lp deposit");
-        dispatch(stopLoading());
-        setStakeConfimation(false);
-
-        const message = await ContractServices.web3ErrorHandle(err);
-        toast.error(message);
-      }
-    }
-    if (type === "withdraw") {
-      const amount = BigNumber(
-        value * 10 ** stakeData.lpTokenDetails.decimals
-      ).toFixed();
-      const data = {
-        pid: stakeData.pid.toString(),
-        amount,
-        from: isUserConnected,
-      };
-      // console.log('sending this withdraw data' , data);
-      try {
-        closeStakeModal();
-        dispatch(startLoading());
-        const result = await FarmService.withdraw(data);
-        dispatch(stopLoading());
-        setStakeConfimation(false);
-
-        if (result) {
-          setTxHash(result);
-          setShowTransactionModal(true);
-
-          const data = {
-            message: `Withdraw ${stakeData.lpTokenDetails.lpTokenName}`,
-            tx: result,
-          };
-          dispatch(addTransaction(data));
-        }
-      } catch (err) {
-        console.log(err, "lp withdraw");
-        dispatch(stopLoading());
-        setStakeConfimation(false);
-
-        const message = await ContractServices.web3ErrorHandle(err);
-        toast.error(message);
-      }
-    }
+    } catch(e) {
+      console.log(e);
+    } finally {dsp(stopLoading())}
   };
 
   return (
@@ -406,8 +107,8 @@ const FarmPlanets = (props) => {
                   type="checkbox"
                   id="stakecheck"
                   label="Staked only"
-                  checked={checked}
-                  onChange={handleChange}
+                  checked={farming.checked}
+                  onChange={Farmer.handleChange}
                 />
                 <Button className="btn harvest_btn">Harvest all</Button>
               </div>
@@ -418,23 +119,23 @@ const FarmPlanets = (props) => {
                   activeKey={tab}
                   id="frmplanet_tab"
                   variant="pills"
-                  onSelect={handleTab}
+                  onSelect={Farmer.handleTab}
                 >
                   <Tab eventKey="active" title="Active">
                     <div className="planet_list active">
                       <Row>
                         <Col xl={12}>
-                          {checked && (
+                          {farming.checked && (
                           <div className="planet_list_view">
-                              {stakingOnly.map((farm, index) => (
+                              {farming.stakingOnly.map((farm, i) => (
                                 <PlanetCard
-                                  key={index}
-                                  index={index}
-                                  harvestOnClick={harvest}
-                                  currentIndex={currentIndex}
-                                  handleChange={() => handleIndex(index)}
-                                  stakeHandle={stakeHandle}
-                                  handleRoiModal={handleRoiModal}
+                                  key={i}
+                                  index={i}
+                                  harvestOnClick={Farmer.harvest}
+                                  currentIndex={farming.currentIndex}
+                                  handleChange={() => farming.handleIndex(i)}
+                                  stakeHandle={Farmer.stakeHandle}
+                                  handleRoiModal={Farmer.handleRoiModal}
                                   status={true}
                                   farm={farm}
                                   icon1={NIOB}
@@ -446,16 +147,16 @@ const FarmPlanets = (props) => {
                             </div>
                           )}
 
-                          {!checked && <div className="planet_list_view">
-                              {farms.map((farm, index) => (
+                          {!farming.checked && <div className="planet_list_view">
+                              {farming.farms.map((farm, i) => (
                                 <PlanetCard
-                                  key={index}
-                                  index={index}
-                                  harvestOnClick={harvest}
-                                  currentIndex={currentIndex}
-                                  handleChange={() => handleIndex(index)}
-                                  stakeHandle={stakeHandle}
-                                  handleRoiModal={handleRoiModal}
+                                  key={i}
+                                  index={i}
+                                  harvestOnClick={Farmer.harvest}
+                                  currentIndex={farming.currentIndex}
+                                  handleChange={() => farming.handleIndex(i)}
+                                  stakeHandle={Farmer.stakeHandle}
+                                  handleRoiModal={Farmer.handleRoiModal}
                                   status={true}
                                   farm={farm}
                                   icon1={NIOB}
@@ -476,15 +177,15 @@ const FarmPlanets = (props) => {
                       <Row>
                         <Col xl={12}>
                           <div className="planet_list_view">
-                            {inactiveFarms.map((farm, index) => (
+                            {farming.inactiveFarms.map((farm, i) => (
                               <PlanetCard
-                                key={index}
-                                index={index}
-                                harvestOnClick={harvest}
-                                currentIndex={currentIndex}
-                                handleChange={() => handleIndex(index)}
-                                stakeHandle={stakeHandle}
-                                handleRoiModal={handleRoiModal}
+                                key={i}
+                                index={i}
+                                harvestOnClick={Farmer.harvest}
+                                currentIndex={farming.currentIndex}
+                                handleChange={() => farming.handleIndex(i)}
+                                stakeHandle={Farmer.stakeHandle}
+                                handleRoiModal={Farmer.handleRoiModal}
                                 status={true}
                                 farm={farm}
                                 icon1={NIOB}
@@ -505,30 +206,30 @@ const FarmPlanets = (props) => {
         </Container>
       </div>
       <GetLPToken
-        stakeValue={stakeValue}
-        stakeData={stakeData}
-        stakeConfirmation={stakeConfirmation}
-        handleStakeValue={handleStakeValue}
-        depositWithdraw={depositWithdraw}
-        setMaxValue={setMaxValue}
-        show={showStake}
-        closeStakeModal={handleClose}
+        stakeValue={farming.stakeValue}
+        stakeData={farming.stakeData}
+        stakeConfirmation={farming.stakeConfirmation}
+        handleStakeValue={Farmer.handleStakeValue}
+        depositWithdraw={Farmer.depositWithdraw}
+        setMaxValue={Farmer.setMaxValue}
+        show={farming.showStake}
+        closeStakeModal={Farmer.handleClose}
       />
       <WithDrawLPToken
-        stakeValue={stakeValue}
-        stakeData={stakeData}
-        stakeConfirmation={stakeConfirmation}
-        handleStakeValue={handleStakeValue}
-        depositWithdraw={depositWithdraw}
-        setMaxValue={setMaxValue}
-        show={showStakeWithdraw}
-        closeStakeModal={handleWithdrawClose}
+        stakeValue={farming.stakeValue}
+        stakeData={farming.stakeData}
+        stakeConfirmation={farming.stakeConfirmation}
+        handleStakeValue={Farmer.handleStakeValue}
+        depositWithdraw={Farmer.depositWithdraw}
+        setMaxValue={Farmer.setMaxValue}
+        show={farming.showStakeWithdraw}
+        closeStakeModal={Farmer.handleWithdrawClose}
         isNiobWithdrawabe={false}
       />
       <TransactionalModal
-        show={showTransactionModal}
-        handleClose={closeTransactionModal}
-        txHash={txHash}
+        show={farming.showTransactionModal}
+        handleClose={Farmer.closeTransactionModal}
+        txHash={common.txHash}
       />
     </div>
   );

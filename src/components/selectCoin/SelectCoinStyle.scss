@@ -1,6 +1,11 @@
 @import "../../assets/theme/clr_var.scss";
 @import "../../assets/theme/_mixins.scss";
+.selectCoin_style *:disabled {
+  opacity: 0.4;
+  cursor: none;
+}
 .selectCoin_style.col {
+  
   margin-bottom: 42px;
   padding: 16px 26px;
   background: $dimbg;

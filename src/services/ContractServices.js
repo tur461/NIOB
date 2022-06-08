@@ -167,69 +167,45 @@ const walletWindowListener = async () => {
   }
 }
 
-const callWeb3 = async () => {
-  if (web3Object) {
-    return (web3Object);
-  }
+const Web_3 = _ => {
+  if (web3Object) return web3Object;
+  
   const { ethereum, web3, BinanceChain } = window;
-  if (walletTypeObject === 'Metamask') {
-    if (ethereum && ethereum.isMetaMask) {
-      web3Object = new Web3(ethereum);
-      return (web3Object);
-    } else if (ethereum) {
-      web3Object = new Web3(ethereum);
-      return (web3Object);
-    } else if (web3) {
-      web3Object = new Web3(web3.currentProvider);
-      return (web3Object);
-    } else {
-      toast.error("You have to install Wallet!");
-    }
-  } else {
-    if (BinanceChain) {
-      web3Object = new Web3(BinanceChain);
-      return (web3Object);
-    } else {
-      toast.error("You have to install Wallet!");
-    }
-  }
+  web3Object = walletTypeObject === 'Metamask' ? (ethereum && ethereum.isMetaMask ? new Web3(ethereum) :
+  ethereum ?  new Web3(ethereum) : web3 ? new Web3(web3.currentProvider) : null ) :
+  BinanceChain ? new Web3(BinanceChain) : null;
+  return web3Object ? web3Object : toast.error("You have to install Wallet!");
 };
 
-const callContract = async (contractAddress, contractABI) => {
-  if (
-    contractOjbect && currentContractAddress &&
-    currentContractAddress.toLowerCase() === contractAddress.toLowerCase()
-  ) {
-    return contractOjbect;
+const getContract = (_ => {
+  let _instance = null;
+  
+  return (addr, abi) => {
+    let w = Web_3();
+    _instance = _instance ? _instance : new w.eth.Contract(abi, addr);
+    return _instance;
   }
-  const web3Object = await callWeb3();
-  currentContractAddress = contractAddress;
-  contractOjbect = new web3Object.eth.Contract(contractABI, contractAddress);
-  return contractOjbect;
-};
-const callTokenContract = async (tokenAddress) => {
-  if (
-    tokenContractObject && currentContractAddress &&
-    currentTokenAddress.toLowerCase() === tokenAddress.toLowerCase()
-  ) {
-    return tokenContractObject;
+
+})();
+
+class TokenContract {
+  _instance = null;
+  
+  static instance(addr) {
+    let w = Web_3();
+    this._instance = this._instance ? this._instance : new w.eth.Contract(TOKEN_ABI, addr);
+    return this._instance;
   }
-  const web3Object = await callWeb3();
-  currentTokenAddress = tokenAddress;
-  tokenContractObject = new web3Object.eth.Contract(
-    TOKEN_ABI,
-    currentTokenAddress
-  );
-  return tokenContractObject;
-};
+
+}
 
 const calculateGasPrice = async () => {
-  const web3 = await callWeb3();
+  const web3 = Web_3();
   return await web3.eth.getGasPrice();
 }
 
 const getDefaultAccount = async () => {
-  const web3 = await callWeb3();
+  const web3 = Web_3();
   const accounts = await web3.eth.getAccounts();
   return accounts[0];
 }
@@ -237,7 +213,7 @@ const getDefaultAccount = async () => {
 const approveToken = async (address, value, mainContractAddress, tokenAddress) => {
   try {
     const gasPrice = await calculateGasPrice();
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     //calculate estimate gas limit
     const gas = await contract.methods.approve(mainContractAddress, value).estimateGas({ from: address });
 
@@ -251,7 +227,7 @@ const approveToken = async (address, value, mainContractAddress, tokenAddress) =
 
 const allowanceToken = async (tokenAddress, mainContractAddress, address) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     return await contract.methods
       .allowance(address, mainContractAddress).call();
   } catch (error) {
@@ -261,7 +237,7 @@ const allowanceToken = async (tokenAddress, mainContractAddress, address) => {
 
 const getTokenBalance = async (tokenAddress, address) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     const decimals = await contract.methods.decimals().call();
 
     let result = await contract.methods.balanceOf(address).call();
@@ -274,7 +250,7 @@ const getTokenBalance = async (tokenAddress, address) => {
 };
 const getTokenBalanceFull = async (tokenAddress, address) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     const decimals = await contract.methods.decimals().call();
 
     let result = await contract.methods.balanceOf(address).call();
@@ -289,8 +265,18 @@ const getTokenBalanceFull = async (tokenAddress, address) => {
 
 const getDecimals = async (tokenAddress) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     return await contract.methods.decimals().call();
+  } catch (error) {
+    return error;
+  }
+};
+
+const getPairDecimals = async (addr0, addr1) => {
+  try {
+    const c1 = TokenContract.init(addr0);
+    const c2 = TokenContract.init(addr1);
+    return Promise.all([c1.methods.decimals().call(), c2.methods.decimals().call()]);
   } catch (error) {
     return error;
   }
@@ -298,7 +284,7 @@ const getDecimals = async (tokenAddress) => {
 
 const getTokenName = async (tokenAddress) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     return await contract.methods.name().call();
   } catch (error) {
     return error;
@@ -307,7 +293,7 @@ const getTokenName = async (tokenAddress) => {
 
 const getTokenSymbol = async (tokenAddress) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     return await contract.methods.symbol().call();
   } catch (error) {
     return error;
@@ -316,7 +302,7 @@ const getTokenSymbol = async (tokenAddress) => {
 
 const getBNBBalance = async (address) => {
   try {
-    const web3 = await callWeb3();
+    const web3 = Web_3();
     let result = await web3.eth.getBalance(address);
     result = (Number(result) / 10 ** 18).toFixed(5);
     return Number(result);
@@ -331,7 +317,7 @@ const setWalletType = async (walletType) => {
 
 const getTotalSupply = async (tokenAddress) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
     let result = await contract.methods.totalSupply().call();
     const decimals = await contract.methods.decimals().call();
     result = Number(result) / (10 ** Number(decimals));
@@ -359,7 +345,7 @@ const web3ErrorHandle = async (err) => {
 
 const getLiquidity100Value = async (tokenAddress, address) => {
   try {
-    const contract = await callTokenContract(tokenAddress);
+    const contract = TokenContract.instance(tokenAddress);
 
     return await contract.methods.balanceOf(address).call();
   } catch (error) {
@@ -402,27 +388,28 @@ const callWeb3ForWalletConnect = async (provider) => {
 
 //exporting functions
 export const ContractServices = {
-  isMetamaskInstalled,
-  isBinanceChainInstalled,
-  callWeb3,
-  callContract,
-  calculateGasPrice,
-  approveToken,
-  getTokenBalance,
-  getTokenBalanceFull,
+  Web_3,
+  TokenContract,
+  getContract,
   getDecimals,
+  approveToken,
   getTokenName,
-  getTokenSymbol,
   getBNBBalance,
   setWalletType,
+  getTokenSymbol,
   allowanceToken,
   getTotalSupply,
-  convertToDecimals,
+  getTokenBalance,
+  getPairDecimals,
   web3ErrorHandle,
-  getDefaultAccount,
-  callTokenContract,
-  walletWindowListener,
   walletTypeObject,
+  convertToDecimals,
+  calculateGasPrice,
+  getDefaultAccount,
+  getTokenBalanceFull,
+  isMetamaskInstalled,
+  walletWindowListener,
   getLiquidity100Value,
+  isBinanceChainInstalled,
   callWeb3ForWalletConnect
 }
