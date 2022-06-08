@@ -564,22 +564,22 @@ const Home = () => {
         <Carousel fade {...options}>
           <Carousel.Item>
             <Carousel.Caption>
-              <h3>Welcome to NIOB Swap</h3>
+              <h3>Welcome to SaitaMask</h3>
               <p>
                 Decentralized Exchange and Automatic Liquidity Acquisition Yield
                 Farm running currently on Binance Smart Chain.
               </p>
               <p>
-                If you are new to NIOB please also visit our Tutorial Section in
-                our official docs. We’ll teach you step by step you to use NIOB
-                Swap and it’s assets.
+                If you are new to SaitaMask please also visit our Tutorial Section in
+                our official docs. We’ll teach you step by step you to use SaitaMask Dex
+                and it’s assets.
               </p>
               <a
                 href="https://docs.niob.finance/tutorial"
                 target={"_blank"}
                 className="captionFooter d-flex justify-content-between align-items-center"
               >
-                <span>NIOB Tutorial</span>
+                <span>SaitaMask Tutorial</span>
                 <span>
                   <Image
                     src={require("../../assets/images/Link-Icon.svg").default}
@@ -601,16 +601,16 @@ const Home = () => {
               <h3>The Docs</h3>
               <p>
                 All important and technical information about the project
-                "Niob", tokenomics, project roadmap and term explanations can be
+                "SaitaMask", tokenomics, project roadmap and term explanations can be
                 found in our docs. If you have any questions, please ask them in
-                the official Niob Telegram Channel.
+                the official SaitaMask Telegram Channel.
               </p>
               <a
-                href="https://docs.niob.finance"
+                href="https://docs.saitamask.finance"
                 target={"_blank"}
                 className="captionFooter d-flex justify-content-between align-items-center"
               >
-                <span>NIOB Docs</span>{" "}
+                <span>SaitaMask Docs</span>{" "}
                 <span>
                   <Image
                     src={require("../../assets/images/Link-Icon.svg").default}
@@ -637,12 +637,12 @@ const Home = () => {
               />
               <h3>Start your engine </h3>
               <p>Start your journey or improve your wallet portfolio:</p>
-              <h3>NIOB Price: ${niobBusdValue.toFixed(4)}</h3>
+              <h3>SaitaMask Price: ${niobBusdValue.toFixed(4)}</h3>
               <Link
                 to={"/trade/exchange"}
                 className="captionFooter d-flex justify-content-between align-items-center"
               >
-                <span>Buy NIOB Token </span> <span className="arrowIcon" />
+                <span>Buy SaitaMask Token </span> <span className="arrowIcon" />
               </Link>
             </div>
           </Col>
@@ -697,7 +697,7 @@ const Home = () => {
           </Col>
           <Col xl={6} lg={12}>
             <div className="comnBlk mb-4">
-              <h3>NIOB Stats</h3>
+              <h3>SaitaMask Stats</h3>
               <ul className="pl-0 niobStats">
                 <li>
                   <label>Market Cap</label>
@@ -743,7 +743,7 @@ const Home = () => {
                   <span>{addCommas(anchorTotalSupply.toFixed(2))}</span>
                 </li>
                 <li>
-                  <label>New Niob/Block</label>
+                  <label>New SaitaMask/Block</label>
                   <span>{niobPerBlock}</span>
                   {/* <span>{addCommas(anchorPerBlock)}</span> */}
                 </li>
