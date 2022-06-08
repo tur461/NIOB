@@ -105,18 +105,14 @@ const useCommonTrade = (props) => {
         
         if (isBnb(addr[0])) addr[0] = WETH;
         if (isBnb(addr[1])) addr[1] = WETH;
-        console.log('[swapHelper] amt, addr, tt', amt, addr, tt);
 
         let pairAddr = await ExchangeService.getPair(addr[tt-1], addr[tgl(tt)-1]);
-        console.log('pass 3.1, exact:', common.exact, pairAddr);
         if (pairAddr) {
             res = tt-1 ? 
             await ExchangeService.getAmountsIn(amt, [addr[0], addr[1]]) : 
             await ExchangeService.getAmountsOut(amt, addr);
             addrForPriceImpact = addr.map(a => a);
-            console.log('+pass 3.2, res:', res);
         } else {
-            console.log('-pass 3.2');
             let pair = await checkPairWithBNBOrUSDT(addr[tt-1], addr[tgl(tt)-1]);
             if (pair) {
                 res = tt-1 ? 
@@ -124,7 +120,6 @@ const useCommonTrade = (props) => {
                 await ExchangeService.getAmountsOut(amt, pair);
                 addrForPriceImpact = pair.map(p => p);
                 common.setHasPriceImpact(!0);
-                console.log('+pass 3.3, res:', res);
             }
         }
         let finalAmount = '';
@@ -133,13 +128,11 @@ const useCommonTrade = (props) => {
             finalAmount = tt-1 ? res[0] : res[res.length - 1];
             finalAmount = Number(finalAmount.toFixed(5));
             const ratio = Number(amt) / finalAmount;
-            console.log('+pass 3.4', tt, finalAmount, 'ratio:', ratio.toFixed(10));
             common.setSharePoolValue(ratio.toFixed(10));
             let out = toBgFix(finalAmount * 10 ** common[`token${tgl(tt)}`].decimals);
             common.setMinReceived(Number(out) - (Number(out) * P.slippage / 100));
             calculatePriceImpact(amt, addrForPriceImpact);
         }
-        console.log('pass 3.5');
         return {addr: [...addrForPriceImpact], amt2: finalAmount};
         
     }
@@ -183,18 +176,19 @@ const useCommonTrade = (props) => {
 
     const handleInput = async (amount, tt, isSwap) => {
         console.log('handling token value:', amount, tt, common[`token${tgl(tt)}Currency`]);
+        common.setFetching(!0);
         if(!hasVal(amount)) {
             common.setBtnText('');
+            common.setFetching(!1);
             return common.setTokenValue(amount, T_TYPE.AB);
         }
         if (rEq(common[`token${tgl(tt)}Currency`], STR.SEL_TKN)) {
             common.setTokenValue(amount, tt);
             common.setTokenValue('', tgl(tt));
-            // console.log('curr', common.token1Value);
+            common.setFetching(!1);
             return common.setBtnText(STR.SEL_TKN);
         }
         common.setTokenValue(amount, tt);
-        console.log('pass 1');
         let amt = [amount],
             i = tt-1 ? 1 : 2,
             tkn = common[`token${tt}`],
@@ -204,19 +198,16 @@ const useCommonTrade = (props) => {
             addr = [common.token1.address, common.token2.address]; 
         
         const bal = await checkBalance(tkn.address);
-        console.log('balance of token', tkn, 'is', bal);
         if (amount > bal) {
             common.setDisabled(!0);
             common.setBtnText(`Insufficient ${tkn.symbol} balance`);
+            common.setFetching(!1);
             return;
         }
-        console.log('pass 2');
         common.setBtnText('');
         common.setDisabled(!1);
-        common.setFetching(!0);
         let d = {};
         if (apvd && rDefined(tkn.address, common[`token${i}`].address)) {
-            console.log('pass 3');
             if(isSwap) {
                 d = await swapHelper(amount, [...addr], tt);
                 addr = d.addr;
@@ -236,7 +227,6 @@ const useCommonTrade = (props) => {
         }
         common.setTokenValue(amt[1], tgl(tt));
         if(tt === T_TYPE.B) { let t = amt[1]; amt[1] = amt[0]; amt[0] = t; }
-        console.log('addr:', addr);
         if (rDefined(...addr)) {
             let cPair;
             if (isBnb(addr[0])) {
@@ -254,16 +244,13 @@ const useCommonTrade = (props) => {
                 common.setCurrentPair(cPair);
                 common.setSharePoolValue(ratio);
                 common.setLpTokenBalance(await ContractServices.getTokenBalance(cPair, P.priAccount));
-                console.log('+pass 4');
             } else {
                 common.setDisabled(!0);
                 common.setIsFirstLP(!0);
                 common.setCurrentPair('');
                 common.setLpTokenBalance(0);
-                console.log('-pass 4');
             }
             common.showPoolShare(!0);
-            console.log('pass 5');
         }
         common.setFetching(!1);
     };
