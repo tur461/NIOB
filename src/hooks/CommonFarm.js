@@ -33,7 +33,7 @@ const useCFarm = (props) => {
         planet.setLpTokenDetails(lpTokenDetailsTemp);
 
         const a = await calculateAPR(
-            Number(poolInfo.allocPoint),
+            Number(poolInfo?.allocPoint),
             lpToken,
             liquidity
         );
@@ -55,7 +55,7 @@ const useCFarm = (props) => {
             }
 
             let balance = await ContractServices.getTokenBalance(
-            poolInfo.lpToken,
+            poolInfo?.lpToken,
             P.priAccount
             );
             if (balance > 0.00001) {
@@ -101,7 +101,7 @@ const useCFarm = (props) => {
         const r = await ContractServices.approveToken(
         value,
         P.priAccount,
-        poolInfo.lpToken,
+        poolInfo?.lpToken,
         MAIN_CONTRACT_LIST.farm.address,
         );
         if (r) {
@@ -200,7 +200,7 @@ const useCFarm = (props) => {
 
     const getAnchorDollarValue = async () => {
 
-        if (poolInfo.lpToken != undefined) {
+        if (poolInfo?.lpToken != undefined) {
             try {
             let reserves = await ExchangeService.getReserves(ANCHOR_BUSD_LP);
             let val = reserves[1] / reserves[0];

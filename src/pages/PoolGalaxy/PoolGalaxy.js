@@ -29,6 +29,8 @@ import WithDrawLPToken from "../../components/GetLPToken/WithDrawLPToken";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
 import ReturnInvest from "../../components/ReturnInvest/ReturnInvest"
 import { ANCHOR_BUSD_LP } from "../../assets/tokens";
+import PoolInactive from "./PoolInactive";
+import PoolActive from "./PoolActive";
 
 function PoolGalaxy(props) {
   const {
@@ -409,100 +411,26 @@ function PoolGalaxy(props) {
                 >
 
                   <Tab eventKey="active" title="Active">
-                    <div className="planet_list active">
-                      <Row>
-                        <Col xl={12}>
-                          {checked && (
-                            <div className="planet_list_view">
-                              <div className="headingStyle">
-                                <h6>Token</h6>
-                                <h6>APR</h6>
-                                <h6>Total Staked</h6>
-                                <h6 className="earnTxt">Earned</h6>
-                              </div>
-                              {stakingOnly.map((farm, index) =>
-                                <GalaxyCard
-                                  key={index}
-                                  index={index}
-                                  harvestOnClick={harvest}
-                                  currentIndex={currentIndex}
-                                  handleChange={() => handleIndex(index)}
-                                  stakeHandle={stakeHandle}
-                                  handleRoiModal={handleRoiModal}
-                                  status={true}
-                                  farm={farm}
-                                  icon1={NIOB}
-                                  icon2={BUSD}
-                                  title={`NIOB`}
-                                  title1={`BUSD`}
-                                />
-                              )}
-                            </div>
-                          )}
-                          {!checked && (
-                            <div className="planet_list_view">
-                              <div className="headingStyle">
-                                <h6>Token</h6>
-                                <h6>APR</h6>
-                                <h6>Total Staked</h6>
-                                <h6 className="earnTxt">Earned</h6>
-                              </div>
-                              {farms.map((farm, index) =>
-                                <GalaxyCard
-                                  key={index}
-                                  index={index}
-                                  harvestOnClick={harvest}
-                                  currentIndex={currentIndex}
-                                  handleChange={() => handleIndex(index)}
-                                  stakeHandle={stakeHandle}
-                                  handleRoiModal={handleRoiModal}
-                                  status={true}
-                                  farm={farm}
-                                  icon1={NIOB}
-                                  icon2={BUSD}
-                                  title={`NIOB`}
-                                  title1={`BUSD`}
-                                />
-                              )}
-                            </div>
-                          )}
-                        </Col>
-                      </Row>
-                    </div>
+                    <PoolActive 
+                      checked={checked}
+                      activeFarms={checked ? stakingOnly : farms}
+                      harvest={harvest} 
+                      cIndex={currentIndex} 
+                      changeHandler={handleIndex}
+                      stakeHandler={stakeHandle}
+                      roiModalHandler={handleRoiModal}
+                    />
                   </Tab>
 
                   <Tab eventKey="inactive" title="Inactive">
-                    <div className="planet_list active">
-                      <Row>
-                        <Col xl={12}>
-                          <div className="planet_list_view">
-                            <div className="headingStyle">
-                              <h6>Token</h6>
-                              <h6>APR</h6>
-                              <h6>Total Staked</h6>
-                              <h6 className="earnTxt">Earned</h6>
-                            </div>
-                            {inactiveFarms.map((farm, index) =>
-                              <GalaxyCard
-                                key={index}
-                                index={index}
-                                harvestOnClick={harvest}
-                                currentIndex={currentIndex}
-                                handleChange={() => handleIndex(index)}
-                                stakeHandle={stakeHandle}
-                                handleRoiModal={handleRoiModal}
-                                status={false}
-                                farm={farm}
-                                icon1={NIOB}
-                                icon2={BUSD}
-                                title={`NIOB`}
-                                title1={`BUSD`}
-                              />
-                            )}
-                          </div>
-                        </Col>
-                      </Row>
-                    </div>
+                    <PoolInactive 
+                      inactiveFarms={inactiveFarms} 
+                      harvest={harvest} 
+                      cIndex={currentIndex} 
+                      changeHandler={handleIndex}
+                      stakeHandler={stakeHandle}
+                      roiModalHandler={handleRoiModal}
+                    />
                   </Tab>
 
                 </Tabs>

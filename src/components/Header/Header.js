@@ -6,20 +6,17 @@ import IconToggle from '../../assets/images/menu_toggle_icon.png'
 import Iconmenu from '../../assets/images/wrap-menu.png'
 import Button from "../Button/Button";
 import ConnectWallet from "../ConnectWallet/ConnectWallet";
-import ProfileModal from "../ProfileModal/ProfileModal";
 import { login, logout, versionManager } from "../../redux/actions"
 import { ContractServices } from "../../services/ContractServices";
-
 const Header = props => {
     const dispatch = useDispatch();
-    const isUserConnected = useSelector(state => state.persist.isUserConnected);
-    const walletType = useSelector(state => state.persist.walletType);
-    const [show, setShow] = useState(false);
-    useEffect(() => {
-        const init = async () => {
+    const P = useSelector(state => state.persist);
+    const [show, setShow] = useState(!1);
+    useEffect(_ => {
+        const init = async _ => {
             await dispatch(versionManager());
-            if (walletType) {
-                await ContractServices.setWalletType(walletType);
+            if (P.walletType) {
+                await ContractServices.setWalletType(P.walletType);
             } else {
                 dispatch(logout());
             }
@@ -27,68 +24,57 @@ const Header = props => {
         init();
         addListeners();
     }, []);
-    const handleClose = () => setShow(false);
+    const handleShow = _ => setShow(!0);
+    const handleClose = _ => setShow(!1);
+    const prepWalletConnectModal = _ => P.isConnected ? setShow(!show) : setShow(!0);
 
-    const handleShow = () => setShow(true);
-
-    const connectCall = () => {
-        isUserConnected ? setShow(!show) : setShow(true);
-    }
-    const addListeners = async () => {
-        let address;
-        if (walletType === 'Metamask') {
-            address = await ContractServices.isMetamaskInstalled('');
-        }
-        if (walletType === 'BinanceChain') {
-            address = await ContractServices.isBinanceChainInstalled();
-        }
-
+    const addListeners = async _ => {
+        let addr = P.walletType === 'Metamask' ? 
+        await ContractServices.isMetamaskInstalled('') : P.walletType === 'BinanceChain' ?
+        await ContractServices.isBinanceChainInstalled() : null;
         ContractServices.walletWindowListener();
-        if (address) {
-            window.ethereum.on('accountsChanged', function (accounts) {
-                const account = accounts[0];
-                dispatch(login({ account, walletType }));
-                window.location.reload();
-            });
-        }
+        addr &&
+        window.ethereum.on('accountsChanged', function (accounts) {
+            const account = accounts[0];
+            dispatch(login({ account, walletType: P.walletType }));
+            window.location.reload();
+        });
+        
     };
-    const logoutCall = () => {
-        dispatch(logout());
-        setShow(false);
-    }
 
-    return (
+    return(
         <div className={`header_style ${props.className}`}>
-            <div className="header_left_style">
-                <div className="for_desktop">
-                    <div className="hamburg" onClick={props.small_nav}>
-                        {
-                            props.mobileIcon ?
+                <div className="header_left_style">
+                    <div className="for_desktop">
+                        <div  className="hamburg" onClick={props.small_nav}>
+                            {
+                                props.mobileIcon ?
                                 <img src={Iconmenu} alt="" />
                                 :
-                                <img src={IconToggle} />
-                        }
+                                <img src={IconToggle} alt=""/>                            
+                            }
+                        </div> 
                     </div>
-                </div>
-                <div className="for_mobile">
-                    <div className="hamburg" onClick={props.small_nav}>
-                        {
-                            props.mobileIcon ?
-                                <img src={IconToggle} />
+                    <div className="for_mobile">
+                        <div className="hamburg" onClick={props.small_nav}>
+                            {
+                                props.mobileIcon ?
+                                <img src={IconToggle} alt=""/>
                                 :
-                                <img src={Iconmenu} alt="" />
-                        }
+                                <img src={Iconmenu} alt="" />                            
+                            }
+                        </div>
                     </div>
+                    <Link to="/home" className="header_logo"></Link> 
                 </div>
-                <Link to="/home" className="header_logo"></Link>
-            </div>
-            <div className="header_right_style">
-                <Button onClick={() => connectCall()} title={isUserConnected ? `${isUserConnected.substring(1, 6)}...${isUserConnected.substr(isUserConnected.length - 4)}` : 'Connect'} />
-            </div>
-            {isUserConnected === "" && <ConnectWallet show={show} handleShow={handleShow} handleClose={handleClose} />}
-            {isUserConnected !== "" && <ProfileModal show={show} handleClose={handleClose} logout={logoutCall} />}
+                <div className="header_right_style">
+                    <Button 
+                        onClick={_ => prepWalletConnectModal()} 
+                        title={P.isConnected ? `${P.priAccount.substring(1, 6)}...${P.priAccount.substr(P.priAccount.length - 4)}` : 'Connect'}
+                    />
+                </div>
+                <ConnectWallet show={show} handleShow={handleShow} handleClose={handleClose} /> 
         </div>
-
     )
 }
 

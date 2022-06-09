@@ -20,6 +20,8 @@ import { Container, Col, Row, Form, InputGroup, FormControl } from "react-bootst
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
 import { isAddr, isZero, zero } from "../../services/utils";
 import { toast } from "../../components/Toast/Toast";
+import Active from "./Active";
+import Inactive from "./Inactive";
 
 const FarmPlanets = (props) => {
   const { tab } = props.match.params;
@@ -28,7 +30,6 @@ const FarmPlanets = (props) => {
   const common = useCommon(s => s);
   const farming = useFarming(s => s);
   const P = useSelector(s => s.persist);
-  console.log('persist:', P);
   const Farmer = useFarmer({init, history: props.history});
   
   useEffect(() => {
@@ -122,82 +123,25 @@ const FarmPlanets = (props) => {
                   onSelect={Farmer.handleTab}
                 >
                   <Tab eventKey="active" title="Active">
-                    <div className="planet_list active">
-                      <Row>
-                        <Col xl={12}>
-                          {farming.checked && (
-                          <div className="planet_list_view">
-                              {farming.stakingOnly.map((farm, i) => (
-                                <PlanetCard
-                                  key={i}
-                                  index={i}
-                                  harvestOnClick={Farmer.harvest}
-                                  currentIndex={farming.currentIndex}
-                                  handleChange={() => farming.handleIndex(i)}
-                                  stakeHandle={Farmer.stakeHandle}
-                                  handleRoiModal={Farmer.handleRoiModal}
-                                  status={true}
-                                  farm={farm}
-                                  icon1={NIOB}
-                                  icon2={BUSD}
-                                  title={`NIOB`}
-                                  title1={`BUSD`}
-                                />
-                              ))}
-                            </div>
-                          )}
-
-                          {!farming.checked && <div className="planet_list_view">
-                              {farming.farms.map((farm, i) => (
-                                <PlanetCard
-                                  key={i}
-                                  index={i}
-                                  harvestOnClick={Farmer.harvest}
-                                  currentIndex={farming.currentIndex}
-                                  handleChange={() => farming.handleIndex(i)}
-                                  stakeHandle={Farmer.stakeHandle}
-                                  handleRoiModal={Farmer.handleRoiModal}
-                                  status={true}
-                                  farm={farm}
-                                  icon1={NIOB}
-                                  icon2={BUSD}
-                                  title={`NIOB`}
-                                  title1={`BUSD`}
-                                />
-                              ))}
-                            </div> 
-                          }
-                        </Col>
-                      </Row>
-                    </div>
+                    <Active 
+                      activeFarms={farming.checked ? farming.stakingOnly : farming.farms}
+                      harvest={Farmer.harvest} 
+                      cIndex={farming.currentIndex} 
+                      changeHandler={farming.handleIndex}
+                      stakeHandler={Farmer.stakeHandle}
+                      roiModalHandler={Farmer.handleRoiModal}
+                    />
                   </Tab>
 
                   <Tab eventKey="inactive" title="Inactive">
-                    <div className="planet_list active">
-                      <Row>
-                        <Col xl={12}>
-                          <div className="planet_list_view">
-                            {farming.inactiveFarms.map((farm, i) => (
-                              <PlanetCard
-                                key={i}
-                                index={i}
-                                harvestOnClick={Farmer.harvest}
-                                currentIndex={farming.currentIndex}
-                                handleChange={() => farming.handleIndex(i)}
-                                stakeHandle={Farmer.stakeHandle}
-                                handleRoiModal={Farmer.handleRoiModal}
-                                status={true}
-                                farm={farm}
-                                icon1={NIOB}
-                                icon2={BUSD}
-                                title={`NIOB`}
-                                title1={`BUSD`}
-                              />
-                            ))}
-                          </div>
-                        </Col>
-                      </Row>
-                    </div>
+                  <Inactive 
+                      inactiveFarms={farming.inactiveFarms}
+                      harvest={Farmer.harvest} 
+                      cIndex={farming.currentIndex} 
+                      changeHandler={farming.handleIndex}
+                      stakeHandler={Farmer.stakeHandle}
+                      roiModalHandler={Farmer.handleRoiModal}
+                    />
                   </Tab>
                 </Tabs>
               </div>

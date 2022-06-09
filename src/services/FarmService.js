@@ -25,12 +25,9 @@ const poolInfo = async (index, type) => {
     const contract = FarmContract();
     const result = await contract.methods.poolInfo(index).call();
     const poolType = await contract.methods.poolType(result.lpToken).call();
-    if (poolType === type) {
-      return result;
-    }
-    return false;
-  } catch (error) {
-    return error;
+    return  JSON.stringify(result) === JSON.stringify({}) ? null : poolType === type ? result : null;
+  } catch (er) {
+    return er;
   }
 };
 

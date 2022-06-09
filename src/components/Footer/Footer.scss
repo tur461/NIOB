@@ -21,7 +21,11 @@
   @media (max-width:767px){
     padding: 15px 15px 10px;
   }
-  .niob_price {
+  .niob_price img {
+    width: 49px;
+    height: auto;
+}
+  .Niob_price {
     display: flex;
     align-items: center;
     img{
@@ -56,7 +60,7 @@
     @media (max-width:767px){
       flex-wrap: wrap;
     }
-    .buy_niob {
+    .buy_Niob {
       img {
         width: 36px;
         height: 36px;
@@ -70,9 +74,8 @@
         font-size: 14px;
         font-weight: 700;
         height: 36px;
-        line-height: 36px; padding: 0;
       }
-    } 
+    }
     .noib_info {
       display: flex;
       @media (max-width:767px){

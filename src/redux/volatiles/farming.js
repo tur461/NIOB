@@ -51,13 +51,16 @@ const useFarming = create((set, get) => ({
         set(s => ({...s, poolLength: l}));
     },
     setFarms: v => {
-        set(s => ({...s, farms: [...s.farms, {...v}]}));
+        let a = [...get().farms]; a.push(v);
+        set(s => ({...s, farms: [...a]}));
     },
     setInactiveFarms: v => {
-        set(s => ({...s, inactiveFarms: [...s.inactiveFarms, {...v}]}));
+        let a = [...get().inactiveFarms]; a.push(v);
+        set(s => ({...s, inactiveFarms: [...a]}));
     },
     setStakingOnly: v => {
-        set(s => ({...s, stakingOnly: [...s.stackingOnly, {...v}]}));
+        let a = [...get().stakingOnly]; a.push(v);
+        set(s => ({...s, stakingOnly: [...a]}));
     },
 
     setStakeData: d => {

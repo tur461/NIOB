@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="21.572" height="22.418" viewBox="0 0 21.572 22.418">
   <g id="Gruppe_913" data-name="Gruppe 913" transform="translate(-1435.197 -1047.207)">
-    <path id="Pfad_850" data-name="Pfad 850" d="M1463.039,1091.939a3.929,3.929,0,0,1-5.547,0l-.551.551a4.709,4.709,0,0,0,6.649,0Z" transform="translate(-14.283 -29.383)" fill="#e3305a"/>
-    <path id="Pfad_851" data-name="Pfad 851" d="M1451.608,1097.82a7.3,7.3,0,0,0,10.308,0l-.551-.551a6.52,6.52,0,0,1-9.207,0Z" transform="translate(-10.78 -32.884)" fill="#e3305a"/>
-    <path id="Pfad_852" data-name="Pfad 852" d="M1446.887,1102.545l-.551.551a9.861,9.861,0,0,0,13.927,0l-.551-.551A9.082,9.082,0,0,1,1446.887,1102.545Z" transform="translate(-7.317 -36.35)" fill="#e3305a"/>
-    <path id="Pfad_853" data-name="Pfad 853" d="M1451.691,1047.207a7.857,7.857,0,0,0-7.8,6.924h15.609A7.856,7.856,0,0,0,1451.691,1047.207Zm1.512,2.054.434-1.057a9.01,9.01,0,0,1,4.719,4.465l-1.031.492A7.87,7.87,0,0,0,1453.2,1049.261Z" transform="translate(-5.708)" fill="#e3305a"/>
-    <rect id="Rechteck_145" data-name="Rechteck 145" width="14.699" height="1.433" transform="translate(1438.633 1058.605)" fill="#e3305a"/>
-    <path id="Pfad_854" data-name="Pfad 854" d="M1435.2,1070.715v2.189h21.572v-2.189Zm3.959,1.666h-1.625v-1.143h1.625Zm3.82,0h-1.626v-1.143h1.626Zm3.82,0h-1.626v-1.143h1.626Zm3.819,0h-1.625v-1.143h1.625Zm3.82,0h-1.625v-1.143h1.625Z" transform="translate(0 -15.442)" fill="#e3305a"/>
+    <path id="Pfad_850" data-name="Pfad 850" d="M1463.039,1091.939a3.929,3.929,0,0,1-5.547,0l-.551.551a4.709,4.709,0,0,0,6.649,0Z" transform="translate(-14.283 -29.383)" fill="#8b26f4"/>
+    <path id="Pfad_851" data-name="Pfad 851" d="M1451.608,1097.82a7.3,7.3,0,0,0,10.308,0l-.551-.551a6.52,6.52,0,0,1-9.207,0Z" transform="translate(-10.78 -32.884)" fill="#8b26f4"/>
+    <path id="Pfad_852" data-name="Pfad 852" d="M1446.887,1102.545l-.551.551a9.861,9.861,0,0,0,13.927,0l-.551-.551A9.082,9.082,0,0,1,1446.887,1102.545Z" transform="translate(-7.317 -36.35)" fill="#8b26f4"/>
+    <path id="Pfad_853" data-name="Pfad 853" d="M1451.691,1047.207a7.857,7.857,0,0,0-7.8,6.924h15.609A7.856,7.856,0,0,0,1451.691,1047.207Zm1.512,2.054.434-1.057a9.01,9.01,0,0,1,4.719,4.465l-1.031.492A7.87,7.87,0,0,0,1453.2,1049.261Z" transform="translate(-5.708)" fill="#8b26f4"/>
+    <rect id="Rechteck_145" data-name="Rechteck 145" width="14.699" height="1.433" transform="translate(1438.633 1058.605)" fill="#8b26f4"/>
+    <path id="Pfad_854" data-name="Pfad 854" d="M1435.2,1070.715v2.189h21.572v-2.189Zm3.959,1.666h-1.625v-1.143h1.625Zm3.82,0h-1.626v-1.143h1.626Zm3.82,0h-1.626v-1.143h1.626Zm3.819,0h-1.625v-1.143h1.625Zm3.82,0h-1.625v-1.143h1.625Z" transform="translate(0 -15.442)" fill="#8b26f4"/>
   </g>
 </svg>

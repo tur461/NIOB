@@ -92,11 +92,6 @@ li.pro-menu-item{
     .more_nav_icon{
         background: url(../../assets/images/more-icon.svg);
     }
-    .pred_nav_icon{
-        background: url(../../assets/images/PRDT-Icon.png);
-        background-size: contain;
-        background-repeat: no-repeat;
-    }
     i{
         width: 20px;
         height: 20px;
@@ -123,10 +118,9 @@ li.pro-menu-item{
     padding: 5px 35px 5px 20px;
 }
 .sidebar_footer{
-    border-top: 2px solid #22A7F0 !important;
+    border-top: 2px solid #7868E6 !important;
     flex: 0 0 auto;
     padding: 60px 0;
-    display: block;
 }
 .token-language{
     display: flex;
@@ -147,7 +141,7 @@ li.pro-menu-item{
             font-family: $baseFont;
 
             img{
-                margin-right: 10px;
+                margin-right: 10px; width:39px; height: 39px;;
             }
     
         }
@@ -169,7 +163,9 @@ ul.social_links{display: flex; justify-content: space-between;  padding-left: 25
 ul.social_links li{ position: relative; transition: all ease 0.5s;}  
 ul.social_links li:hover img{width: 30px; transform: rotate(360deg); transition: all ease 0.5s;}  
 ul.social_links li img{width: 30px; transition: all ease 0.5s;}  
-
+.pro-sidebar .pro-menu > ul > .pro-sub-menu > .pro-inner-list-item {
+    background-color: #3d0c6f !important;
+}
 
 .pro-sidebar > .pro-sidebar-inner > .pro-sidebar-layout{
     
@@ -185,15 +181,7 @@ ul.social_links li img{width: 30px; transition: all ease 0.5s;}
 .pro-sidebar.small_nav{
     width: 73px;
     min-width: 73px;
-    .token-language, .social_links {
-       opacity: 0;
-       visibility: hidden;
-       @media (max-width: 960px) {
-           opacity: 1;
-           visibility: visible;
-           
-       }
-    }
+
     a{
         opacity: 0;
     }

@@ -14,15 +14,15 @@ const Application = () => {
             // {hasAccess === false ?
                 // <> <Confirmation /> </>
                 // :
-                <>
-                    <LoaderComponent></LoaderComponent>
+                // <>
+                //     <LoaderComponent></LoaderComponent>
                     <Router>
                         <Switch>
                             {/* <AuthGuard path={`${rootName}/auth`} component={PrivateRoutes} /> */}
                             <Route path={`${rootName}/`} component={PublicRoutes} />
                         </Switch>
                     </Router>
-                </>
+                // </>
             // }
         // </>
     )

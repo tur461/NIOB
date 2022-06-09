@@ -16,7 +16,7 @@ const PlanetCard = (props) => {
     status,
   } = props;
 
-  if(!poolInfo) window.location.reload(!1);
+  // if(!poolInfo) window.location.reload(!1);
  
   const [classToggle, setClassToggle] = useState(!1);
 
@@ -52,7 +52,7 @@ const PlanetCard = (props) => {
           </span>
           <span className="coin_title">{planet.lpTokenDetails?.lpTokenName}</span>
         </div>
-        {poolInfo.depositFeeBP && Number(poolInfo.depositFeeBP) === 0 && (
+        {poolInfo?.depositFeeBP && Number(poolInfo?.depositFeeBP) === 0 && (
           <div className="info_about_card_feeinfo">
             {" "}
             <img src={props.fee_icon} alt="" /> No Fee
@@ -181,9 +181,9 @@ const PlanetCard = (props) => {
           </div>
           <div className="funds">
             <div className="count_funds">
-              <span>Deposit Fee : {poolInfo.depositFeeBP ? (Number(poolInfo.depositFeeBP) / 10000) * 100 : 0}%</span>
+              <span>Deposit Fee : {poolInfo?.depositFeeBP ? (Number(poolInfo.depositFeeBP) / 10000) * 100 : 0}%</span>
               <span className="d-block">
-                Harvest Interval: {poolInfo.harvestInterval ? Number(((poolInfo.harvestInterval) / 3600).toFixed(2)) : 0} Hour(s)
+                Harvest Interval: {poolInfo?.harvestInterval ? Number(((poolInfo.harvestInterval) / 3600).toFixed(2)) : 0} Hour(s)
               </span>
             </div>
           </div>

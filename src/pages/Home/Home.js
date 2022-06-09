@@ -553,40 +553,28 @@ const Home = () => {
   return (
     <div className="container_wrap">
       <div className="container container_inside homePage">
-        <div className="updateSection">
-          <img src={UpdateDsk} className="forDesktop" alt="banner" />
-          {/* <img src={UpdateMob} className="forMob" alt="banner" /> */}
-          {/* <Button  title="Read Statement of the team" className="readState_btn" /> */}
-          <a rel="stylesheet" href={"https://prdt.niob.app"} target="_blank" type="button" className="readState_btn" >Go to Prediction Trading</a>
-          {/* <a rel="stylesheet" href={Statement} target="_blank" type="button" className="readState_btn" >Read Statement of the team</a> */}
-        </div>
-
         <Carousel fade {...options}>
           <Carousel.Item>
             <Carousel.Caption>
-              <h3>Welcome to SaitaMask</h3>
+              <h3>Welcome to SAITA Swap</h3>
               <p>
                 Decentralized Exchange and Automatic Liquidity Acquisition Yield
                 Farm running currently on Binance Smart Chain.
               </p>
               <p>
-                If you are new to SaitaMask please also visit our Tutorial Section in
-                our official docs. We’ll teach you step by step you to use SaitaMask Dex
-                and it’s assets.
+                If you are new to SAITA please also visit our Tutorial Section in
+                our official docs. We’ll teach you step by step you to use SAITA
+                Swap and it’s assets.
               </p>
-              <a
-                href="https://docs.niob.finance/tutorial"
-                target={"_blank"}
-                className="captionFooter d-flex justify-content-between align-items-center"
-              >
-                <span>SaitaMask Tutorial</span>
+              <Link className="captionFooter d-flex justify-content-between align-items-center">
+                <span>SAITA Tutorial</span>
                 <span>
                   <Image
                     src={require("../../assets/images/Link-Icon.svg").default}
                     alt="icon"
                   />
                 </span>
-              </a>
+              </Link>
             </Carousel.Caption>
             <Image
               className="bgImage"
@@ -598,26 +586,39 @@ const Home = () => {
           </Carousel.Item>
           <Carousel.Item>
             <Carousel.Caption>
-              <h3>The Docs</h3>
-              <p>
-                All important and technical information about the project
-                "SaitaMask", tokenomics, project roadmap and term explanations can be
-                found in our docs. If you have any questions, please ask them in
-                the official SaitaMask Telegram Channel.
-              </p>
-              <a
-                href="https://docs.saitamask.finance"
-                target={"_blank"}
-                className="captionFooter d-flex justify-content-between align-items-center"
-              >
-                <span>SaitaMask Docs</span>{" "}
+              <h3>First slide label</h3>
+              <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
+              <Link className="captionFooter d-flex justify-content-between align-items-center">
+                <span>SAITA Tutorial</span>{" "}
                 <span>
                   <Image
                     src={require("../../assets/images/Link-Icon.svg").default}
                     alt="icon"
                   />
                 </span>
-              </a>
+              </Link>
+            </Carousel.Caption>
+            <Image
+              className="bgImage"
+              alt="image"
+              src={
+                require("../../assets/images/dashboard-header-bg.jpg").default
+              }
+            />
+          </Carousel.Item>
+          <Carousel.Item>
+            <Carousel.Caption>
+              <h3>First slide label</h3>
+              <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
+              <Link className="captionFooter d-flex justify-content-between align-items-center">
+                <span>SAITA Tutorial</span>{" "}
+                <span>
+                  <Image
+                    src={require("../../assets/images/Link-Icon.svg").default}
+                    alt="icon"
+                  />
+                </span>
+              </Link>
             </Carousel.Caption>
             <Image
               className="bgImage"
@@ -637,12 +638,9 @@ const Home = () => {
               />
               <h3>Start your engine </h3>
               <p>Start your journey or improve your wallet portfolio:</p>
-              <h3>SaitaMask Price: ${niobBusdValue.toFixed(4)}</h3>
-              <Link
-                to={"/trade/exchange"}
-                className="captionFooter d-flex justify-content-between align-items-center"
-              >
-                <span>Buy SaitaMask Token </span> <span className="arrowIcon" />
+              <h3>SAITA Price: $0.50</h3>
+              <Link className="captionFooter d-flex justify-content-between align-items-center">
+                <span>Buy SAITA Token </span> <span className="arrowIcon" />
               </Link>
             </div>
           </Col>
@@ -654,11 +652,8 @@ const Home = () => {
               />
               <h3>Farm Planets</h3>
               <p>Stake LP tokens in Farms and earn up to:</p>
-              <h3>{topFarmApy !== "" ? topFarmApy : "loading.."} % APR</h3>
-              <Link
-                className="captionFooter d-flex justify-content-between align-items-center"
-                to="farmplanets/active"
-              >
+              <h3>1,000 % APY</h3>
+              <Link className="captionFooter d-flex justify-content-between align-items-center" to="farmplanets/active">
                 <span>Start farming</span> <span className="arrowIcon" />
               </Link>
             </div>
@@ -672,10 +667,7 @@ const Home = () => {
               <h3>Decentralized Ref Link </h3>
               <p>Enjoy Referral Rewards from:</p>
               <h3>Farms, Pools Swaps</h3>
-              <Link
-                className="captionFooter d-flex justify-content-between align-items-center"
-                to="/referral"
-              >
+              <Link className="captionFooter d-flex justify-content-between align-items-center" to="/referral">
                 <span>Start inviting friends</span>{" "}
                 <span className="arrowIcon" />
               </Link>
@@ -683,145 +675,134 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="announcements">
-          <Col xl={6} lg={12}>
-            <div className="comnBlk  carousel_caption_announce">
-              <h3 className="fw-strong pb-2">Announcements</h3>
-              <TwitterTimelineEmbed
-                sourceType="profile"
-                screenName="niobfinance"
-                options={{ height: 418 }}
-                theme="dark"
-                noScrollbar={true}
-              />
-            </div>
-          </Col>
-          <Col xl={6} lg={12}>
-            <div className="comnBlk mb-4">
-              <h3>SaitaMask Stats</h3>
-              <ul className="pl-0 niobStats">
-                <li>
-                  <label>Market Cap</label>
-                  <span>${addCommas(marketCap.toFixed(2))}</span>
-                </li>
-                <li>
-                  <label>Total Minted</label>
-                  <span>{addCommas(totalMinted.toFixed(2))}</span>
-                </li>
-                <li>
-                  <label>Total Burned</label>
-                  <span>{addCommas(burnedToken)}</span>
-                </li>
-                <li>
-                  <label>Total Locked Rewards</label>
-                  <span>
-                    <strong className="value">
-                      {farmAndStakeLoader ? (
-                        <Loader
-                          type="Circles"
-                          color="#FFFFFF"
-                          height={15}
-                          width={15}
-                          visible={true}
-                        // timeout={5000} //3 secs
-                        />
-                      ) : (
-                        addCommas(
-                          totalLockedRewards ? totalLockedRewards.toFixed(2) : 0
-                        )
-                      )}
-                    </strong>
-                  </span>
-                </li>
-                <li>
-                  <label> Circulating Supply </label>
-                  <span>
-                    {addCommas((totalMinted - burnedToken).toFixed(2))}
-                  </span>
-                </li>
-                <li>
-                  <label>Max Tx Amount </label>
-                  <span>{addCommas(anchorTotalSupply.toFixed(2))}</span>
-                </li>
-                <li>
-                  <label>New SaitaMask/Block</label>
-                  <span>{niobPerBlock}</span>
-                  {/* <span>{addCommas(anchorPerBlock)}</span> */}
-                </li>
-                <li>
-                  <label>Transfer Tax</label>
-                  <span>{"3%"}</span>
-                </li>
-              </ul>
-            </div>
+          <Col xl={6} lg={12} >
             <div className="comnBlk">
-              <h3>Total Value Locked (TVL)</h3>
-              <div className="totl_value">
-                <h3>
-                  {" "}
-                  {farmAndStakeLoader ? (
-                    <Loader
-                      type="Circles"
-                      color="#FFFFFF"
-                      height={15}
-                      width={15}
-                      visible={true}
-                    // timeout={5000} //3 secs
-                    />
-                  ) : (
-                    addCommas(liquidity ? liquidity.toFixed(2) : 0)
-                  )}
-                </h3>
-                <p className="mb-0">Across all Farms and Pools</p>
+              <div className="headSec">
+                <div className="d-flex justify-content-between align-items-center">
+                  <h3>News & Announcements</h3>
+                  <ul className="d-flex justify-content-between align-items-center mb-0 socialLinks">
+                    <li>
+                      <a>
+                        <Image
+                          src={
+                            require("../../assets/images/twitter-icon.svg")
+                              .default
+                          }
+                        />
+                      </a>
+                    </li>
+                    <li>
+                      <a>
+                        <Image
+                          src={
+                            require("../../assets/images/telegram-icon.svg")
+                              .default
+                          }
+                        />
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                <h5>Tweets by @SaitaSwap</h5>
+              </div>
+              <div className="NiobSwap">
+                <h5>
+                  SaitaSwap<span>@SaitaSwap</span>
+                </h5>
+                <p>
+                  This may probably be the most important and life-changing
+                  Tweet you’ve ever read in your whole life. We proudly present
+                  the most intuitive, secure and sexiest CryptoSwap on the World
+                  Wide Web. Welcome to the feature. Welcome to SaitaSwap.</p>
+
+                <p>This may probably be the most important and life-changing Tweet you’ve ever read in your whole life. We proudly present the most intuitive, secure and sexiest CryptoSwap on the World Wide Web. Welcome to the feature. Welcome to SaitaSwap. We proudly present the most intuitive, secure and sexiest CryptoSwap on the World
+                  Wide Web. Welcome to the feature. Welcome to SaitaSwap.</p>
+                
+
+
+
+             
+              <div className="niobImg tweet_Img">
+                <Image className="tweet_img"
+                  src={
+                    require("../../assets/images/Niob-Header-Logo.svg")
+                      .default
+                  }
+                />
               </div>
             </div>
-          </Col>
-        </Row>
-        <Row className="all_farms">
-          <Col md={12}>
-            <div className="farm_title">
-              <h3>Top Farm Planets</h3>
-              <Button
-                title="All Farms"
-                onClick={() => {
-                  history.push(`${rootName}/farmplanets/active`);
-                }}
-              />
+          </div>
+        </Col>
+        <Col xl={6} lg={12}>
+          <div className="comnBlk mb-4">
+            <h3>SAITA Stats</h3>
+            <ul className="pl-0 niobStats">
+              <li>
+                <label>Market Cap</label>
+                <span>$100,000,001</span>
+              </li>
+              <li>
+                <label>Total Minted</label>
+                <span>38,913,839</span>
+              </li>
+              <li>
+                <label>Total Burned</label>
+                <span>2,587,911 </span>
+              </li>
+              <li>
+                <label>Total Locked Rewards</label>
+                <span>12,438,199 </span>
+              </li>
+              <li>
+                <label> Circulating Supply </label>
+                <span>23,891,243</span>
+              </li>
+              <li>
+                <label>Max Tx Amoung </label>
+                <span>58,373 </span>
+              </li>
+              <li>
+                <label>New ANCHOR/Block Transfer Tax</label>
+                <span> 75 3,0%</span>
+              </li>
+              <li>
+                <label>Transfer Tax</label>
+                <span>3,0%</span>
+              </li>
+            </ul>
+          </div>
+          <div className="comnBlk">
+            <h3>Total Value Locked (TVL)</h3>
+            <div className="totl_value">
+              <h3>$20,000,000.00</h3>
+              <p className="mb-0">Across all Farms and Pools</p>
             </div>
-          </Col>
-
-          {topFarms
-            .sort(function (a, b) {
-              let keyA = a.newApr,
-                keyB = b.newApr;
-              // Compare the 2 farms
-              if (keyA < keyB) return 1;
-              if (keyA > keyB) return -1;
-              return 0;
-            })
-            .filter((farm, index) => index < 3)
-            .map((topFarm, index) => (
-              <Col xl={4} lg={12}>
-                <FarmCard
-                  title={topFarm.symbol0}
-                  title1={topFarm.symbol1}
-                  icon1={
-                    handleIcon(topFarm?.symbol0)
-                      ? handleIcon(topFarm?.symbol0)
-                      : ""
-                  }
-                  icon2={
-                    handleIcon(topFarm?.symbol1)
-                      ? handleIcon(topFarm?.symbol1)
-                      : ""
-                  }
-                  liquidity={`$${topFarm.newLiquidity} `}
-                  apy={`${topFarm.newApr != "NaN" ? topFarm.newApr : "0"} %`}
-                />
-              </Col>
-            ))}
-        </Row>
-      </div>
+          </div>
+        </Col>
+      </Row>
+      <Row className="all_farms">
+        <Col md={12}>
+          <div className="farm_title">
+            <h3>Top Farm Planets</h3>
+            <Button title="All Farms" onClick={() => { history.push(`${rootName}/farmplanets/active`) }} />
+          </div>
+        </Col>
+        <Col xl={4} lg={12}>
+          <FarmCard title="SAITA" title1="BUSD" icon1={NIOB} icon2={BUSD} liquidity="$81,400.000"
+            apy="987.40 %" />
+        </Col>
+        <Col xl={4} lg={12}>
+          <FarmCard title="SAITA" title1="BTCB" icon1={NIOB} icon2={BTCB} liquidity="$98,500.000" apy="1,187.40 %"
+          />
+        </Col>
+        <Col xl={4} lg={12}>
+          <FarmCard title="SAITA" title1="ANCHOR" icon1={NIOB} icon2={ANCHOR} liquidity="$108,450.000"
+            apy="435.90 %" />
+        </Col>
+      </Row>
     </div>
+    </div >
   );
 };
 

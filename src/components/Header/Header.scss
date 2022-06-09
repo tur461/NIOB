@@ -32,20 +32,19 @@
             }
         }
         .header_logo{
-            width: 225px;
-            height: 35px;
-            background: url("../../assets/images/smask-Header-Logo.png") no-repeat;
+            width: 143px;
+            height: 46px;
+            background: url("../../assets/images/SaitaSwap_logo_purple.png") no-repeat;
             display: flex;
-            background-size: contain;
             font-family: $baseFont;
             margin-left: 14px;
             display: inline-block;
             transition: all .25s;
             @media(max-width:991px){
-                background: url("../../assets/images/token_icons/NIOB.svg") no-repeat;
-                width: 38px;
-                height: 37px;
-                background-size: contain;                
+                // background: url("../../assets/images/Niob-Token.svg") no-repeat;
+                width: 140px;
+                height: 46px;
+                background-size: 143px;             
             }
         }
         .for_mobile{
