@@ -117,3 +117,10 @@ export const T_TYPE = {
   AB: 0,
 }
 
+export const WALLET_TYPE = {
+  M_MASK: 'Metamask',
+  B_NANCE: 'BinanceChain',
+  isMMask: w => w === WALLET_TYPE.M_MASK,
+  isBinance: w => w === WALLET_TYPE.B_NANCE,
+}
+

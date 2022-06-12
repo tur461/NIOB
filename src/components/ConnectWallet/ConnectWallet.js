@@ -74,7 +74,7 @@ const ConnectWallet = ({ show, handleClose }) => {
                 }
 
             } else {
-                const account = await ContractServices.isMetamaskInstalled(type);
+                const account = await ContractServices.tryGetAccount(type);
                 if (account) {
                     dispatch(login({ account, walletType }));
                     handleClose(false);

@@ -3,6 +3,9 @@ import { MAIN_CONTRACT_LIST, WETH, BURN_ADDRESS, DEFLATIONNARY_TOKENS, TOKEN_LIS
 import { toast } from "../components/Toast/Toast";
 import { ContractServices } from "./ContractServices";
 import { BigNumber } from "bignumber.js";
+import { rEq, toDec, toFull } from "./utils";
+
+const TokenContract = ContractServices.TokenContract;
 
 const PairContract = (_ => {
   let inst = null;
@@ -31,180 +34,66 @@ const FactoryContract = (_ => {
   }
 })();
 
-const allPairs = async () => {
-  try {
-    const contract = FactoryContract;
-    return await contract.methods.allPairs().call();
-  } catch (error) {
-    return error;
-  }
-}
 
-const getPair = async (token1, token2) => {
-  try {
-    const contract = FactoryContract;
-    return await contract.methods.getPair(token1, token2).call();
-  } catch (error) {
-    return error;
-  }
-};
 
-const getPairFromPancakeFactory = async (token1, token2) => {
-  try {
-    const contract = FactoryContract(pancakeFactory);
-    return await contract.methods.getPair(token1, token2).call();
-  } catch (error) {
-    return error;
-  }
-};
+const allPairs = async _ => FactoryContract().methods.allPairs().call();
 
-const getTokens = async (currentPairAddress) => {
-  // console.log('pair abi for token 0:', MAIN_CONTRACT_LIST.pair);
-  try {
-    const contract = PairContract(currentPairAddress);
+const getPair = async (t1, t2) => FactoryContract().methods.getPair(t1, t2).call();
+
+const getPairFromPancakeFactory = async (t1, t2) => FactoryContract(pancakeFactory).methods.getPair(t1, t2).call();
+
+const getTokens = async (pairAddr) => {
+    const contract = PairContract(pairAddr);
     return Promise.all([contract.methods.token0().call(), contract.methods.token1().call()]);
-  } catch (error) {
-    return error;
-  }
 };
 
-const getTokenZero = async (currentPairAddress) => {
-  try {
-    const contract = PairContract(currentPairAddress);
-    return await contract.methods.token0().call();
-  } catch (error) {
-    return error;
-  }
-};
+const getTokenOne = async (pairAddr) => PairContract(pairAddr).methods.token1().call();
+const getTokenZero = async (pairAddr) => PairContract(pairAddr).methods.token0().call();
 
-const getTokenOne = async (currentPairAddress) => {
-  try {
-    const contract = PairContract(currentPairAddress);
-    return await contract.methods.token1().call();
-  } catch (error) {
-    return error;
-  }
-};
-
-const getAmountsOut = async (amountIn, pair) => {
-  try {
-
-    const decimals1 = await ContractServices.getDecimals(pair[0]);
-    const addAmountIn = amountIn * 10 ** decimals1;
-
-    let calAmount = BigNumber(addAmountIn).toFixed();
-    calAmount.toString();
-    let contract;
-    if ((pair[0].toLowerCase() === TOKEN_LIST[1].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[1].address.toLowerCase())) {
-      contract = RouterContract();
-    } else if (
-      ((pair[0].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[0].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
-      ) && ((pair[1].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
-      )) {
-      contract = RouterContract();
-    }
-    else {
-      contract = RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
-    }
-    console.log('router contract:', contract);
-
-    const result = await contract.methods.getAmountsOut(calAmount, pair).call();
-
-    let pushArray = [];
-    for (let i = 0; i < result.length; i++) {
-      const decimals = await ContractServices.getDecimals(pair[i]);
-      const path = Number(result[i]) / 10 ** decimals
-      pushArray.push(path);
-    }
-    return pushArray;
-  } catch (error) {
-    return error;
-  }
+const _getAmounts = async (amount, pair, isIn) => {
+  let contract = rEq(pair[0], TOKEN_LIST[1].address) || rEq(pair[1], TOKEN_LIST[1].address) ? RouterContract()
+    : (rEq(pair[0], TOKEN_LIST[0].address) || rEq(pair[0], TOKEN_LIST[2].address)) && 
+      (rEq(pair[1], TOKEN_LIST[0].address) || rEq(pair[1], TOKEN_LIST[2].address)) ? RouterContract() 
+      : RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
+    TokenContract.setTo(pair[0]);
+    let dec = await TokenContract.decimals(),
+        decAmountIn = BigNumber(toFull(amount, dec)).toFixed(),
+        res = await (
+          isIn ? 
+          contract.methods.getAmountsIn(decAmountIn, pair) : 
+          contract.methods.getAmountsOut(decAmountIn, pair)
+        ).call();
+    let amounts = [];
+    for (
+      let i = 0; 
+      i < res.length; 
+      TokenContract.setTo(pair[i]), amounts.push(toDec(res[i++], await TokenContract.decimals()))
+    );
+    return amounts;
 }
 
-const getAmountsIn = async (amountOut, pair) => {
-  try {
-    const decimals1 = await ContractServices.getDecimals(pair[0]);
-    const addAmountOut = amountOut * 10 ** decimals1;
+const getAmountsOut = (amountIn, pair) => _getAmounts(amountIn, pair, !1);
 
-    let calAmount = BigNumber(addAmountOut).toFixed();
-    calAmount.toString();
-    let contract;
-    if ((pair[0].toLowerCase() === TOKEN_LIST[1].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[1].address.toLowerCase())) {
-      contract = RouterContract();
-    } else if (
-      ((pair[0].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[0].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
-      ) && ((pair[1].toLowerCase() === TOKEN_LIST[0].address.toLowerCase()) || (pair[1].toLowerCase() === TOKEN_LIST[2].address.toLowerCase())
-      )) {
-      contract = RouterContract();
-    } else {
-      contract = RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
-    }
-    const result = await contract.methods.getAmountsIn(calAmount, pair).call();
-    let pushArray = [];
-    for (let i = 0; i < result.length; i++) {
-      const decimals = await ContractServices.getDecimals(pair[i]);
-      const path = Number(result[i]) / 10 ** decimals
-      pushArray.push(path);
-    }
-    return pushArray;
-  } catch (error) {
-    return error;
-  }
+const getAmountsIn = (amountOut, pair) => _getAmounts(amountOut, pair, !0);
+
+const getReserves = async pairAddr => PairContract(pairAddr).methods.getReserves().call();
+
+const getTotalSupply = async (pairAddr) => {
+    const con = PairContract(pairAddr);
+    return Number(toDec(
+      await con.methods.totalSupply().call(), 
+      await con.methods.decimals().call()
+    ).toFixed(5));
 }
 
-const getReserves = async (pairAddress) => {
-  try {
-    const contract = PairContract(pairAddress);
-    return await contract.methods.getReserves().call();
-  } catch (error) {
-    return error;
-  }
-}
-
-const getTotalSupply = async (pairAddress) => {
-  try {
-    const contract = PairContract(pairAddress);
-    const decimals = await contract.methods.decimals().call();
-    let result = await contract.methods.totalSupply().call();
-    result = (Number(result) / 10 ** decimals).toFixed(5);
-    return Number(result);
-
-  } catch (error) {
-    return error;
-  }
-}
-
-const getTokenStaked = async (pairAddress) => {
-  try {
-    const contract = ContractServices.TokenContract.instance(pairAddress);
-    const decimals = await contract.methods.decimals().call();
-
-    let result = await contract.methods.balanceOf(MAIN_CONTRACT_LIST.farm.address).call();
-    result = (Number(result) / 10 ** decimals).toFixed(5);
-    return Number(result);
-  } catch (error) {
-    console.log("Error:", error);
-    return error;
-  }
+const getTokenStaked = async (pairAddr) => {
+  TokenContract.setTo(pairAddr);
+  return TokenContract.hasInst() ? Number((await TokenContract.balanceOf(MAIN_CONTRACT_LIST.farm.address)).toFixed(5)) : 0;
 };
 
 const getBurnedToken = async () => {
-  try {
-    const contract = ContractServices.TokenContract.instance(MAIN_CONTRACT_LIST.anchorNew.address);
-    if (contract) {
-      const decimals = await contract.methods.decimals().call();
-
-      let result = await contract.methods.balanceOf(BURN_ADDRESS).call();
-      result = (Number(result) / 10 ** decimals).toFixed(2);
-      return Number(result);
-    }
-    return 0;
-
-  } catch (error) {
-    console.log("Error:", error);
-    return error;
-  }
+  TokenContract.setTo(MAIN_CONTRACT_LIST.anchorNew.address);
+  return TokenContract.hasInst() ? Number((await TokenContract.balanceOf(BURN_ADDRESS)).toFixed(2)) : 0;
 };
 
 const addLiquidity = async (data) => {
@@ -223,7 +112,7 @@ const addLiquidity = async (data) => {
       } = data;
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
 
       const gas = await contract.methods.addLiquidity(
         tokenA,
@@ -277,7 +166,7 @@ const addLiquidityETH = async (data) => {
       valueOfExact = await web3.utils.toHex(valueOfExact);
 
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
       // valueOfExact = await web3.utils.toHex(valueOfExact);
 
       const gas = await contract.methods.addLiquidityETH(
@@ -328,7 +217,7 @@ const removeLiquidityWithPermit = async (data) => {
       } = data;
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
 
       if (checkSignature) {
 
@@ -419,7 +308,7 @@ const removeLiquidityETHWithPermit = async (data) => {
       value = '0';
 
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
 
       if (checkSignature) {
 
@@ -573,7 +462,7 @@ const swapExactTokensForTokens = async (data, a1, a2) => {
 
     const web3 = ContractServices.Web_3();
     const contract = RouterContract();
-    const gasPrice = await ContractServices.calculateGasPrice();
+    const gasPrice = await ContractServices.getGasPrice();
     const checkDeflationnaryTokens = DEFLATIONNARY_TOKENS.find(element => element.toLowerCase() === a1.toLowerCase());
 
     if (checkDeflationnaryTokens) {
@@ -659,7 +548,7 @@ const swapTokensForExactTokens = async (data) => {
 
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
       const gas = await contract.methods.swapTokensForExactTokens(
         amountIn,
         amountOutMin,
@@ -703,7 +592,7 @@ const swapExactETHForTokens = async (data, handleBalance) => {
       } = data;
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
       const gas = await contract.methods.swapExactETHForTokens(
         amountOutMin,
         path,
@@ -746,7 +635,7 @@ const swapETHForExactTokens = async (data) => {
       } = data;
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
       value = await web3.utils.toHex(value);
       console.log("Checking here:", data);
       const gas = await contract.methods.swapETHForExactTokens(
@@ -1165,7 +1054,7 @@ const swapTokensForExactETH = async (data) => {
       } = data;
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
       value = await web3.utils.toHex(value);
 
       const gas = await contract.methods.swapTokensForExactETH(
@@ -1211,7 +1100,7 @@ const swapExactTokensForETH = async (data, a1, a2) => {
       } = data;
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
-      const gasPrice = await ContractServices.calculateGasPrice();
+      const gasPrice = await ContractServices.getGasPrice();
       value = await web3.utils.toHex(value);
 
       const checkDeflationnaryToken = DEFLATIONNARY_TOKENS.find(element => element.toLowerCase() == a1.toLowerCase());

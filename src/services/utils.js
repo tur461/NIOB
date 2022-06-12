@@ -3,6 +3,8 @@ import { BigNumber } from "bignumber.js"
 
 export const zero = v => !!!v;
 
+export const contains = (s, c) => s.indexOf(c) > -1;
+
 export const isDefined = x => !!x;
 
 export const isBnb = x => x === 'BNB';

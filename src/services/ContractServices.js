@@ -1,60 +1,110 @@
+import { 
+  WALLET_TYPE, 
+  NETWORK_LINK, 
+  NETWORK_RPC_URL, 
+  NETWORK_CHAIN_NAME, 
+  NETWORK_NATIVE_CURRENCY_NAME, 
+  NETWORK_NATIVE_CURRENCY_SYMBOL, 
+  NETWORK_NATIVE_CURRENCY_DECIMALS, 
+} from '../constant'
 import Web3 from "web3";
-import TOKEN_ABI from "../assets/ABI/tokenContract.ABI.json";
+import { contains, toDec } from "./utils";
 import { toast } from "../components/Toast/Toast";
-import { NETWORK_CHAIN_NAME, NETWORK_LINK, NETWORK_NATIVE_CURRENCY_DECIMALS, NETWORK_NATIVE_CURRENCY_NAME, NETWORK_NATIVE_CURRENCY_SYMBOL, NETWORK_RPC_URL } from '../constant'
+import TOKEN_ABI from "../assets/ABI/tokenContract.ABI.json";
 import WalletConnectProvider from '@walletconnect/web3-provider'
 
 const NETWORK_CHAIN_ID = '0x61'; // 97
 
-let web3Object;
-let contractOjbect;
-let currentContractAddress;
-let tokenContractObject;
-let currentTokenAddress;
-let walletTypeObject = 'Metamask';
-let walletConnectProvider;
+let defaultWalletType = WALLET_TYPE.M_MASK;
 
-//only for lp tokens
-const convertToDecimals = async (value) => {
-  const decimals = 18;
-  return Number(value) / 10 ** decimals;
+const Web_3 = (_ => {
+  let _web3 = null;
+  return _ => {
+    if (_web3) return _web3;
+    const { ethereum, web3, BinanceChain } = window;
+    _web3 = WALLET_TYPE.isMMask(defaultWalletType) ? (ethereum && ethereum.isMetaMask ? new Web3(ethereum) :
+    ethereum ?  new Web3(ethereum) : web3 ? new Web3(web3.currentProvider) : null ) :
+    BinanceChain ? new Web3(BinanceChain) : null;
+    return _web3 ? _web3 : toast.error("You have to install Wallet!");
+  }
+})()
+
+const getContract = (_ => {
+  return (a, abi) => {
+    let w = Web_3();
+    return new w.eth.Contract(abi, a);
+  }
+})();
+
+const getGasPrice = _ => Web_3().eth.getGasPrice();
+const getDefaultAccount = async _ => (await Web_3().eth.getAccounts())[0];
+
+const TokenContract = (_ => {
+  let _inst = {};
+  let inst = null,p=[];
+  
+  const gas = (m, p) => inst.methods[m](...p).estimateGas();
+  const getInstance = a => a in _inst ? _inst[a] : (_inst[a] = new (Web_3()).eth.Contract(TOKEN_ABI, a));
+  return {
+    setTo: a => inst = getInstance(a),
+    get inst() { return inst},
+    hasInst: _ => !!inst,
+    name: _ => inst.methods['name']().call(),
+    symbol: _ => inst.methods['symbol']().call(),
+    decimals: _ => inst.methods['decimals']().call(),
+    allowanceOf: addr => inst.methods['allowance'](addr).call(),
+    balanceOf: async addr => toDec(
+      await inst.methods['balanceOf'](addr).call(), 
+      await inst.methods['decimals']().call()
+    ),
+    totalSupply: async _ => toDec(
+      await inst.methods['totalSupply']().call(), 
+      await inst.methods['decimals']().call()
+    ),
+    approve: async (spender, amount) => {
+      p = [spender, amount]; return inst.methods['approve'](...p).send({gasPrice: await gas('approve', p)});
+    },
+  }
+})();
+
+const setWalletType = w => defaultWalletType = w;
+// const getLiquidity100Value = async (tAddr, addr) => TokenContract.setTo(tAddr).methods.balanceOf(addr).call();
+const getPairDecimals = (a0, a1) => {
+  TokenContract.setTo(a0);
+  let dec0 = TokenContract.decimals();
+  TokenContract.setTo(a1);
+  let dec1 = TokenContract.decimals();
+  return Promise.all([dec0, dec1]);
 }
 
-const isMetamaskInstalled = async (type) => {
-  //Have to check the ethereum binding on the window object to see if it's installed
-  const { ethereum, web3 } = window;
-  const result = Boolean(ethereum && ethereum.isMetaMask);
-  walletTypeObject = 'Metamask';
-  if (result) {
-    //metamask
-    try {
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      return accounts[0];
-    } catch (err) {
-      toast.error(err.message);
-      return false;
-    }
-  } else if (ethereum) {
-    //trust wallet
-    try {
-      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-      return accounts[0];
-    } catch (err) {
-      toast.error(err.message);
-      return false;
-    }
-  } else if (web3) {
-    //trustwallet
-    const accounts = await web3.eth.getAccounts();
-    return accounts[0];
-  } else {
-    if (type) {
-      toast.error(`Install ${type} extension first!`);
-    }
-    
-    return false;
-  }
 
+
+const getBNBBalance = async addr => {
+    const web3 = Web_3();
+    let r = await web3.eth.getBalance(addr);
+    r = (Number(r) / 10 ** 18).toFixed(5);
+    return Number(r);
+}
+
+const web3ErrorHandle = async (err) => {
+  let msg = 
+  contains(err.message, 'Rejected') ?  'User denied the transaction!' :
+  contains(err.message, 'User denied') ? 'User denied the transaction!' :
+  contains(err.message, 'INSUFFICIENT_A') ? 'Insufficient value of first token!' :
+  contains(err.message, 'INSUFFICIENT_B') ? 'Insufficient value of second token!' :
+  'Transaction Reverted!';
+  console.log(err, err.message);
+  return msg;
+}
+
+const tryGetAccount = async type => {
+  let { ethereum, web3, r } = window;
+  try { 
+    r = ethereum && ethereum.isMetaMask ? (await ethereum.request({ method: 'eth_requestAccounts' }))[0] 
+  : web3 ? (await web3.eth.getAccounts())[0] 
+  : type ? toast.error(`Install ${type} extension first!`) ? null : null : null;
+  } catch(e) {r=null}
+  return r;
 }
 
 
@@ -63,37 +113,36 @@ const isBinanceChainInstalled = async () => {
   //Have to check the ethereum binding on the window object to see if it's installed
   const { BinanceChain } = window;
   if (BinanceChain) {
-    walletTypeObject = 'BinanceChain';
+    defaultWalletType = WALLET_TYPE.B_NANCE;
     try {
       const accounts = await BinanceChain.request({ method: 'eth_requestAccounts' });
       return accounts[0];
     } catch (err) {
       toast.error(err.message);
-      return false;
+      return !1;
     }
   } else {
     toast.error("Install BinanceChain extension first!");
-    return false;
+    return !1;
   }
 }
 
 const walletWindowListener = async () => {
   const { BinanceChain, ethereum } = window;
-  if (walletTypeObject === 'Metamask') {
+  if (WALLET_TYPE.isMMask(defaultWalletType)) {
     const result = Boolean(ethereum && ethereum.isMetaMask);
     if (result) {
-      console.log('req chain id:', NETWORK_CHAIN_ID, 'eth chainId:', ethereum.chainId);
-      if (ethereum.chainId !== NETWORK_CHAIN_ID) {
+      if (ethereum.chainId !== NETWORK_CHAIN_ID)
         try {
-          const chain = await ethereum.request({
+          await ethereum.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: NETWORK_CHAIN_ID }],
           });
-        } catch (error) {
-          console.log('metamask error', error);
-          if (error?.code === 4902) {
+        } catch (er) {
+          console.log('metamask error', er);
+          if (er?.code === 4902)
             try {
-              const addChain = await ethereum.request({
+              await ethereum.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
                   chainId: NETWORK_CHAIN_ID,
@@ -108,29 +157,26 @@ const walletWindowListener = async () => {
                 }],
               });
               window.location.reload();
-            } catch (error) { }
-          }
-        }
+            } catch (e) { }
 
       }
 
       ethereum.on('chainChanged', async (chainId) => {
-        if (chainId !== NETWORK_CHAIN_ID) {
-          // toast.error('Select Binance Smart Chain Mainnet Network in wallet!')
+        if (chainId !== NETWORK_CHAIN_ID)
           try {
-            const chain = await ethereum.request({
+            await ethereum.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId: NETWORK_CHAIN_ID }],
             });
-          } catch (error) {
-            console.log('metamask error', error);
-            if (error?.code === 4902) {
+          } catch (er) {
+            console.log('metamask error', er);
+            if (er?.code === 4902)
               try {
-                const addChain = await ethereum.request({
+                await ethereum.request({
                   method: 'wallet_addEthereumChain',
                   params: [{
-                    chainId: await window.ethereum.chainId,
                     chainName: NETWORK_CHAIN_NAME,
+                    chainId: await window.ethereum.chainId,
                     nativeCurrency: {
                       name: NETWORK_NATIVE_CURRENCY_NAME,
                       symbol: NETWORK_NATIVE_CURRENCY_SYMBOL,
@@ -140,215 +186,29 @@ const walletWindowListener = async () => {
                     blockExplorerUrls: [NETWORK_LINK]
                   }],
                 });
-              } catch (error) { }
+              } catch (e) {}
             }
-          }
-        }
       });
     }
 
   }
-  if (walletTypeObject === 'BinanceChain') {
+  if (WALLET_TYPE.isBinance(defaultWalletType)) {
     if (BinanceChain) {
-      BinanceChain.on('chainChanged', async (chainId) => {
-        if (chainId !== NETWORK_CHAIN_ID) {
-          // toast.error('Select Binance Smart Chain Mainnet Network in wallet!')
+      BinanceChain.on('chainChanged', async chainId => {
+        if (chainId !== NETWORK_CHAIN_ID)
           try {
-            const chain = await BinanceChain.request({
+            await BinanceChain.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId: NETWORK_CHAIN_ID }],
             });
           } catch (error) {
             console.log('binance error', error)
           }
-        }
       });
     }
   }
 }
 
-const Web_3 = _ => {
-  if (web3Object) return web3Object;
-  
-  const { ethereum, web3, BinanceChain } = window;
-  web3Object = walletTypeObject === 'Metamask' ? (ethereum && ethereum.isMetaMask ? new Web3(ethereum) :
-  ethereum ?  new Web3(ethereum) : web3 ? new Web3(web3.currentProvider) : null ) :
-  BinanceChain ? new Web3(BinanceChain) : null;
-  return web3Object ? web3Object : toast.error("You have to install Wallet!");
-};
-
-const getContract = (_ => {
-  return (a, abi) => {
-    let w = Web_3();
-    return new w.eth.Contract(abi, a);
-  }
-})();
-
-class TokenContract {
-  _instance = null;
-  
-  static instance(addr) {
-    let w = Web_3();
-    this._instance = this._instance ? this._instance : new w.eth.Contract(TOKEN_ABI, addr);
-    return this._instance;
-  }
-
-}
-
-const calculateGasPrice = async () => {
-  const web3 = Web_3();
-  return await web3.eth.getGasPrice();
-}
-
-const getDefaultAccount = async () => {
-  const web3 = Web_3();
-  const accounts = await web3.eth.getAccounts();
-  return accounts[0];
-}
-
-const approveToken = async (address, value, mainContractAddress, tokenAddress) => {
-  try {
-    const gasPrice = await calculateGasPrice();
-    const contract = TokenContract.instance(tokenAddress);
-    //calculate estimate gas limit
-    const gas = await contract.methods.approve(mainContractAddress, value).estimateGas({ from: address });
-
-    return await contract.methods
-      .approve(mainContractAddress, value)
-      .send({ from: address, gasPrice, gas });
-  } catch (error) {
-    return error;
-  }
-};
-
-const allowanceToken = async (tokenAddress, mainContractAddress, address) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    return await contract.methods
-      .allowance(address, mainContractAddress).call();
-  } catch (error) {
-    return error;
-  }
-}
-
-const getTokenBalance = async (tokenAddress, address) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    const decimals = await contract.methods.decimals().call();
-
-    let result = await contract.methods.balanceOf(address).call();
-    result = ((Number(result) / 10 ** decimals)).toFixed(5);
-    return Number(result);
-  } catch (error) {
-    console.log("Error:", error);
-    return error;
-  }
-};
-const getTokenBalanceFull = async (tokenAddress, address) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    const decimals = await contract.methods.decimals().call();
-
-    let result = await contract.methods.balanceOf(address).call();
-    result = result / 10 ** decimals;
-
-    return result;
-  } catch (error) {
-    console.log("Error:", error);
-    return error;
-  }
-};
-
-const getDecimals = async (tokenAddress) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    return await contract.methods.decimals().call();
-  } catch (error) {
-    return error;
-  }
-};
-
-const getPairDecimals = async (addr0, addr1) => {
-  try {
-    const c1 = TokenContract.init(addr0);
-    const c2 = TokenContract.init(addr1);
-    return Promise.all([c1.methods.decimals().call(), c2.methods.decimals().call()]);
-  } catch (error) {
-    return error;
-  }
-};
-
-const getTokenName = async (tokenAddress) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    return await contract.methods.name().call();
-  } catch (error) {
-    return error;
-  }
-}
-
-const getTokenSymbol = async (tokenAddress) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    return await contract.methods.symbol().call();
-  } catch (error) {
-    return error;
-  }
-}
-
-const getBNBBalance = async (address) => {
-  try {
-    const web3 = Web_3();
-    let result = await web3.eth.getBalance(address);
-    result = (Number(result) / 10 ** 18).toFixed(5);
-    return Number(result);
-  } catch (error) {
-    return error;
-  }
-}
-
-const setWalletType = async (walletType) => {
-  walletTypeObject = walletType;
-}
-
-const getTotalSupply = async (tokenAddress) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-    let result = await contract.methods.totalSupply().call();
-    const decimals = await contract.methods.decimals().call();
-    result = Number(result) / (10 ** Number(decimals));
-    return result;
-  } catch (error) {
-    return error;
-  }
-}
-
-const web3ErrorHandle = async (err) => {
-  let message = 'Transaction Reverted!';
-  if (err.message.indexOf('Rejected') > -1) {
-    message = 'User denied the transaction!';
-  } else if (err.message && err.message.indexOf('User denied') > -1) {
-    message = 'User denied the transaction!';
-  } else if (err.message && err.message.indexOf('INSUFFICIENT_B') > -1) {
-    message = 'Insufficient value of second token!';
-  } else if (err.message && err.message.indexOf('INSUFFICIENT_A') > -1) {
-    message = 'Insufficient value of first token!';
-  } else {
-    console.log(err, err.message);
-  }
-  return message;
-}
-
-const getLiquidity100Value = async (tokenAddress, address) => {
-  try {
-    const contract = TokenContract.instance(tokenAddress);
-
-    return await contract.methods.balanceOf(address).call();
-  } catch (error) {
-    console.log("Error:", error);
-    return error;
-  }
-};
 
 const callWeb3ForWalletConnect = async (provider) => {
   const provide = new WalletConnectProvider({
@@ -359,7 +219,7 @@ const callWeb3ForWalletConnect = async (provider) => {
     },
     chainId: 97,
     network: "binance",
-    qrcode: true,
+    qrcode: !0,
     qrcodeModalOptions: {
       mobileLinks: [
         "rainbow",
@@ -375,8 +235,8 @@ const callWeb3ForWalletConnect = async (provider) => {
     }
   });
   const results = await provide.enable();
-  walletConnectProvider = provide;
-  web3Object = new Web3(provide);
+  // walletConnectProvider = provide;
+  // web3Object = new Web3(provide);
 
   // return instance;
 }
@@ -385,27 +245,17 @@ const callWeb3ForWalletConnect = async (provider) => {
 //exporting functions
 export const ContractServices = {
   Web_3,
-  TokenContract,
   getContract,
-  getDecimals,
-  approveToken,
-  getTokenName,
+  getGasPrice,
+  TokenContract,
   getBNBBalance,
+  tryGetAccount,
   setWalletType,
-  getTokenSymbol,
-  allowanceToken,
-  getTotalSupply,
-  getTokenBalance,
   getPairDecimals,
   web3ErrorHandle,
-  walletTypeObject,
-  convertToDecimals,
-  calculateGasPrice,
+  defaultWalletType,
   getDefaultAccount,
-  getTokenBalanceFull,
-  isMetamaskInstalled,
   walletWindowListener,
-  getLiquidity100Value,
   isBinanceChainInstalled,
   callWeb3ForWalletConnect
 }

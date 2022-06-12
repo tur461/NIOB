@@ -15,6 +15,8 @@ const useCommonTrade = (props) => {
     const common = useCommon(s => s);
     const P = useSelector(s => s.persist);
 
+    const TC = ContractServices.TokenContract;
+
 
     const handleShow1 = () => common.setShow1(!0);
     const handleClose1 = () => common.setShow1(!1);
@@ -48,7 +50,10 @@ const useCommonTrade = (props) => {
         addr.push(address);
         dsp(startLoading())
         if (isBnb(address)) bal = await ContractServices.getBNBBalance(P.priAccount);
-        else bal = await ContractServices.getTokenBalance(address, P.priAccount);
+        else {
+            TC.setTo(address);
+            bal = await TC.balanceOf(P.priAccount);
+        }
         common.setTokenCurrency(symbol, selected);
         common.setToken(token, selected);
         common.setTokenBalance(bal, selected);
@@ -80,10 +85,13 @@ const useCommonTrade = (props) => {
 
             if (isNonZero(cPair)) {
                 common.setCurrentPair(cPair);
-                const dec1 = await ContractServices.getDecimals(addr[0]);
-                const dec2 = await ContractServices.getDecimals(addr[1]);
+                TC.setTo(addr[0]);
+                const dec1 = await TC.decimals();
+                TC.setTo(addr[1]);
+                const dec2 = await TC.decimals();
                 const reserves = await ExchangeService.getReserves(cPair);
-                const lpTokenBalance = await ContractServices.getTokenBalance(cPair, P.priAccount);
+                TC.setTo(cPair);
+                const lpTokenBalance = await TC.balanceOf(P.priAccount);
                 calcLiqPercentForSelCurrency(reserves, dec1, dec2, lpTokenBalance, cPair);
                 common.setIsFirstLP(!1);
                 common.showPoolShare(!0);
@@ -109,7 +117,7 @@ const useCommonTrade = (props) => {
         let pairAddr = await ExchangeService.getPair(addr[tt-1], addr[tgl(tt)-1]);
         if (pairAddr) {
             res = tt-1 ? 
-            await ExchangeService.getAmountsIn(amt, [addr[0], addr[1]]) : 
+            await ExchangeService.getAmountsIn(amt, addr) : 
             await ExchangeService.getAmountsOut(amt, addr);
             addrForPriceImpact = addr.map(a => a);
         } else {
@@ -126,7 +134,7 @@ const useCommonTrade = (props) => {
         if (res.length > 0) {
             common.setExact(tt);
             finalAmount = tt-1 ? res[0] : res[res.length - 1];
-            finalAmount = Number(finalAmount.toFixed(5));
+            finalAmount = Number(Number(finalAmount).toFixed(8));
             const ratio = Number(amt) / finalAmount;
             common.setSharePoolValue(ratio.toFixed(10));
             let out = toBgFix(finalAmount * 10 ** common[`token${tgl(tt)}`].decimals);
@@ -146,8 +154,10 @@ const useCommonTrade = (props) => {
         const tk0 = await ExchangeService.getTokenZero(p);
         const tk1 = await ExchangeService.getTokenOne(p);
         const reserves = await ExchangeService.getReserves(p);
-        const token0Decimal = await ContractServices.getDecimals(tk0);
-        const token1Decimal = await ContractServices.getDecimals(tk1);
+        TC.setTo(tk0);
+        const token0Decimal = await TC.decimals();
+        TC.setTo(tk1);
+        const token1Decimal = await TC.decimals();
         
         if (rDefined(tk0, reserves)) {
             let a = rEq(tAddr, tk0) ? 
@@ -170,7 +180,8 @@ const useCommonTrade = (props) => {
     }
 
     const hasBalance = async (amount, addr) => {
-        let b = await ContractServices.getTokenBalance(addr, P.priAccount);
+        TC.setTo(addr);
+        let b = await TC.balanceOf(P.priAccount);
         return b >= amount;
     }
 
@@ -218,11 +229,13 @@ const useCommonTrade = (props) => {
                 apvd = await checkForAllowance(a, tgl(tt));
             }
         }
+        console.log('d:', d);
         
         if(tt-1 && await hasBalance(amt[1], tkn2.address)) {
             common.setDisabled(!0);
-            common.setTokenValue('', 1);
+            common.setTokenValue(amt[1], 1);
             common.setBtnText(`Insufficient ${tkn2.symbol} balance`);
+            common.setFetching(!1);
             return;
         }
         common.setTokenValue(amt[1], tgl(tt));
@@ -239,11 +252,12 @@ const useCommonTrade = (props) => {
             if (isNonZero(cPair)) {
                 const reserves = await ExchangeService.getReserves(cPair);
                 const ratio = await calculateLiquidityPercentage(reserves, ...amt);
+                TC.setTo(cPair);
                 common.setDisabled(!1);
                 common.setIsFirstLP(!1);
                 common.setCurrentPair(cPair);
                 common.setSharePoolValue(ratio);
-                common.setLpTokenBalance(await ContractServices.getTokenBalance(cPair, P.priAccount));
+                common.setLpTokenBalance(await TC.balanceOf(P.priAccount));
             } else {
                 common.setDisabled(!0);
                 common.setIsFirstLP(!0);
@@ -265,12 +279,8 @@ const useCommonTrade = (props) => {
         let tkn = common[`token${tt}`];
         try {
             dsp(startLoading());
-            const r = await ContractServices.approveToken(
-            P.priAccount,
-            VAL.MAX_256,
-            MAIN_CONTRACT_LIST.router.address,
-            tkn.address
-            );
+            TC.setTo(tkn.address);
+            const r = await TC.approve(MAIN_CONTRACT_LIST.router.address, VAL.MAX_256);
             if (rEq(4001, r.code)) toast.error("User denied transaction signature.");
             else {
                 common.setTokenApproved(!0, tt);
@@ -292,7 +302,10 @@ const useCommonTrade = (props) => {
             // .002 BNB is reserved for saving gas fee 
         if (isBnb(addr)) handleInput(await ContractServices.getBNBBalance(P.priAccount) - 0.1, tt, !1);
         // __ amount of particular token must be reserved for saving -needs to be fixed
-        else handleInput(await ContractServices.getTokenBalance(addr, P.priAccount), tt, !1);
+        else {
+            TC.setTo(addr);
+            handleInput(await TC.balanceOf(P.priAccount), tt, !1);
+        }
         common.setIsMax(!1);
     }
 
@@ -314,7 +327,10 @@ const useCommonTrade = (props) => {
         if(!P.isConnected) return !!toast.error("Connect wallet first!");
         let tkn = common[`token${tt}`];
         if (!isBnb(tkn.address)) {
-            let allowance = await ContractServices.allowanceToken(tkn.address, MAIN_CONTRACT_LIST.router.address, P.priAccount);
+            TC.setTo(tkn.address);
+            console.log('checking allowance');
+            let allowance = await TC.allowanceOf(MAIN_CONTRACT_LIST.router.address);
+            console.log('allowance:', allowance);
             allowance = toDec(allowance, tkn.decimals);
             if (amount > allowance) {
                 common.setTokenApproved(!1, tt);
@@ -328,7 +344,10 @@ const useCommonTrade = (props) => {
 
     const checkBalance = async addr => {
         if (isBnb(addr)) return await ContractServices.getBNBBalance(P.priAccount);
-        else return await ContractServices.getTokenBalance(addr, P.priAccount); 
+        else {
+            TC.setTo(addr)
+            return await TC.balanceOf(P.priAccount);
+        } 
     }
 
     const handleBalance = async _ => {
@@ -340,8 +359,8 @@ const useCommonTrade = (props) => {
     async function calculateLiquidityPercentage(reserve, amount0, amount1) {
         const r0 = toDec(reserve._reserve0, common.token1.decimals);
         const r1 = toDec(reserve._reserve1, common.token2.decimals);
-
-        let _totalSupply = await ContractServices.getTotalSupply(common.currentPair);
+        TC.setTo(common.currentPair);
+        let _totalSupply = await TC.totalSupply();
         let ratio = common.lpTokenBalance / _totalSupply;
         const t0 = (ratio * r0).toFixed(5);
         const t1 = (ratio * r1).toFixed(5);
@@ -359,7 +378,8 @@ const useCommonTrade = (props) => {
     const calcLiqPercentForSelCurrency = async (reserve, dec1, dec2, lpBalance, cPair) => {
         const r0 = toDec(reserve._reserve0, dec1);
         const r1 = toDec(reserve._reserve1, dec2);
-        let _totalSupply = await ContractServices.getTotalSupply(cPair);
+        TC.setTo(cPair);
+        let _totalSupply = await TC.totalSupply(cPair);
         let ratio = lpBalance / _totalSupply;
         const t0 = (ratio * r0).toFixed(5);
         const t1 = (ratio * r1).toFixed(5);
@@ -385,8 +405,10 @@ const useCommonTrade = (props) => {
         const reserve = await ExchangeService.getReserves(cPair);
         const t0 = await ExchangeService.getTokenZero(cPair);
         const t1 = await ExchangeService.getTokenOne(cPair);
-        const dec0 = await ContractServices.getDecimals(t0);
-        const dec1 = await ContractServices.getDecimals(t1);
+        TC.setTo(t0);
+        const dec0 = await TC.decimals();
+        TC.setTo(t1);
+        const dec1 = await TC.decimals();
         if (rEq(t0, addrForPriceImpact[0])) {
             const res = Number(reserve[0]) / (10 ** dec0);
 

@@ -20,7 +20,7 @@ const useLiquidity = (props) => {
         if (!P.isConnected) cTrade.handleShow1();
         else {
             let addr, e=null;
-            if (P.walletType === "Metamask") addr = await ContractServices.isMetamaskInstalled('');
+            if (P.walletType === "Metamask") addr = await ContractServices.tryGetAccount('');
             if (P.walletType === "BinanceChain") addr = await ContractServices.isBinanceChainInstalled();
             if (!rEq(P.priAccount, addr)) e = 'Mismatch wallet addr!';
             else if (!isDefined(common.token1.address)) e = 'Select 1st token!';

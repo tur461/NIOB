@@ -30,7 +30,7 @@ const Header = props => {
 
     const addListeners = async _ => {
         let addr = P.walletType === 'Metamask' ? 
-        await ContractServices.isMetamaskInstalled('') : P.walletType === 'BinanceChain' ?
+        await ContractServices.tryGetAccount('') : P.walletType === 'BinanceChain' ?
         await ContractServices.isBinanceChainInstalled() : null;
         ContractServices.walletWindowListener();
         addr &&

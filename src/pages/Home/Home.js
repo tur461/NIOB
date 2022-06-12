@@ -120,7 +120,7 @@ const Home = () => {
   }, [isUserConnected]);
 
   const init = async () => {
-    const res = await ContractServices.isMetamaskInstalled();
+    const res = await ContractServices.tryGetAccount();
 
     if (isUserConnected && res) {
       getMarketCap();
