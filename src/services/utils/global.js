@@ -1,4 +1,4 @@
-import { ADDRESS } from "../constant";
+import { ADDRESS } from "../../constant";
 import { BigNumber } from "bignumber.js"
 
 export const zero = v => !!!v;

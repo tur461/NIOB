@@ -3,7 +3,7 @@ import { MAIN_CONTRACT_LIST, WETH, BURN_ADDRESS, DEFLATIONNARY_TOKENS, TOKEN_LIS
 import { toast } from "../components/Toast/Toast";
 import { ContractServices } from "./ContractServices";
 import { BigNumber } from "bignumber.js";
-import { rEq, toDec, toFull } from "./utils";
+import { rEq, toDec, toFull } from "./utils/global";
 
 const TokenContract = ContractServices.TokenContract;
 
@@ -1175,6 +1175,8 @@ const swapExactTokensForETH = async (data, a1, a2) => {
     }
   });
 }
+
+const getDecimalPair = tkn => tkn.map(async t => { TokenContract.setTo(t); return await TokenContract.decimals();})
 //exporting functions
 export const ExchangeService = {
   getPair,
@@ -1186,6 +1188,7 @@ export const ExchangeService = {
   getTokenZero,
   addLiquidity,
   getAmountsOut,
+  getDecimalPair,
   getTotalSupply,
   getTokenStaked,
   getBurnedToken,

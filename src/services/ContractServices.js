@@ -8,7 +8,7 @@ import {
   NETWORK_NATIVE_CURRENCY_DECIMALS, 
 } from '../constant'
 import Web3 from "web3";
-import { contains, toDec } from "./utils";
+import { contains, toDec } from "./utils/global";
 import { toast } from "../components/Toast/Toast";
 import TOKEN_ABI from "../assets/ABI/tokenContract.ABI.json";
 import WalletConnectProvider from '@walletconnect/web3-provider'

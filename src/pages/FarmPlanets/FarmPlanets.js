@@ -18,7 +18,7 @@ import { ReferralsServices } from "../../services/ReferralsServices";
 import WithDrawLPToken from "../../components/GetLPToken/WithDrawLPToken";
 import { Container, Col, Row, Form, InputGroup, FormControl } from "react-bootstrap";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
-import { isAddr, isZero, zero } from "../../services/utils";
+import { isAddr, isZero, zero } from "../../services/utils/global";
 import { toast } from "../../components/Toast/Toast";
 import Active from "./Active";
 import Inactive from "./Inactive";

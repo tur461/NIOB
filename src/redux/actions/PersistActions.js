@@ -96,7 +96,7 @@ export const checkUserLpTokens = (payload) => {
   };
 }
 
-export const savereffralAddress = (address) => {
+export const saveReferralAddress = (address) => {
   return {
     type: actionTypes.SAVE_REFFRAL_ADDRESS,
     payload: address,

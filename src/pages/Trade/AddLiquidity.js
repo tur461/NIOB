@@ -1,7 +1,7 @@
 import "./Trade.scss";
 import { T_TYPE } from "../../constant";
 import React, { useEffect } from "react";
-import { isBnb } from "../../services/utils";
+import { isBnb } from "../../services/utils/global";
 import useLiquidity from "../../hooks/liquidity";
 import { Container, Col } from "react-bootstrap";
 import useLiquid from "../../redux/volatiles/liquid";

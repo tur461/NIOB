@@ -7,7 +7,7 @@ import { FarmService } from "../services/FarmService";
 import { useDispatch, useSelector } from "react-redux";
 import { ContractServices } from "../services/ContractServices";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
-import { isDefined, rEq, toBgFix, toDec, toFull } from "../services/utils";
+import { isDefined, rEq, toBgFix, toDec, toFull } from "../services/utils/global";
 
 
 const useFarmer = (props) => {

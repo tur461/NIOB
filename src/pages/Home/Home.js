@@ -35,17 +35,18 @@ import { BigNumber } from "bignumber.js";
 import Loader from "react-loader-spinner";
 import { TwitterTimelineEmbed } from "react-twitter-embed";
 import Default from "../../assets/images/token_icons/default.svg";
-import { savereffralAddress } from "../../redux/actions";
+import { saveReferralAddress } from "../../redux/actions";
 
 import "./Home.scss";
 import { toast } from "../../components/Toast/Toast";
 
 import UpdateDsk from "../../assets/images/PRDT-Trading-Banner.jpg";
+import { isAddr, isNonZero, rEq, toFull } from "../../services/utils/global";
 // import UpdateMob from "../../assets/images/update_Mob.jpg";
 
 const Home = () => {
   const dispatch = useDispatch();
-  const isUserConnected = useSelector((state) => state.persist.isUserConnected);
+  const P = useSelector((state) => state.persist);
   const [potDetails, setPotDetails] = useState({
     prizeArray: [0, 0, 0],
     miniPrice: 0,
@@ -58,7 +59,7 @@ const Home = () => {
   const [niobPerBlock, setNiobPerBlock] = useState(0);
   const [transferTaxRate, setTransferTaxRate] = useState(0);
   const [burnedToken, setBurnedToken] = useState(0);
-  const [walletShow, setWalletShow] = useState(false);
+  const [walletShow, setWalletShow] = useState(!1);
   const [poolLength, setPoolLength] = useState(0);
   const [farms, setFarms] = useState([]);
   const [inactiveFarms, setInactiveFarms] = useState([]);
@@ -78,57 +79,57 @@ const Home = () => {
   const [anchorBnbWorth, setAnchorBnbWorth] = useState(0);
   const [anchorBusdWorth, setAnchorBusdWorth] = useState(0);
   const [tokenIds, setTokenIds] = useState();
-  const [allowance, setAllowance] = useState(false);
-  const [disable, setDisabledBUtton] = useState(false);
-  const [IButton, setIButton] = useState(false);
-  const [ticketWindow, openTicketWindow] = useState(false);
+  const [allowance, setAllowance] = useState(!1);
+  const [disable, setDisabledBUtton] = useState(!1);
+  const [IButton, setIButton] = useState(!1);
+  const [ticketWindow, openTicketWindow] = useState(!1);
   const [ticketValue, setvalue] = useState(1);
-  const [buyButton, setBuyButton] = useState(false);
-  const [loader, setLoader] = useState(false);
+  const [buyButton, setBuyButton] = useState(!1);
+  const [loader, setLoader] = useState(!1);
   const [currentTicketsArray, setCurrentArray] = useState([]);
-  const [showHarvest, setShowHarvest] = useState(false);
+  const [showHarvest, setShowHarvest] = useState(!1);
   const [harvest, setHarvestAll] = useState([]);
   const [stakeConfirmation, setStakeConfimation] = useState(0);
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(!1);
   const [txHash, setTxHash] = useState("");
-  const [farmAndStakeLoader, setFarmAndStakeLoader] = useState(false);
+  const [farmAndStakeLoader, setFarmAndStakeLoader] = useState(!1);
   const [liquidity, setLiquidity] = useState(0);
   const [niobApr, setNiobApr] = useState(0);
 
   const [topFarms, setTopFarms] = useState([]);
   const [topFarmApy, setTopFarmApy] = useState("");
 
+  let TC = ContractServices.TokenContract;;
+
   useEffect(async () => {
+    TC = ContractServices.TokenContract;
     init();
     if (ref) {
-      const checkAddress = await Web3.utils.isAddress(ref.toLowerCase());
+
+      const checkAddress = await Web3.utils.isAddress(ref);
       if (!checkAddress) {
         toast.error("Address does not exist!");
         return;
       }
-      if (isUserConnected) {
-        let re = await ReferralsServices.getReferrer(isUserConnected);
-        if (re != "0x0000000000000000000000000000000000000000") {
-          toast.error(`This user has already referral`);
-          return;
-        }
-        dispatch(savereffralAddress(ref.toLowerCase()));
+      if (P.priAccount) {
+        let re = await ReferralsServices.getReferrer(P.priAccount);
+        if (isAddr(re)) return toast.error(`This user has already referral`);
+        dispatch(saveReferralAddress(ref));
         return;
       }
       toast.success(`Please connect with wallet!`);
     }
-  }, [isUserConnected]);
+  }, [P.priAccount]);
 
   const init = async () => {
     const res = await ContractServices.tryGetAccount();
-
-    if (isUserConnected && res) {
+    if (P.isConnected && res) {
       getMarketCap();
       getBurnedToken();
       getNiobPerBlock();
       try {
         dispatch(startLoading());
-        let ref = await ReferralsServices.getReferrer(isUserConnected);
+        let ref = await ReferralsServices.getReferrer(P.priAccount);
         if (ref === "0x0000000000000000000000000000000000000000") {
           if (
             referralAddress &&
@@ -142,37 +143,23 @@ const Home = () => {
         const pL = Number(await FarmService.poolLength());
         setPoolLength(pL);
         // let farmsTemp = [];
-        let totalRewards = 0;
         let totalLockedRewards = 0;
+        let totalRewards = 0;
         let totalLiquidity = 0;
         let options = [];
-        const res = await ContractServices.getTokenBalance(
-          TOKEN_LIST[1].address,
-          isUserConnected
-        );
+        TC.setTo(TOKEN_LIST[1].address)
+        const res = await TC.balanceOf(P.priAccount);
         setAmount(res);
-        // setFarmAndStakeLoader(true);
         let allAPRs = [];
         for (let i = 0; i < pL; i++) {
           const res = await FarmService.totalPoolInfo(i);
-          const userInfo = await FarmService.userInfo(i, isUserConnected);
+          const userInfo = await FarmService.userInfo(i, P.priAccount);
           const { poolInfo, latest } = res;
 
           if (poolInfo.lpToken != undefined) {
-            const allowance = await ContractServices.allowanceToken(
-              poolInfo.lpToken,
-              MAIN_CONTRACT_LIST.farm.address,
-              isUserConnected
-            );
-            let check = true;
-            if (
-              BigNumber(allowance).isGreaterThanOrEqualTo(
-                BigNumber(2 * 255 - 1)
-              )
-            ) {
-              // setShowApproveButton(false);
-              check = false;
-            }
+            TC.setTo(poolInfo.lpToken);
+            const allowance = await TC.allowanceOf(MAIN_CONTRACT_LIST.farm.address);
+            let check = BigNumber(allowance).isGreaterThanOrEqualTo(BigNumber(2 * 255 - 1)) ? !1 : !0;
             const reserve = await ExchangeService.getReserves(ANCHOR_BUSD_LP);
             const tokenZero = await ExchangeService.getTokenZero(
               ANCHOR_BUSD_LP
@@ -215,25 +202,9 @@ const Home = () => {
               const tokenAmount = await ExchangeService.getTokenStaked(
                 pool.lpToken
               );
-              let price = 0;
-              if (
-                pool.lpToken.toLowerCase() ===
-                TOKEN_LIST[2].address.toLowerCase()
-              ) {
-                price = 1;
-              } else {
-                const tokenPairUSDT = await ExchangeService.getPair(
-                  pool.lpToken,
-                  TOKEN_LIST[2].address
-                );
-                price = await calPrice(tokenPairUSDT);
-              }
-              //const niobId = await FarmService.niobId();
-              //console.log('this is apr',poolInfo,  niobId);
-              if (poolInfoForNiob.allocPoint === "30") {
-                let apr = await calculateAPR(poolInfoForNiob.allocPoint, res);
-                setNiobApr(apr);
-              }
+              let price = rEq(pool.lpTokenaddress, TOKEN_LIST[2].address) ? 1 
+              : await getPrice(await ExchangeService.getPair(pool.lpToken, TOKEN_LIST[2].address))
+              if (poolInfoForNiob.allocPoint === "30") setNiobApr(await calculateAPR(poolInfoForNiob.allocPoint, res));
               const liq = tokenAmount * price;
               totalLiquidity += Number(liq);
               setLiquidity(totalLiquidity);
@@ -251,7 +222,7 @@ const Home = () => {
             }
             const rewards = Number(
               Number(
-                (await FarmService.pendingPanther(i, isUserConnected)) /
+                (await FarmService.pendingPanther(i, P.priAccount)) /
                 10 ** 18
               ).toFixed(3)
             );
@@ -260,7 +231,7 @@ const Home = () => {
 
             const nextHarvestUntil = await FarmService.canHarvest(
               i,
-              isUserConnected
+              P.priAccount
             );
             if (
               !check &&
@@ -273,20 +244,20 @@ const Home = () => {
             }
           }
           // if (i + 1 == pL) {
-          //     setFarmAndStakeLoader(false);
+          //     setFarmAndStakeLoader(!1);
           // }
         }
         setTopFarmApy(Math.max.apply(Math, allAPRs));
         setHarvestAll(options);
       } catch (err) {
         console.log(err);
-        setFarmAndStakeLoader(false);
+        setFarmAndStakeLoader(!1);
         dispatch(stopLoading());
       }
     }
   };
   const calculateAPR = async (allocPoint, liquidity) => {
-    const anchorPrice = await calPrice(ANCHOR_BUSD_LP);
+    const anchorPrice = await getPrice(ANCHOR_BUSD_LP);
     const totalAllcationPoint = Number(
       await FarmService.totalAllocationPoint()
     );
@@ -341,80 +312,43 @@ const Home = () => {
     }
   };
   const getPriceInUsd = async (tokenZero, tokenOne, reserve) => {
+    TC.setTo(tokenZero);
+    const decimalZero = await TC.decimals();
+    TC.setTo(tokenOne);
+    const decimalOne = await TC.decimals();
     let price;
-
-    const decimalZero = await ContractServices.getDecimals(tokenZero);
-    const decimalOne = await ContractServices.getDecimals(tokenOne);
-
-    if (tokenZero.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
-      price = (reserve[0] * decimalOne) / (reserve[1] * decimalZero);
-    }
-
-    if (tokenOne.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
-      price = (reserve[1] * decimalZero) / (reserve[0] * decimalOne);
-    }
-
+    if (rEq(tokenZero, TOKEN_LIST[2].address)) price = (reserve[0] * decimalOne) / (reserve[1] * decimalZero);
+    if (rEq(tokenOne, TOKEN_LIST[2].address)) price = (reserve[1] * decimalZero) / (reserve[0] * decimalOne);
     return price;
   };
-  const calPrice = async (pairAddress) => {
-    let price = 0;
-
-    if (pairAddress == "0x0000000000000000000000000000000000000000") {
-      return 0;
-    }
-
-    // console.log("pairAddresspairAddress", pairAddress);
-    const tokenZero = await ExchangeService.getTokenZero(pairAddress);
-    const tokenOne = await ExchangeService.getTokenOne(pairAddress);
+  const getPrice = async (pairAddress) => {
+    if (!isAddr(pairAddress)) return 0;
+    const tkn = await ExchangeService.getTokens(pairAddress);
     const reserve = await ExchangeService.getReserves(pairAddress);
-
-    const decimalZero = await ContractServices.getDecimals(tokenZero);
-    const decimalOne = await ContractServices.getDecimals(tokenOne);
-
-    if (tokenZero.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
-      return (price =
-        (reserve[0] * 10 ** decimalOne) / (reserve[1] * 10 ** decimalZero));
-    }
-
-    if (tokenOne.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
-      return (price =
-        (reserve[1] * 10 ** decimalZero) / (reserve[0] * 10 ** decimalOne));
-    }
-
-    let priceBNBToUSD = await calPrice(BNB_BUSD_LP); //replace with BNB-USD pair
-
-    if (tokenZero.toLowerCase() === WETH.toLowerCase()) {
-      price =
-        (reserve[0] * 10 ** decimalOne) / (reserve[1] * 10 ** decimalZero);
-      return price * priceBNBToUSD;
-    }
-
-    if (tokenOne.toLowerCase() === WETH.toLowerCase()) {
-      price =
-        (reserve[1] * 10 ** decimalZero) / (reserve[0] * 10 ** decimalOne);
-      return price * priceBNBToUSD;
-    }
+    const dec = await ExchangeService.getDecimalPair(tkn);
+    
+    if (rEq(tkn[0], TOKEN_LIST[2].address)) return toFull(reserve[0], dec[0]) / toFull(reserve[1], dec[1]);
+    if (rEq(tkn[1], TOKEN_LIST[2].address)) return toFull(reserve[1], dec[1]) / toFull(reserve[0], dec[0]);
+    let priceBNBToUSD = await getPrice(BNB_BUSD_LP); //replace with BNB-USD pair
+    if (rEq(tkn[0], WETH)) return toFull(priceBNBToUSD * reserve[0], dec[0]) / toFull(reserve[1], dec[1]);
+    if (rEq(tkn[1], WETH)) return toFull(priceBNBToUSD * reserve[1], dec[1]) / toFull(reserve[0], dec[0]);
   };
 
   const getDollarAPR = async (address) => {
     try {
 
-      if (address.toLowerCase() === TOKEN_LIST[1].address.toLowerCase()) {
+      if (rEq(address, TOKEN_LIST[1].address)) {
         const reserves = await ExchangeService.getReserves(ANCHOR_BUSD_LP);
         let val = reserves[1] / reserves[0];
         val = val || 0;
-        //setAnchorDollarValue(val.toFixed(3));
         return (val.toFixed(3));
-      } else if (address.toLowerCase() === TOKEN_LIST[2].address.toLowerCase()) {
-        return 1;
-      }
-      else if (address.toLowerCase() != TOKEN_LIST[2].address.toLowerCase()) {
-
+      } 
+      else if (rEq(address, TOKEN_LIST[2].address))return 1;
+      else if (!rEq(address, TOKEN_LIST[2].address)) {
         const pair = await ExchangeService.getPairFromPancakeFactory(address, TOKEN_LIST[2].address);
         const reserves = await ExchangeService.getReserves(pair);
         let val = reserves[1] / reserves[0];
         val = val || 0;
-        // setAnchorDollarValue(val.toFixed(3));
         return (val.toFixed(3));
       }
 
@@ -423,130 +357,50 @@ const Home = () => {
     }
   }
 
-  const handleTotalLiquidity = async (pairAddress) => {
-    if (pairAddress != "0x0000000000000000000000000000000000000000") {
-      // console.log(pairAddress);
-      const tokenZero = await ExchangeService.getTokenZero(pairAddress);
-      const tokenOne = await ExchangeService.getTokenOne(pairAddress);
+  const handleTotalLiquidity = async pairAddress => {
+    if (isAddr(pairAddress)) {
+      const tkn = await ExchangeService.getTokens(pairAddress)
       const reserve = await ExchangeService.getReserves(pairAddress);
-      const tokenZeroPairUSDT = await ExchangeService.getPair(
-        tokenZero,
-        TOKEN_LIST[2].address
-      );
-      const tokenOnePairUSDT = await ExchangeService.getPair(
-        tokenOne,
-        TOKEN_LIST[2].address
-      );
-
-      const tokenZeroPairBNB = await ExchangeService.getPair(tokenZero, WETH);
-      const tokenOnePairBNB = await ExchangeService.getPair(tokenOne, WETH);
-
-      const decimalZero = await ContractServices.getDecimals(tokenZero);
-      const decimalOne = await ContractServices.getDecimals(tokenOne);
-      // const decimalPair = await ContractServices.getDecimals(pairAddress);
-
-
-      let priceA = await getDollarAPR(tokenZero);
-      let priceB = await getDollarAPR(tokenOne);
-
-
-
-      // let priceA = 0;
-      // let priceB = 0;
-
-      // if (tokenZero.toLowerCase() == TOKEN_LIST[2].address.toLowerCase()) {
-      //   priceA = 1;
-      // } else if (tokenZero.toLowerCase() == WETH.toLowerCase()) {
-      //   priceA = await calPrice(BNB_BUSD_LP);
-      // }
-
-      // if (tokenOne.toLowerCase() == TOKEN_LIST[2].address.toLowerCase()) {
-      //   priceB = 1;
-      // } else if (tokenOne.toLowerCase() == WETH.toLowerCase()) {
-      //   priceB = await calPrice(BNB_BUSD_LP);
-      // }
-
-      // if (priceA == 0) {
-      //   if (tokenZeroPairUSDT != "0x0000000000000000000000000000000000000000") {
-      //     priceA = await calPrice(tokenZeroPairUSDT);
-      //   } else if (
-      //     tokenZeroPairBNB != "0x0000000000000000000000000000000000000000"
-      //   ) {
-      //     priceA = await calPrice(tokenZeroPairBNB);
-      //   } else {
-      //     priceA = 0;
-      //   }
-      // }
-
-      // if (priceB == 0) {
-      //   if (tokenOnePairUSDT != "0x0000000000000000000000000000000000000000") {
-      //     priceB = await calPrice(tokenOnePairUSDT);
-      //   } else if (
-      //     tokenOnePairBNB != "0x0000000000000000000000000000000000000000"
-      //   ) {
-      //     priceB = await calPrice(tokenOnePairBNB);
-      //   } else {
-      //     priceB = 0;
-      //   }
-      // }
-
+      const dec = await ExchangeService.getDecimalPair(tkn);
+      let priceA = await getDollarAPR(tkn[0]);
+      let priceB = await getDollarAPR(tkn[1]);
       const totalSupply = await ExchangeService.getTotalSupply(pairAddress);
       const tokenStaked = await ExchangeService.getTokenStaked(pairAddress);
-
       const liquidity =
-        (((reserve[0] / 10 ** decimalZero) * priceA +
-          (reserve[1] / 10 ** decimalOne) * priceB) /
+        (((reserve[0] / 10 ** dec[0]) * priceA +
+          (reserve[1] / 10 ** dec[1]) * priceB) /
           totalSupply) *
         tokenStaked;
-
       return liquidity;
     }
     return 0;
   };
   const options = {
-    indicators: false,
+    indicators: !1,
   };
   const handleTotalLiquidityForPool = async (tokenAddress) => {
-    if (tokenAddress != "0x0000000000000000000000000000000000000000") {
+    if (isAddr(tokenAddress)) {
       const reserve = await ExchangeService.getTokenStaked(tokenAddress);
       const tokenPairUSDT = await ExchangeService.getPair(
         tokenAddress,
         TOKEN_LIST[2].address
       );
       const tokenPairBNB = await ExchangeService.getPair(tokenAddress, WETH);
-
       let priceA = 0;
-
-      if (tokenAddress.toLowerCase() == TOKEN_LIST[2].address.toLowerCase()) {
-        priceA = 1;
-      } else if (tokenAddress.toLowerCase() == WETH.toLowerCase()) {
-        priceA = await calPrice(BNB_BUSD_LP);
-      }
+      if (rEq(tokenAddress, TOKEN_LIST[2].address)) priceA = 1;
+      else if (rEq(tokenAddress, WETH)) priceA = await getPrice(BNB_BUSD_LP);
 
       if (priceA == 0) {
-        if (tokenPairUSDT != "0x0000000000000000000000000000000000000000") {
-          priceA = await calPrice(tokenPairUSDT);
-        } else if (
-          tokenPairBNB != "0x0000000000000000000000000000000000000000"
-        ) {
-          priceA = await calPrice(tokenPairBNB);
+        if (isAddr(tokenPairUSDT)) priceA = await getPrice(tokenPairUSDT);
+        else if (isAddr(tokenPairBNB)) {
+          //priceA = await getPrice(tokenPairBNB);
           priceA = 0;
         }
       }
-
       const liquidity = reserve * priceA;
-
       return Number(liquidity).toFixed(2);
     }
     return 0;
-  };
-  const handleIcon = (symbol) => {
-    if (symbol != undefined) {
-      const tokenObj = TOKEN_LIST.find(
-        (d) => d.symbol.toLowerCase() === symbol.toLowerCase()
-      );
-      return tokenObj != undefined ? tokenObj.icon : Default;
-    }
   };
 
   const history = useHistory();

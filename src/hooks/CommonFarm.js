@@ -7,7 +7,7 @@ import usePlanet from "../redux/volatiles/planet";
 import { ContractServices } from "../services/ContractServices";
 import { ExchangeService } from "../services/ExchangeService";
 import { FarmService } from "../services/FarmService";
-import { isAddr, isDefined, rEq, toDec, toFull } from "../services/utils";
+import { isAddr, isDefined, rEq, toDec, toFull } from "../services/utils/global";
 import { BigNumber } from "bignumber.js";
 
 const useCFarm = (props) => {

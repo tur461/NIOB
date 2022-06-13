@@ -10,7 +10,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { ExchangeService } from "../services/ExchangeService";
 import { ContractServices } from "../services/ContractServices";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
-import { isBnb, isDefined, isNonZero, rEq, tgl, toBgFix, toDec, toFlr, tStamp } from "../services/utils";
+import { isBnb, isDefined, isNonZero, rEq, toBgFix, toDec, toFlr, tStamp } from "../services/utils/global";
+import { togIP } from "../services/utils/trading";
 
 
 const useXchange = (props) => {
@@ -137,22 +138,22 @@ const useXchange = (props) => {
     const handleSwapAmountIn = async (dl, v) => {
         let i = common.exact, x = [
         toDec(common[`token${i}Value`], common[`token${i}`].decimals),
-        toDec(common[`token${tgl(i)}Value`], common[`token${tgl(i)}`].decimals),
+        toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].decimals),
         ], d = {
         value: v,
         path: [],
         deadline: dl,
         to: P.priAccount,
         amountIn: toBgFix(x[i-1]).toString(),
-        amountOutMin: toBgFix(x[tgl(i)-1] + (x[tgl(i)-1] * P.slippage / 100)).toString(),
+        amountOutMin: toBgFix(x[togIP(i)-1] + (x[togIP(i)-1] * P.slippage / 100)).toString(),
         };
         console.log('[swap] handle amountIn:', v, i, d);
         return {...d}; 
     }
 
     const handleBNBSwapForTK1 = async (dl, v) => {
-        let tv = common[`token${tgl(common.exact)}Value`]
-        let dec = common[`token${tgl(common.exact)}`].decimals;
+        let tv = common[`token${togIP(common.exact)}Value`]
+        let dec = common[`token${togIP(common.exact)}`].decimals;
         let x = toBgFix(toFlr(toDec(tv, dec)));
         let d = {
         value: v,
@@ -175,7 +176,7 @@ const useXchange = (props) => {
             };
         
         let x = toDec(common[`token${i}Value`],  common[`token${i}`].decimals); 
-        let y = toDec(common[`token${tgl(i)}Value`], common[`token${tgl(i)}`].decimals);
+        let y = toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].decimals);
         
         if (!(i-1)) {
         d['amountIn'] = toBgFix(toFlr(x));
@@ -191,7 +192,7 @@ const useXchange = (props) => {
     }
 
     const handleSwitchCurrencies = () => {
-        common.setExact(tgl(common.exact));
+        common.setExact(togIP(common.exact));
         common.setToken(common.token1, T_TYPE.B);
         common.setToken(common.token2, T_TYPE.A);
         common.setTokenIcon(common.token1Icon, T_TYPE.B);

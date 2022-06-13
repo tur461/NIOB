@@ -5,7 +5,8 @@ import useCommon from "../redux/volatiles/common";
 import { useDispatch, useSelector } from "react-redux";
 import { ExchangeService } from "../services/ExchangeService";
 import { ContractServices } from "../services/ContractServices";
-import { isBnb, isDefined,rDefined, rEq, tgl, toFull, tStamp, zero } from "../services/utils";
+import { isBnb, isDefined,rDefined, rEq, toFull, tStamp, zero } from "../services/utils/global";
+import { togIP } from "../services/utils/trading";
 import { addTransaction, checkUserLpTokens, startLoading, stopLoading } from "../redux/actions";
 
 
@@ -65,9 +66,9 @@ const useLiquidity = (props) => {
         if (i) {
             valueOfExact = valueOfExact.toString();
             let amountETHMin = BigNumber(Math.floor(Number(valueOfExact) - (Number(valueOfExact) * P.slippage) / 100)).toFixed();
-            let tknAmtDzd = common[`token${tgl(i)}Value`];
-            let tknMinAmt = BigNumber(Math.floor((toFull((tknAmtDzd - (tknAmtDzd * P.slippage) / 100), dec[tgl(i)-1])))).toFixed();
-            tknAmtDzd = BigNumber(toFull(tknAmtDzd, dec[tgl(i)-1])).toFixed();
+            let tknAmtDzd = common[`token${togIP(i)}Value`];
+            let tknMinAmt = BigNumber(Math.floor((toFull((tknAmtDzd - (tknAmtDzd * P.slippage) / 100), dec[togIP(i)-1])))).toFixed();
+            tknAmtDzd = BigNumber(toFull(tknAmtDzd, dec[togIP(i)-1])).toFixed();
 
             const data = {
             otherTokenzAddr,
@@ -155,7 +156,7 @@ const useLiquidity = (props) => {
         const tv = [common.token1Value, common.token2Value];
         return rDefined(...tv) ? 
         !zero(tv[tt-1]) ? 
-            Number((tv[tgl(tt)-1] / tv[tt-1]).toFixed(5)) 
+            Number((tv[togIP(tt)-1] / tv[tt-1]).toFixed(5)) 
             : 0 
         : 0;
     };
