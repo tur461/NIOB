@@ -36,19 +36,19 @@ const FactoryContract = (_ => {
 
 
 
-const allPairs = async _ => FactoryContract().methods.allPairs().call();
+const allPairs = _ => FactoryContract().methods.allPairs().call();
 
-const getPair = async (t1, t2) => FactoryContract().methods.getPair(t1, t2).call();
+const getPair = (t1, t2) => FactoryContract().methods.getPair(t1, t2).call();
 
-const getPairFromPancakeFactory = async (t1, t2) => FactoryContract(pancakeFactory).methods.getPair(t1, t2).call();
+const getPairFromPancakeFactory = (t1, t2) => FactoryContract(pancakeFactory).methods.getPair(t1, t2).call();
 
-const getTokens = async (pairAddr) => {
+const getTokens = pairAddr => {
     const contract = PairContract(pairAddr);
     return Promise.all([contract.methods.token0().call(), contract.methods.token1().call()]);
 };
 
-const getTokenOne = async (pairAddr) => PairContract(pairAddr).methods.token1().call();
-const getTokenZero = async (pairAddr) => PairContract(pairAddr).methods.token0().call();
+const getTokenOne = pairAddr => PairContract(pairAddr).methods.token1().call();
+const getTokenZero = pairAddr => PairContract(pairAddr).methods.token0().call();
 
 const _getAmounts = async (amount, pair, isIn) => {
   let contract = rEq(pair[0], TOKEN_LIST[1].address) || rEq(pair[1], TOKEN_LIST[1].address) ? RouterContract()
@@ -56,6 +56,7 @@ const _getAmounts = async (amount, pair, isIn) => {
       (rEq(pair[1], TOKEN_LIST[0].address) || rEq(pair[1], TOKEN_LIST[2].address)) ? RouterContract() 
       : RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
     TokenContract.setTo(pair[0]);
+    console.log('is in', isIn)
     let dec = await TokenContract.decimals(),
         decAmountIn = BigNumber(toFull(amount, dec)).toFixed(),
         res = await (
@@ -63,6 +64,7 @@ const _getAmounts = async (amount, pair, isIn) => {
           contract.methods.getAmountsIn(decAmountIn, pair) : 
           contract.methods.getAmountsOut(decAmountIn, pair)
         ).call();
+    
     let amounts = [];
     for (
       let i = 0; 
@@ -76,7 +78,7 @@ const getAmountsOut = (amountIn, pair) => _getAmounts(amountIn, pair, !1);
 
 const getAmountsIn = (amountOut, pair) => _getAmounts(amountOut, pair, !0);
 
-const getReserves = async pairAddr => PairContract(pairAddr).methods.getReserves().call();
+const getReserves = pairAddr => PairContract(pairAddr).methods.getReserves().call();
 
 const getTotalSupply = async (pairAddr) => {
     const con = PairContract(pairAddr);
@@ -86,17 +88,17 @@ const getTotalSupply = async (pairAddr) => {
     ).toFixed(5));
 }
 
-const getTokenStaked = async (pairAddr) => {
+const getTokenStaked = async pairAddr => {
   TokenContract.setTo(pairAddr);
   return TokenContract.hasInst() ? Number((await TokenContract.balanceOf(MAIN_CONTRACT_LIST.farm.address)).toFixed(5)) : 0;
 };
 
-const getBurnedToken = async () => {
+const getBurnedToken = async _ => {
   TokenContract.setTo(MAIN_CONTRACT_LIST.anchorNew.address);
   return TokenContract.hasInst() ? Number((await TokenContract.balanceOf(BURN_ADDRESS)).toFixed(2)) : 0;
 };
 
-const addLiquidity = async (data) => {
+const addLiquidity = async data => {
   return new Promise(async (resolve, reject) => {
     try {
       let {

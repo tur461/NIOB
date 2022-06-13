@@ -25,7 +25,7 @@ export const toFull = (v, dec) => Number(v) * 10 ** Number(dec);
 
 export const tStamp = (a=0) => Math.floor(new Date().getTime() / 1000) + a;
 
-export const hasVal = v => typeof v == 'string' && !v.length ? !1 : v === 0 ? !1 : !0;
+export const hasVal = v => typeof v == 'string' && !v.length ? !1 : parseFloat(v) === 0 ? !1 : !0;
 
 export const rDefined = function() {
     for(let a=arguments, i=0, l=a.length; i<l;)

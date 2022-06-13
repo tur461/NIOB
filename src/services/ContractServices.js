@@ -52,7 +52,7 @@ const TokenContract = (_ => {
     name: _ => inst.methods['name']().call(),
     symbol: _ => inst.methods['symbol']().call(),
     decimals: _ => inst.methods['decimals']().call(),
-    allowanceOf: addr => inst.methods['allowance'](addr).call(),
+    allowanceOf: (owner, spender) => inst.methods['allowance'](owner, spender).call(),
     balanceOf: async addr => toDec(
       await inst.methods['balanceOf'](addr).call(), 
       await inst.methods['decimals']().call()
