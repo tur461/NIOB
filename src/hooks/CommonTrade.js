@@ -47,21 +47,14 @@ const useCommonTrade = (props) => {
     }
 
     const _onHandleSelectCurrency = async (token, selected) => {
-        if (!P.isConnected) {
-            return toast.error("Connect wallet first!");
-        }
+        if (!P.isConnected) return toast.error("Connect wallet first!");
         common.setSearch('');
         handleClose();
-        
-        let i = togIP(selected), addr = [], bal = 0;
-        const address = try2weth(token.addr), symbol = token.sym;
-        console.log('[select  currency] token:', token);
-        addr.push(address);
         dsp(startLoading())
-        TC.setTo(address);
-        bal = await TC.balanceOf(P.priAccount);
-        
-        addr.push(try2weth(common[`token${i}`].addr));
+        let tknOther = common[`token${togIP(selected)}`], addr = [], bal = 0;
+        const symbol = token.sym;
+        addr.push(try2weth(token.addr));
+        tknOther.addr && addr.push(try2weth(tknOther.addr));
         if(addr.length === 1) return dsp(stopLoading())
         if(rEq(...addr)) {
             console.log('tokens cant be same!');
@@ -69,7 +62,6 @@ const useCommonTrade = (props) => {
             return toast.error('please select dissimilar tokens!');
         }
         if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
-        
         if (rDefined(...addr)) {
             let cPair = ADDRESS.ZERO;
             console.log('3 getPair', addr);
@@ -79,6 +71,8 @@ const useCommonTrade = (props) => {
                 dsp(stopLoading());
                 return toast.error('pair not available!!');
             }
+            TC.setTo(addr[0]);
+            bal = await TC.balanceOf(P.priAccount);
             common.setTokenCurrency(symbol, selected);
             common.setToken(token, selected);
             common.setTokenBalance(bal, selected);
