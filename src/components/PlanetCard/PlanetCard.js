@@ -2,7 +2,7 @@ import "./PlanetCard.scss";
 import { toast } from "../Toast/Toast";
 import { Button } from "react-bootstrap";
 import { useSelector } from "react-redux";
-import { addCommas } from "../../constant";
+import { addCommas } from "../../services/constant";
 import useCFarm from "../../hooks/CommonFarm";
 import React, { useEffect, useRef, useState } from "react";
 import usePlanet from "../../redux/volatiles/planet";

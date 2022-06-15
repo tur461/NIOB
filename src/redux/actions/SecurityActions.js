@@ -1,7 +1,7 @@
 import { SecurityService } from "../../services/SecurityService";
 import { startLoading, stopLoading } from "./LoadingActions";
 import { toast } from "../../components/Toast/Toast";
-import { AUTH_TOKEN_KEY } from "../../constant";
+import { AUTH_TOKEN_KEY } from "../../services/constant";
 import { getToken } from "../../Helpers/storageHelper"
 
 

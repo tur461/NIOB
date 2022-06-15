@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { T_TYPE } from "../../constant";
+import { T_TYPE } from "../../services/constant";
 
 
 

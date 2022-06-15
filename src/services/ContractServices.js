@@ -6,14 +6,14 @@ import {
   NETWORK_NATIVE_CURRENCY_NAME, 
   NETWORK_NATIVE_CURRENCY_SYMBOL, 
   NETWORK_NATIVE_CURRENCY_DECIMALS, 
-} from '../constant'
+} from './constant'
 import Web3 from "web3";
 import { contains, toDec } from "./utils/global";
 import { toast } from "../components/Toast/Toast";
 import TOKEN_ABI from "../assets/ABI/tokenContract.ABI.json";
 import WalletConnectProvider from '@walletconnect/web3-provider'
 
-const NETWORK_CHAIN_ID = '0x61'; // 97
+const NETWORK_CHAIN_ID = '0x4'; // 97
 
 let defaultWalletType = WALLET_TYPE.M_MASK;
 
@@ -22,8 +22,13 @@ const Web_3 = (_ => {
   return _ => {
     if (_web3) return _web3;
     const { ethereum, web3, BinanceChain } = window;
-    _web3 = WALLET_TYPE.isMMask(defaultWalletType) ? (ethereum && ethereum.isMetaMask ? new Web3(ethereum) :
-    ethereum ?  new Web3(ethereum) : web3 ? new Web3(web3.currentProvider) : null ) :
+    _web3 = WALLET_TYPE.isMMask(defaultWalletType) ? 
+    (ethereum && ethereum.isMetaMask 
+      ? new Web3(ethereum) :
+        ethereum 
+        ? new Web3(ethereum) : 
+          web3 ? new Web3(web3.currentProvider) : null 
+    ) :
     BinanceChain ? new Web3(BinanceChain) : null;
     return _web3 ? _web3 : toast.error("You have to install Wallet!");
   }
@@ -79,7 +84,7 @@ const getPairDecimals = (a0, a1) => {
 
 
 
-const getBNBBalance = async addr => {
+const getETHBalance = async addr => {
     const web3 = Web_3();
     let r = await web3.eth.getBalance(addr);
     r = (Number(r) / 10 ** 18).toFixed(5);
@@ -158,8 +163,8 @@ const walletWindowListener = async () => {
               });
               window.location.reload();
             } catch (e) { }
-
       }
+    else console.log('chain id match:', ethereum);
 
       ethereum.on('chainChanged', async (chainId) => {
         if (chainId !== NETWORK_CHAIN_ID)
@@ -248,7 +253,7 @@ export const ContractServices = {
   getContract,
   getGasPrice,
   TokenContract,
-  getBNBBalance,
+  getETHBalance,
   tryGetAccount,
   setWalletType,
   getPairDecimals,

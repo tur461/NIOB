@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { ANCHOR_BUSD_LP, BNB_BUSD_LP, MAIN_CONTRACT_LIST, TOKEN_LIST, WETH } from "../assets/tokens";
 import { toast } from "../components/Toast/Toast";
-import { addCommas, VAL } from "../constant";
+import { addCommas, VAL } from "../services/constant";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
 import usePlanet from "../redux/volatiles/planet";
 import { ContractServices } from "../services/ContractServices";

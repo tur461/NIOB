@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { STR, T_TYPE } from "../../constant";
+import { STR, TOKENS, T_TYPE } from "../../services/constant";
 import { TOKEN_LIST } from "../../assets/tokens";
 import defaultImg from '../../assets/images/token_icons/default.svg'
 
@@ -53,11 +53,11 @@ const useCommon = create((set, get) => ({
     token1Approved: !0,
     token2Approved: !0,
     tokenType: T_TYPE.A,
-    token1: TOKEN_LIST[0],
+    token1: TOKENS.ETH,
     token2Icon: defaultImg,
     token2Currency: STR.SEL_TKN,
-    token1Icon: TOKEN_LIST[0].icon,
-    token1Currency: TOKEN_LIST[0].symbol,
+    token1Icon: TOKENS.ETH.icon,
+    token1Currency: TOKENS.ETH.sym,
 
     setShow: show => {
         set(s => ({...s, show}));

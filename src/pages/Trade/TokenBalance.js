@@ -5,20 +5,20 @@ import { ContractServices } from '../../services/ContractServices';
 const TokenBalance = ({ address }) => {
 
       const [balance, setBalance] = useState('');
-      const isUserConnected = useSelector(state => state.persist.isUserConnected);
+      const P = useSelector(state => state.persist);
 
       useEffect(() => {
             init();
-      }, [isUserConnected, address]);
+      }, [P.isConnected, address]);
 
       const init = async () => {
             try {
                   let res = 0;
                   if (address === 'BNB') {
-                        res = await ContractServices.getBNBBalance(isUserConnected);
+                        res = await ContractServices.getETHBalance(P.priAccount);
                         setBalance(res);
                   } else {
-                        res = await ContractServices.getTokenBalance(address, isUserConnected);
+                        res = await ContractServices.getTokenBalance(address, P.priAccount);
                         setBalance(res);
                   }
             } catch (error) {

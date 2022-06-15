@@ -1,5 +1,5 @@
 import { fetch } from "./Fetch";
-import { API_HOST } from "../constant";
+import { API_HOST } from "./constant";
 
 
 const getIp = () => {

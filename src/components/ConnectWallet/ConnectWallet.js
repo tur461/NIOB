@@ -14,20 +14,21 @@ import TokenPocket from '../../assets/images/tp.png'
 import TrustWallet from '../../assets/images/trust-wallet.png'
 import Binance from '../../assets/images/Binance-chain.png'
 import MathWallet from '../../assets/images/mathwallet.png'
+import { WALLET_TYPE } from '../../services/constant'
 
 const ConnectWallet = ({ show, handleClose }) => {
     const dispatch = useDispatch();
 
-    const loginCall = async (walletType, type) => {
+    const tryConnect2Wallet = async (walletType) => {
         try {
-            if (walletType === 'BinanceChain') {
+            if (WALLET_TYPE.isBinance(walletType)) {
                 const account = await ContractServices.isBinanceChainInstalled();
                 if (account) {
                     dispatch(login({ account, walletType }));
                     handleClose(false);
                     window.location.reload();
                 }
-            } else if (walletType === 'Walletconnect') {
+            } else if (WALLET_TYPE.isWalletConnect(walletType)) {
                 try {
                     const provider = new WalletConnectProvider({
                         //infuraId: "8570afa4d18b4c5d9cb3a629b08de069",
@@ -74,7 +75,7 @@ const ConnectWallet = ({ show, handleClose }) => {
                 }
 
             } else {
-                const account = await ContractServices.tryGetAccount(type);
+                const account = await ContractServices.tryGetAccount(walletType);
                 if (account) {
                     dispatch(login({ account, walletType }));
                     handleClose(false);
@@ -95,7 +96,7 @@ const ConnectWallet = ({ show, handleClose }) => {
                 <Row>
                     <Col className="baseToken_style token_strut">
                         <ul>
-                            <li><Button onClick={() => loginCall('Metamask', 'Metamask')}>MetaMask<span><img src={iconMatamask} /></span> </Button></li>
+                            <li><Button onClick={() => tryConnect2Wallet(WALLET_TYPE.M_MASK)}>MetaMask<span><img src={iconMatamask} /></span> </Button></li>
                             <li><Button>CoinBase Wallet<span><img src={iconCoinbase} /></span> </Button></li>
                             <li><Button>WalletConnect<span><img src={iconWallet} /></span> </Button></li>
                             <li><Button>TrustWallet<span><img src={TrustWallet} /></span> </Button></li>

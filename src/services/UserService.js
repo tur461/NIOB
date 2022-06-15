@@ -1,5 +1,5 @@
 import { fetch } from "./Fetch";
-import { API_HOST } from "../constant";
+import { API_HOST } from "./constant";
 
 const getPairsCount = () => fetch("get", `${API_HOST}pair/count`, {});
 const getPairs = (data) => fetch("post", `${API_HOST}pair/getAll`, data);

@@ -14,7 +14,7 @@ import { MAIN_CONTRACT_LIST, TOKEN_LIST, WETH, ANCHOR_BUSD_LP, BNB_BUSD_LP } fro
 import { BigNumber } from "bignumber.js"
 import { toast } from "../Toast/Toast";
 import { addTransaction, startLoading, stopLoading } from "../../redux/actions";
-import { addCommas } from "../../constant";
+import { addCommas } from "../../services/constant";
 import ConnectWallet from "../ConnectWallet/ConnectWallet";
 
 const GalaxyCard = (props) => {

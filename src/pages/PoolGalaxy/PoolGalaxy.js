@@ -15,15 +15,11 @@ import PoolIcon from "../../assets/images/Pool-Header-Logo.svg";
 import "./PoolGalaxy.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { addTransaction, startLoading, stopLoading } from "../../redux/actions";
-import { ReferralsServices } from "../../services/ReferralsServices";
 import { FarmService } from "../../services/FarmService";
 import { ContractServices } from "../../services/ContractServices";
 import { ExchangeService } from "../../services/ExchangeService";
 import { toast } from "../../components/Toast/Toast";
 import BigNumber from "bignumber.js";
-import GalaxyCard from "../../components/GalaxyCard/GalaxyCard";
-import NIOB from "../../assets/images/token_icons/NIOB.svg";
-import BUSD from "../../assets/images/token_icons/BUSD-Token.svg";
 import GetLPToken from "../../components/GetLPToken/GetLPToken";
 import WithDrawLPToken from "../../components/GetLPToken/WithDrawLPToken";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
@@ -49,7 +45,6 @@ function PoolGalaxy(props) {
   const dispatch = useDispatch();
 
   const [checked, setChecked] = useState(false);
-  const [active, setActive] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [showStake, setShowStake] = useState(false);
   const [showStakeWithdraw, setShowStakeWithdraw] = useState(false);
@@ -87,7 +82,6 @@ function PoolGalaxy(props) {
     setShowAPY(false);
   }
   const handleRoiModal = (data, lpDetails, niobId) => {
-    // console.log(data, lpDetails);
     setNiobStats(niobId);
     setRoiModalData(data);
     setLpTokenDetails(lpDetails);
@@ -144,13 +138,6 @@ function PoolGalaxy(props) {
   const init = async () => {
     try {
       dispatch(startLoading());
-      let ref = await ReferralsServices.getReferrer(P.priAccount);
-      if (ref === '0x0000000000000000000000000000000000000000') {
-        if (P.referralAddress && P.referralAddress !== '0x0000000000000000000000000000000000000000') {
-          ref = P.referralAddress;
-        }
-        setReferrer(ref);
-      }
       const pL = Number(await FarmService.poolLength());
       // console.log('qq', pL);
       setPoolLength(pL);

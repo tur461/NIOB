@@ -1,7 +1,7 @@
 import "./Trade.scss";
-import { T_TYPE } from "../../constant";
+import { T_TYPE } from "../../services/constant";
 import React, { useEffect } from "react";
-import { isBnb } from "../../services/utils/global";
+import { isEth, try2weth } from "../../services/utils/trading";
 import useLiquidity from "../../hooks/liquidity";
 import { Container, Col } from "react-bootstrap";
 import useLiquid from "../../redux/volatiles/liquid";
@@ -27,6 +27,8 @@ const AddLiquidity = (props) => {
   const cTrade = useCommonTrade({});
   const liquidity = useLiquidity({});
   const P = useSelector(s => s.persist);
+
+  const TC = ContractServices.TokenContract;
   
   useEffect(() => {
     common.setFilteredTokenList(P.tokenList.filter((token) => token.name.toLowerCase().includes(common.search.toLowerCase())));
@@ -35,27 +37,26 @@ const AddLiquidity = (props) => {
 
   const init = async () => {
     if (P.isConnected) {
-      const balance1 = await ContractServices.getBNBBalance(P.priAccount);
-      common.setTokenBalance(balance1, T_TYPE.A);
       const { lptoken } = props;
+      let bal = '0';
       if (lptoken) {
+        let i = lptoken.token0Obj ? 0 : lptoken.token0Obj ? 1 : -1;
+        if(isEth(lptoken[`token${i}Obj`].addr))
+          bal = await ContractServices.getETHBalance(P.priAccount);
+        else {
+          TC.setTo(lptoken[`token${i}Obj`].addr);
+          bal = await TC.balanceOf(P.priAccount);
+        }
         common.setCurrentPair(lptoken.pair);
         common.setLpTokenBalance(lptoken.balance);
         common.setSharePoolValue(lptoken.poolShare);
-        let i = lptoken.token0Obj ? 0 : lptoken.token1Obj ? 1 : -1;
         if(i>=0) {
           common.setTokenValue(lptoken[`token${i}Obj`], i+1);
           common.setTokenDeposit(lptoken[`token${i}Deposit`], i+1);
           common.setTokenCurrency(lptoken[`token${i}Obj`].symbol, i+1);
-          common.setTokenBalance(
-            isBnb(lptoken[`token${i}Obj`].address) ?
-            balance1 : 
-            await ContractServices.getTokenBalance(lptoken[`token${i}Obj`].address, P.priAccount), 
-            i+1
-          );
         }
-        console.log('init done with i: ' + i);
       }
+      common.setTokenBalance(bal, T_TYPE.A);
     }
   };
 

@@ -23,13 +23,9 @@ import SelectCoin from "../../selectCoin/SelectCoin";
 const RemoveLiquidity = (props) => {
   const dispatch = useDispatch();
 
-  const isUserConnected = useSelector(state => state.persist.isUserConnected);
-  const tokenList = useSelector(state => state.persist.tokenList);
-  const deadline = useSelector(state => state.persist.deadline);
-  const slippage = useSelector(state => state.persist.slippage);
-  const userLpTokens = useSelector(state => state.persist.userLpTokens);
+  const P = useSelector(state => state.persist);
 
-  const [modalCurrency, setModalCurrency] = useState(false);
+  const [modalCurrency, setModalCurrency] = useState(!1);
   const [tokenOne, setTokenOne] = useState(TOKEN_LIST[0]);
   const [tokenTwo, setTokenTwo] = useState({});
   const [tokenOneValue, setTokenOneValue] = useState(0);
@@ -45,40 +41,41 @@ const RemoveLiquidity = (props) => {
   const [liquidity, setLiquidity] = useState(0);
   const [liquidityTemp, setLiquidityTemp] = useState(0);
   const [tokenType, setTokenType] = useState('TK1');
-  const [showSupplyModal, setShowSupplyModal] = useState(false);
+  const [showSupplyModal, setShowSupplyModal] = useState(!1);
 
   const [search, setSearch] = useState("");
   const [filteredTokenList, setFilteredTokenList] = useState([]);
-  const [liquidityConfirmation, setLiquidityConfirmation] = useState(false);
+  const [liquidityConfirmation, setLiquidityConfirmation] = useState(!1);
 
   const [selectedCurrency, setSelectedCurrency] = useState('');
 
   const [currentPairAddress, setCurrentPairAddress] = useState('');
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
+  const [showTransactionModal, setShowTransactionModal] = useState(!1);
   const [txHash, setTxHash] = useState('');
 
-  const [screenType, setScreenType] = useState(true);//detailed/simple
+  const [screenType, setScreenType] = useState(!0);//detailed/simple
   const [rangeValue, setRangeValue] = useState(0);
-  const [approve, setApprove] = useState(false);
+  const [approve, setApprove] = useState(!1);
   const [error, setError] = useState('Enter an amount');
   const [signedData, setSignedData] = useState(null);
   const [dl, setDl] = useState(0);
-  const [receiveBNB, setReceiveBNB] = useState(true);
-  const [checkBNB, setCheckBNB] = useState(false);
-  const [checkSignature, setCheckSignature] = useState(true);
+  const [receiveBNB, setReceiveBNB] = useState(!0);
+  const [checkBNB, setCheckBNB] = useState(!1);
+  const [checkSignature, setCheckSignature] = useState(!0);
 
-  const [approvalConfirmation, setApprovalConfirmation] = useState(false);
+  const [approvalConfirmation, setApprovalConfirmation] = useState(!1);
 
   const [symbolsArr] = useState(["e", "E", "+", "-"]);
+  const TC = ContractServices.TokenContract;
 
   useEffect(() => {
-    setFilteredTokenList(tokenList.filter((token) => token.name.toLowerCase().includes(search.toLowerCase())));
+    setFilteredTokenList(P.tokenList.filter((token) => token.name.toLowerCase().includes(search.toLowerCase())));
     init();
-  }, [search, tokenList, props.show]);
+  }, [search, P.tokenList, props.show]);
 
   const init = async () => {
-    if (isUserConnected) {
-      const oneBalance = await ContractServices.getBNBBalance(isUserConnected);
+    if (P.isConnected) {
+      const oneBalance = await ContractServices.getETHBalance(P.priAccount);
       setTokenOneBalance(oneBalance);
 
       const { lptoken } = props;
@@ -93,9 +90,10 @@ const RemoveLiquidity = (props) => {
           let tokenBal = 0;
           if (lptoken.token0Obj.address === 'BNB') {
             tokenBal = oneBalance;
-            setCheckBNB(true);
+            setCheckBNB(!0);
           } else {
-            tokenBal = await ContractServices.getTokenBalance(lptoken.token0Obj.address, isUserConnected);
+            TC.setTo(lptoken.token0Obj.address);
+            tokenBal = await TC.balanceOf(P.priAccount);
           }
           setTokenOneBalance(tokenBal);
         }
@@ -106,9 +104,10 @@ const RemoveLiquidity = (props) => {
           let tokenBal = 0;
           if (lptoken.token1Obj.address === 'BNB') {
             tokenBal = oneBalance;
-            setCheckBNB(true);
+            setCheckBNB(!0);
           } else {
-            tokenBal = await ContractServices.getTokenBalance(lptoken.token1Obj.address, isUserConnected);
+            TC.setTo(lptoken.token1Obj.address);
+            tokenBal = await TC.balanceOf(P.priAccount);
           }
           setTokenTwoBalance(tokenBal);
         }
@@ -117,34 +116,34 @@ const RemoveLiquidity = (props) => {
   };
 
   const closeTransactionModal = () => {
-    setShowTransactionModal(false);
+    setShowTransactionModal(!1);
     props.backBtn();
     window.location.reload();
   }
 
   const onHandleOpenModal = (tokenType) => {
     console.log('dropdown:', tokenType);
-    if (!isUserConnected) {
+    if (!P.isConnected) {
       return toast.error('Connect wallet first!');
     }
     setSelectedCurrency(tokenType === 'TK1' ? tokenTwoCurrency : tokenOneCurrency);
     setModalCurrency({
-      modalCurrency: true,
+      modalCurrency: !0,
     });
     setTokenType(tokenType);
   }
   const onHandleSelectCurrency = async (token, selecting) => {
     const { address, symbol } = token;
-    if (!isUserConnected) {
+    if (!P.isConnected) {
       return toast.error('Connect wallet first!');
     }
     let a1, a2, oneBalance = 0, twoBalance = 0;
     if (selecting === 'TK1') {
       a1 = address;
       if (address === 'BNB') {
-        oneBalance = await ContractServices.getBNBBalance(isUserConnected);
+        oneBalance = await ContractServices.getETHBalance(P.priAccount);
       } else {
-        oneBalance = await ContractServices.getTokenBalance(address, isUserConnected);
+        oneBalance = await ContractServices.getTokenBalance(address, P.priAccount);
       }
       setTokenOne(token);
       setCurrencyNameForTokenOne(symbol);
@@ -156,9 +155,10 @@ const RemoveLiquidity = (props) => {
     if (selecting === 'TK2') {
       a2 = address;
       if (address === 'BNB') {
-        twoBalance = await ContractServices.getBNBBalance(isUserConnected);
+        twoBalance = await ContractServices.getETHBalance(P.priAccount);
       } else {
-        twoBalance = await ContractServices.getTokenBalance(address, isUserConnected);
+        TC.setTo(address);
+        twoBalance = await TC.balanceOf(P.priAccount);
       }
       setTokenTwo(token);
       setCurrencyNameForTokenTwo(symbol);
@@ -169,7 +169,7 @@ const RemoveLiquidity = (props) => {
     }
     setModalCurrency(!modalCurrency);
     setSearch('');
-    setFilteredTokenList(tokenList);
+    setFilteredTokenList(P.tokenList);
 
     if (a1 && a2) {
       let currentPairAddress;
@@ -184,13 +184,13 @@ const RemoveLiquidity = (props) => {
       }
       if (currentPairAddress !== '0x0000000000000000000000000000000000000000') {
         setCurrentPairAddress(currentPairAddress);
-        const lpTokenBalance = await ContractServices.getTokenBalance(currentPairAddress, isUserConnected);
+        TC.setTo(currentPairAddress)
+        const lpTokenBalance = await TC.balanceOf(P.priAccount);
+        const totalSupply = await TC.totalSupply();
         setLiquidity(lpTokenBalance);
         setLiquidityTemp(0);
 
-        const totalSupply = await ContractServices.getTotalSupply(currentPairAddress);
         const ratio = lpTokenBalance / totalSupply;
-
         const reserves = await ExchangeService.getReserves(currentPairAddress);
 
         //lp deposit
@@ -244,10 +244,10 @@ const RemoveLiquidity = (props) => {
       setTokenTwoValue(tokenTwoValue);
 
       //enable approve button
-      setApprove(true);
+      setApprove(!0);
       setError('Remove');
     } else {
-      setApprove(false);
+      setApprove(!1);
     }
   };
 
@@ -277,28 +277,28 @@ const RemoveLiquidity = (props) => {
       }
 
       //enable approve button
-      setApprove(true);
+      setApprove(!0);
       setError('Remove');
     } else {
-      setApprove(false);
+      setApprove(!1);
     }
   };
   //sign signature
   const approveTransaction = async () => {
-    setApprove(false);
+    setApprove(!1);
     let value = Math.floor(liquidityTemp * (10 ** 18));
     value = BigNumber(value).toFixed();
 
     if (rangeValue === 100) {//fixing for 100%
-      value = await ContractServices.getLiquidity100Value(currentPairAddress, isUserConnected);
+      value = await ContractServices.getLiquidity100Value(currentPairAddress, P.priAccount);
     }
 
     let dl = Math.floor((new Date()).getTime() / 1000);
-    dl = dl + (deadline * 60);
+    dl = dl + (P.deadline * 60);
     setDl(dl);
 
     const data = {
-      owner: isUserConnected,
+      owner: P.priAccount,
       spender: MAIN_CONTRACT_LIST.router.address,
       value,
       deadline: dl
@@ -307,13 +307,13 @@ const RemoveLiquidity = (props) => {
       const res = await ExchangeService.signRemoveTransaction(data, currentPairAddress);
       if (res.message) {
         if (res.message.indexOf('eth_signTypedData_v4') > -1) {
-          setCheckSignature(false);
+          setCheckSignature(!1);
           setError('Remove');
           await handleTokenApproval();
           return;
         }
         if (res.message.indexOf('User denied') > -1) {
-          setApprove(false);
+          setApprove(!1);
           return toast.error('User denied for approval.');
         }
         return toast.error(res.message);
@@ -321,19 +321,19 @@ const RemoveLiquidity = (props) => {
       setSignedData(res);
       setError(null);
     } catch (err) {
-      setApprove(true);
+      setApprove(!0);
       setError(err.message);
     }
   };
   const confirmRemoveLiquidity = () => {
     if (!error) {
-      setShowSupplyModal(true);
+      setShowSupplyModal(!0);
     }
   }
   //for non signature remove liquidity
   const handleTokenApproval = async () => {
     const acc = await ContractServices.getDefaultAccount();
-    if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
+    if (acc && acc.toLowerCase() !== P.priAccount.toLowerCase()) {
       return toast.error('Wallet address doesn`t match!');
     }
     if (approvalConfirmation) {
@@ -345,65 +345,65 @@ const RemoveLiquidity = (props) => {
     if (lptoken) {
       try {
         dispatch(startLoading());
-        let allowance = await ContractServices.allowanceToken(lptoken.pair, MAIN_CONTRACT_LIST.router.address, isUserConnected);
+        let allowance = await ContractServices.allowanceToken(lptoken.pair, MAIN_CONTRACT_LIST.router.address, P.priAccount);
         allowance = Number(allowance);
         if (!(allowance > 0)) {
-          const r = await ContractServices.approveToken(isUserConnected, value, MAIN_CONTRACT_LIST.router.address, lptoken.pair);
+          const r = await ContractServices.approveToken(P.priAccount, value, MAIN_CONTRACT_LIST.router.address, lptoken.pair);
           if (r.message.indexOf('Rejected') > -1) {
             toast.error("User denied transaction signature.");
             setError('Remove');
-            setApprove(true);
+            setApprove(!0);
           } else if (r.code == 4001) {
             toast.error("User denied transaction signature.");
             setError('Remove');
           } else {
-            setApprovalConfirmation(true);
+            setApprovalConfirmation(!0);
             let data = {
               message: `Approve ${lptoken.symbol}`,
               tx: r.transactionHash
             };
             dispatch(addTransaction(data));
-            setApprovalConfirmation(false);
+            setApprovalConfirmation(!1);
             setError(null);
           }
         } else {
-          setApprove(false);
+          setApprove(!1);
           setError(null);
         }
         dispatch(stopLoading());
       } catch (err) {
-        setApprovalConfirmation(false);
+        setApprovalConfirmation(!1);
         dispatch(stopLoading());
         toast.error('Transaction Reverted!');
         setError('Error');
-        setApprove(true);
+        setApprove(!0);
       }
     }
   }
   const handleLpTokens = async () => {
-    const result = userLpTokens.filter(lpToken => lpToken.pair !== props.lptoken.pair);
+    const result = P.userLpTokens.filter(lpToken => lpToken.pair !== props.lptoken.pair);
     dispatch(saveUserLpTokens(result));
   }
   const removeLiquidity = async () => {
     const acc = await ContractServices.getDefaultAccount();
-    if (acc && acc.toLowerCase() !== isUserConnected.toLowerCase()) {
+    if (acc && acc.toLowerCase() !== P.priAccount.toLowerCase()) {
       return toast.error('Wallet address doesn`t match!');
     }
     if (liquidityConfirmation) {
       return toast.info('Transaction is processing!');
     }
-    setLiquidityConfirmation(true);
+    setLiquidityConfirmation(!0);
     dispatch(startLoading());
 
-    let value = 0, checkBNB = false, token;
+    let value = 0, checkBNB = !1, token;
 
     if (tokenOne.address === 'BNB') {
-      checkBNB = true;
+      checkBNB = !0;
       value = tokenOneValue;
       token = tokenTwo.address;
     }
     if (tokenTwo.address === 'BNB') {
-      checkBNB = true;
+      checkBNB = !0;
       value = tokenTwoValue;
       token = tokenOne.address;
     }
@@ -412,16 +412,16 @@ const RemoveLiquidity = (props) => {
       value = BigNumber(value).toFixed();
     }
     if (checkBNB) {
-      let amountETHMin = BigNumber(Math.floor(Number(value) - (Number(value) * slippage / 100))).toFixed();
+      let amountETHMin = BigNumber(Math.floor(Number(value) - (Number(value) * P.slippage / 100))).toFixed();
 
       let amountTokenMin = '';
       if (tokenOne.address === 'BNB') {
-        let a = tokenTwoValue - (tokenTwoValue * slippage) / 100;
+        let a = tokenTwoValue - (tokenTwoValue * P.slippage) / 100;
         a = a * 10 ** tokenTwo.decimals;
         amountTokenMin = BigNumber(Math.floor(a)).toFixed();
       }
       if (tokenTwo.address === 'BNB') {
-        let a = (tokenOneValue - (tokenOneValue * slippage) / 100);
+        let a = (tokenOneValue - (tokenOneValue * P.slippage) / 100);
         a = a * 10 ** tokenOne.decimals;
         amountTokenMin = BigNumber(Math.floor(a)).toFixed();
       }
@@ -430,7 +430,7 @@ const RemoveLiquidity = (props) => {
       liquidity = BigNumber(liquidity).toFixed();
 
       if (rangeValue === 100) { //fixing for 100%
-        liquidity = await ContractServices.getLiquidity100Value(currentPairAddress, isUserConnected);
+        liquidity = await ContractServices.getLiquidity100Value(currentPairAddress, P.priAccount);
       }
 
       let r, s, v;
@@ -445,10 +445,10 @@ const RemoveLiquidity = (props) => {
         liquidity,
         amountTokenMin,
         amountETHMin,
-        to: isUserConnected,
+        to: P.priAccount,
         deadline: dl,
         value,
-        approveMax: false,
+        approveMax: !1,
         r,
         s,
         v,
@@ -461,8 +461,8 @@ const RemoveLiquidity = (props) => {
 
         if (result) {
           setTxHash(result);
-          setShowTransactionModal(true);
-          setShowSupplyModal(false);
+          setShowTransactionModal(!0);
+          setShowSupplyModal(!1);
           if (rangeValue === 100) handleLpTokens();
           const data = {
             message: `Remove ${tokenOne.symbol} and ${tokenTwo.symbol}`,
@@ -470,20 +470,20 @@ const RemoveLiquidity = (props) => {
           };
           dispatch(addTransaction(data));
         }
-        setLiquidityConfirmation(false);
+        setLiquidityConfirmation(!1);
       } catch (err) {
         console.log(err);
         dispatch(stopLoading());
         const message = await ContractServices.web3ErrorHandle(err);
         toast.error(message);
-        setLiquidityConfirmation(false);
+        setLiquidityConfirmation(!1);
       }
     } else {
       let amountADesired = tokenOneValue;
       let amountBDesired = tokenTwoValue;
 
-      let amountAMin = amountADesired - (amountADesired * slippage / 100);
-      let amountBMin = amountBDesired - (amountBDesired * slippage / 100);
+      let amountAMin = amountADesired - (amountADesired * P.slippage / 100);
+      let amountBMin = amountBDesired - (amountBDesired * P.slippage / 100);
 
       amountADesired = BigNumber(Math.floor(amountADesired * 10 ** tokenOne.decimals)).toFixed();
       amountBDesired = BigNumber(Math.floor(amountBDesired * 10 ** tokenTwo.decimals)).toFixed();
@@ -494,7 +494,7 @@ const RemoveLiquidity = (props) => {
       liquidity = BigNumber(liquidity).toFixed();
 
       if (rangeValue === 100) {//fixing for 100%
-        liquidity = await ContractServices.getLiquidity100Value(currentPairAddress, isUserConnected);
+        liquidity = await ContractServices.getLiquidity100Value(currentPairAddress, P.priAccount);
       }
 
       let r, s, v;
@@ -510,10 +510,10 @@ const RemoveLiquidity = (props) => {
         liquidity,
         amountAMin,
         amountBMin,
-        to: isUserConnected,
+        to: P.priAccount,
         deadline: dl,
         value,
-        approveMax: false,
+        approveMax: !1,
         r,
         s,
         v,
@@ -527,8 +527,8 @@ const RemoveLiquidity = (props) => {
         dispatch(stopLoading());
         if (result) {
           setTxHash(result);
-          setShowTransactionModal(true);
-          setShowSupplyModal(false);
+          setShowTransactionModal(!0);
+          setShowSupplyModal(!1);
           if (rangeValue === 100) handleLpTokens();
           const data = {
             message: `Remove ${tokenOne.symbol} and ${tokenTwo.symbol}`,
@@ -536,13 +536,13 @@ const RemoveLiquidity = (props) => {
           };
           dispatch(addTransaction(data));
         }
-        setLiquidityConfirmation(false);
+        setLiquidityConfirmation(!1);
       } catch (err) {
         console.log(err);
         dispatch(stopLoading());
         const message = await ContractServices.web3ErrorHandle(err);
         toast.error(message);
-        setLiquidityConfirmation(false);
+        setLiquidityConfirmation(!1);
       }
     }
   }
@@ -579,14 +579,9 @@ const RemoveLiquidity = (props) => {
     }
   }
 
-  useEffect(() => {
-
-  }, [tokenTwoValue])
-
-
   return (
     <Modal
-      scrollable={true}
+      scrollable={!0}
       className="selectCurrency_modal removeLiq_Modal"
       show={props.show}
       onHide={props.handleClose}
@@ -661,7 +656,7 @@ const RemoveLiquidity = (props) => {
                     onChange={(e) => handleLiquidityChange(Number(e.target.value), liquidity, 'pair')} min={0}
                     placeholder="0.0"
                     value={liquidityTemp}
-                    min={0}
+                    // min={0}
                     minLength={1}
                     maxLength={79}
                     autoCorrect="off"
@@ -703,7 +698,7 @@ const RemoveLiquidity = (props) => {
               className="mb-0"
               placeholder="0.0"
               onChange={(e) => handleLiquidityChange(Number(e.target.value), tokenOneDeposit, 'TK1')}
-              max={false}
+              max={!1}
               defaultValue={tokenOneValue}
             />}
 
@@ -720,7 +715,7 @@ const RemoveLiquidity = (props) => {
               className="mb-0"
               placeholder="0.0"
               onChange={(e) => handleLiquidityChange(Number(e.target.value), tokenTwoDeposit, 'TK2')}
-              max={false}
+              max={!1}
               defaultValue={tokenTwoValue}
             />}
           </>
@@ -762,7 +757,7 @@ const RemoveLiquidity = (props) => {
         />
 
         {/* Approve confirm Modal Start */}
-        <Modal centered scrollable={true} className="connect_wallet" show={showSupplyModal} onHide={() => setShowSupplyModal(false)}>
+        <Modal centered scrollable={!0} className="connect_wallet" show={showSupplyModal} onHide={() => setShowSupplyModal(!1)}>
           <Modal.Header closeButton>
             <Modal.Title>You will receive</Modal.Title>
           </Modal.Header>
@@ -788,7 +783,7 @@ const RemoveLiquidity = (props) => {
                         <h2>{tokenTwo.symbol}</h2>
                       </span>
                     </div>
-                    <p>Output is estimated. If the price changes by more than {slippage}% your transaction will revert.</p>
+                    <p>Output is estimated. If the price changes by more than {P.slippage}% your transaction will revert.</p>
                   </li>
                   <li>
                     <li>{tokenOneCurrency} Deposit: <span> {tokenOneValue}</span></li>
@@ -798,7 +793,7 @@ const RemoveLiquidity = (props) => {
                         {1}&nbsp;{tokenTwoCurrency} = {calculateFractionRow('TK2')}</p></li>
                   </li>
                   
-                    <Button title={isUserConnected ? 'Confirm' : 'Unlock Wallet'}
+                    <Button title={P.priAccount ? 'Confirm' : 'Unlock Wallet'}
                       className="remove_liq_btn"
                       disabled={liquidityConfirmation} onClick={() => removeLiquidity()}
                     />

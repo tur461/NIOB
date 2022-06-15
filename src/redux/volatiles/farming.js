@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { ADDRESS } from '../../constant';
+import { ADDRESS } from '../../services/constant';
 
 const useFarming = create((set, get) => ({
     checked: !1,

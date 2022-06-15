@@ -1,48 +1,35 @@
-import React, { useEffect, useState } from "react";
-import { Carousel, Row, Col, Image } from "react-bootstrap";
-import { useHistory, useParams } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
+import "./Home.scss";
 import Web3 from "web3";
 import { Link } from "react-router-dom";
-import { rootName } from "../../constant";
+import { BigNumber } from "bignumber.js";
+import { rootName } from "../../services/constant";
+import React, { useEffect, useState } from "react";
 import Button from "../../components/Button/Button";
-import FarmCard from "../../components/FarmCard/FarmCard";
-import NIOB from "../../assets/images/token_icons/NIOB.svg";
-import BUSD from "../../assets/images/token_icons/BUSD-Token.svg";
-import ANCHOR from "../../assets/images/token_icons/ANCHOR-Token.svg";
-import BTCB from "../../assets/images/token_icons/BTCB-Token.svg";
-import { ContractServices } from "../../services/ContractServices";
-import { ExchangeService } from "../../services/ExchangeService";
+import { toast } from "../../components/Toast/Toast";
+import { useHistory, useParams } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
 import { FarmService } from "../../services/FarmService";
-import { ReferralsServices } from "../../services/ReferralsServices";
-import Statement from "../../assets/Pdfs/Statement.pdf";
+import FarmCard from "../../components/FarmCard/FarmCard";
+import { Carousel, Row, Col, Image } from "react-bootstrap";
+import { ExchangeService } from "../../services/ExchangeService";
+import Saitama from "../../assets/images/token_icons/Saitama.png";
+import BUSD from "../../assets/images/token_icons/BUSD-Token.svg";
+import BTCB from "../../assets/images/token_icons/BTCB-Token.svg";
+import { isAddr, rEq, toFull } from "../../services/utils/global";
+import { ContractServices } from "../../services/ContractServices";
+import ANCHOR from "../../assets/images/token_icons/ANCHOR-Token.svg";
 import {
   MAIN_CONTRACT_LIST,
-  BURN_ADDRESS,
   ANCHOR_BUSD_LP,
   WETH,
   TOKEN_LIST,
   BNB_BUSD_LP,
 } from "../../assets/tokens";
-import { addCommas } from "../../constant";
 import {
-  addTransaction,
-  startLoading,
   stopLoading,
   saveFotterValues,
 } from "../../redux/actions";
-import { BigNumber } from "bignumber.js";
-import Loader from "react-loader-spinner";
-import { TwitterTimelineEmbed } from "react-twitter-embed";
-import Default from "../../assets/images/token_icons/default.svg";
-import { saveReferralAddress } from "../../redux/actions";
 
-import "./Home.scss";
-import { toast } from "../../components/Toast/Toast";
-
-import UpdateDsk from "../../assets/images/PRDT-Trading-Banner.jpg";
-import { isAddr, isNonZero, rEq, toFull } from "../../services/utils/global";
-// import UpdateMob from "../../assets/images/update_Mob.jpg";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -54,92 +41,43 @@ const Home = () => {
     decimals: 0,
   });
   const { ref } = useParams();
-  const referralAddress = useSelector((state) => state.persist.referralAddress);
-  const [rewards, seRewards] = useState(0);
-  const [niobPerBlock, setNiobPerBlock] = useState(0);
-  const [transferTaxRate, setTransferTaxRate] = useState(0);
+  const [saitamaPerBlock, setSaitamaPerBlock] = useState(0);
   const [burnedToken, setBurnedToken] = useState(0);
-  const [walletShow, setWalletShow] = useState(!1);
   const [poolLength, setPoolLength] = useState(0);
-  const [farms, setFarms] = useState([]);
-  const [inactiveFarms, setInactiveFarms] = useState([]);
-  const [stakingOnly, setStakingOnly] = useState([]);
-  const [stakeData, setStakeData] = useState(null);
-  const [stakeValue, setStakeValue] = useState(0);
-  const [referrer, setReferrer] = useState(
-    "0x0000000000000000000000000000000000000000"
-  );
+
   const [totalAmount, setAmount] = useState(0);
   const [totalRewards, setRewards] = useState(0);
   const [marketCap, setMarketCap] = useState(0.0);
   const [anchorTotalSupply, setAnchorTotalSupply] = useState(0);
-  const [niobBusdValue, setNiobBusdValue] = useState(0);
+  const [saitamaBusdValue, setSaitamaBusdValue] = useState(0);
   const [totalMinted, setTotalMinted] = useState(0);
   const [totalLockedRewards, setTotalLockedRewards] = useState(0);
-  const [anchorBnbWorth, setAnchorBnbWorth] = useState(0);
-  const [anchorBusdWorth, setAnchorBusdWorth] = useState(0);
-  const [tokenIds, setTokenIds] = useState();
-  const [allowance, setAllowance] = useState(!1);
-  const [disable, setDisabledBUtton] = useState(!1);
-  const [IButton, setIButton] = useState(!1);
-  const [ticketWindow, openTicketWindow] = useState(!1);
-  const [ticketValue, setvalue] = useState(1);
-  const [buyButton, setBuyButton] = useState(!1);
-  const [loader, setLoader] = useState(!1);
-  const [currentTicketsArray, setCurrentArray] = useState([]);
   const [showHarvest, setShowHarvest] = useState(!1);
   const [harvest, setHarvestAll] = useState([]);
-  const [stakeConfirmation, setStakeConfimation] = useState(0);
-  const [showTransactionModal, setShowTransactionModal] = useState(!1);
-  const [txHash, setTxHash] = useState("");
   const [farmAndStakeLoader, setFarmAndStakeLoader] = useState(!1);
   const [liquidity, setLiquidity] = useState(0);
-  const [niobApr, setNiobApr] = useState(0);
+  const [saitamaApr, setSaitamaApr] = useState(0);
 
   const [topFarms, setTopFarms] = useState([]);
   const [topFarmApy, setTopFarmApy] = useState("");
 
   let TC = ContractServices.TokenContract;;
 
-  useEffect(async () => {
-    TC = ContractServices.TokenContract;
-    init();
-    if (ref) {
-
-      const checkAddress = await Web3.utils.isAddress(ref);
-      if (!checkAddress) {
-        toast.error("Address does not exist!");
-        return;
-      }
-      if (P.priAccount) {
-        let re = await ReferralsServices.getReferrer(P.priAccount);
-        if (isAddr(re)) return toast.error(`This user has already referral`);
-        dispatch(saveReferralAddress(ref));
-        return;
-      }
-      toast.success(`Please connect with wallet!`);
-    }
-  }, [P.priAccount]);
+  useEffect(_ => {
+    (async () => {
+      init();
+      if (ref && !Web3.utils.isAddress(ref)) 
+        return toast.error("Address does not exist!");
+    })()
+  }, []);
 
   const init = async () => {
     const res = await ContractServices.tryGetAccount();
     if (P.isConnected && res) {
       getMarketCap();
       getBurnedToken();
-      getNiobPerBlock();
+      getSaitamaPerBlock();
       try {
-        dispatch(startLoading());
-        let ref = await ReferralsServices.getReferrer(P.priAccount);
-        if (ref === "0x0000000000000000000000000000000000000000") {
-          if (
-            referralAddress &&
-            referralAddress !== "0x0000000000000000000000000000000000000000"
-          ) {
-            ref = referralAddress;
-          }
-          setReferrer(ref);
-        }
-        dispatch(stopLoading());
         const pL = Number(await FarmService.poolLength());
         setPoolLength(pL);
         // let farmsTemp = [];
@@ -196,15 +134,15 @@ const Home = () => {
               totalLiquidity += Number(res);
             }
             if (pool) {
-              const poolInfoForNiob = await FarmService.poolInfo(i, "2");
-              // console.log("poolInfoForNiob", poolInfoForNiob);
+              const poolInfoForSaitama = await FarmService.poolInfo(i, "2");
+              // console.log("poolInfoForSaitama", poolInfoForSaitama);
               let res = await handleTotalLiquidityForPool(pool.lpToken);
               const tokenAmount = await ExchangeService.getTokenStaked(
                 pool.lpToken
               );
               let price = rEq(pool.lpTokenaddress, TOKEN_LIST[2].address) ? 1 
               : await getPrice(await ExchangeService.getPair(pool.lpToken, TOKEN_LIST[2].address))
-              if (poolInfoForNiob.allocPoint === "30") setNiobApr(await calculateAPR(poolInfoForNiob.allocPoint, res));
+              if (poolInfoForSaitama.allocPoint === "30") setSaitamaApr(await calculateAPR(poolInfoForSaitama.allocPoint, res));
               const liq = tokenAmount * price;
               totalLiquidity += Number(liq);
               setLiquidity(totalLiquidity);
@@ -212,11 +150,11 @@ const Home = () => {
 
             if (i === pL - 1) {
               const totalSupply = await getTotalSupply();
-              const niobValue = await getNiobDollarValue();
+              const saitamaValue = await getSaitamaDollarValue();
               const obj = {
                 tvl: totalLiquidity,
                 totalSupply: totalSupply,
-                niobValue: niobValue,
+                saitamaValue: saitamaValue,
               };
               dispatch(saveFotterValues(obj));
             }
@@ -243,9 +181,6 @@ const Home = () => {
               options.push({ pid: i, lpToken: poolInfo.lpToken });
             }
           }
-          // if (i + 1 == pL) {
-          //     setFarmAndStakeLoader(!1);
-          // }
         }
         setTopFarmApy(Math.max.apply(Math, allAPRs));
         setHarvestAll(options);
@@ -262,8 +197,6 @@ const Home = () => {
       await FarmService.totalAllocationPoint()
     );
     const anchorPerBlock = Number(await FarmService.pantherPerBlock());
-    //need to calculate usd price.
-    // console.log("liquidity: ", liquidity);
     if (liquidity != 0) {
       const apr =
         ((allocPoint / totalAllcationPoint) *
@@ -276,13 +209,13 @@ const Home = () => {
     return 0;
   };
   const getMarketCap = async () => {
-    const dollarValue = await getNiobDollarValue();
+    const dollarValue = await getSaitamaDollarValue();
     const totalSupply = await getTotalSupply();
     setMarketCap(dollarValue * totalSupply);
   };
-  const getNiobDollarValue = async () => {
+  const getSaitamaDollarValue = async () => {
     const reserves = await ExchangeService.getReserves(ANCHOR_BUSD_LP);
-    setNiobBusdValue(reserves[1] / reserves[0]);
+    setSaitamaBusdValue(reserves[1] / reserves[0]);
     return reserves[1] / reserves[0];
   };
   const getTotalSupply = async () => {
@@ -303,10 +236,10 @@ const Home = () => {
       console.log(error);
     }
   };
-  const getNiobPerBlock = async () => {
+  const getSaitamaPerBlock = async () => {
     try {
-      const niobPerBlock = Number(await FarmService.pantherPerBlock());
-      setNiobPerBlock(niobPerBlock / 10 ** 18);
+      const saitamaPerBlock = Number(await FarmService.pantherPerBlock());
+      setSaitamaPerBlock(saitamaPerBlock / 10 ** 18);
     } catch (error) {
       console.log(error);
     }
@@ -560,7 +493,7 @@ const Home = () => {
 
                 <h5>Tweets by @SaitaSwap</h5>
               </div>
-              <div className="NiobSwap">
+              <div className="SaitamaSwap">
                 <h5>
                   SaitaSwap<span>@SaitaSwap</span>
                 </h5>
@@ -577,10 +510,10 @@ const Home = () => {
 
 
              
-              <div className="niobImg tweet_Img">
+              <div className="saitamaImg tweet_Img">
                 <Image className="tweet_img"
                   src={
-                    require("../../assets/images/Niob-Header-Logo.svg")
+                    require("../../assets/images/Saitama-Header-Logo.svg")
                       .default
                   }
                 />
@@ -591,7 +524,7 @@ const Home = () => {
         <Col xl={6} lg={12}>
           <div className="comnBlk mb-4">
             <h3>SAITA Stats</h3>
-            <ul className="pl-0 niobStats">
+            <ul className="pl-0 saitamaStats">
               <li>
                 <label>Market Cap</label>
                 <span>$100,000,001</span>
@@ -643,15 +576,15 @@ const Home = () => {
           </div>
         </Col>
         <Col xl={4} lg={12}>
-          <FarmCard title="SAITA" title1="BUSD" icon1={NIOB} icon2={BUSD} liquidity="$81,400.000"
+          <FarmCard title="SAITAMA" title1="BUSD" icon1={Saitama} icon2={BUSD} liquidity="$81,400.000"
             apy="987.40 %" />
         </Col>
         <Col xl={4} lg={12}>
-          <FarmCard title="SAITA" title1="BTCB" icon1={NIOB} icon2={BTCB} liquidity="$98,500.000" apy="1,187.40 %"
+          <FarmCard title="SAITAMA" title1="BTCB" icon1={Saitama} icon2={BTCB} liquidity="$98,500.000" apy="1,187.40 %"
           />
         </Col>
         <Col xl={4} lg={12}>
-          <FarmCard title="SAITA" title1="ANCHOR" icon1={NIOB} icon2={ANCHOR} liquidity="$108,450.000"
+          <FarmCard title="SAITAMA" title1="ANCHOR" icon1={Saitama} icon2={ANCHOR} liquidity="$108,450.000"
             apy="435.90 %" />
         </Col>
       </Row>

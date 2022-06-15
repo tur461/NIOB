@@ -1,5 +1,5 @@
 import "./Trade.scss";
-import { T_TYPE } from "../../constant";
+import { T_TYPE } from "../../services/constant";
 import { Container, Col } from 'react-bootstrap'
 import React, { useState, useEffect } from "react";
 import useCommonTrade from "../../hooks/CommonTrade";
@@ -21,6 +21,7 @@ import TransactionalModal from "../../components/TransactionalModal/Transactiona
 import useSwap from "../../redux/volatiles/swap";
 import useXchange from "../../hooks/exchange";
 import Loader from "../../components/Loader";
+import { iContains } from "../../services/utils/global";
 
 const Exchange = (props) => {
   const swap = useSwap(s => s);
@@ -32,13 +33,7 @@ const Exchange = (props) => {
   const [walletShow, setWalletShow] = useState(!1);
 
   useEffect(() => {
-    common.setFilteredTokenList(
-      P.tokenList.filter(
-        tkn => tkn.name.toLowerCase().includes(
-          common.search.toLowerCase()
-        )
-      )
-    );
+    common.setFilteredTokenList(P.tokenList.filter(tkn => iContains(tkn.name, common.search)));
     init();
   }, [common.search, P.tokenList]);
 
@@ -56,7 +51,7 @@ const Exchange = (props) => {
 
   const init = async () => {
     if (P.isConnected)
-      common.setTokenBalance(await ContractServices.getBNBBalance(P.priAccount), T_TYPE.A);
+      common.setTokenBalance(await ContractServices.getETHBalance(P.priAccount), T_TYPE.A);
   };
 
   

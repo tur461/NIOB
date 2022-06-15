@@ -1,8 +1,10 @@
-import { TOKEN_LIST } from "../../assets/tokens";
+import { TOKEN_LIST, WALLET_TYPE } from "../../services/constant";
+import { rEq } from "../../services/utils/global";
 import { actionTypes } from "../actions/PersistActions";
+console.log('TOKEN_LIST', TOKEN_LIST);
 
 const initialState = {
-  walletType: "Metamask",
+  walletType: WALLET_TYPE.M_MASK,
   priAccount: '',
   isConnected: '',
   isUserConnected: '',
@@ -36,13 +38,7 @@ const persist = (state = initialState, action) => {
         tokenList: initialState.tokenList,
       };
     case actionTypes.TOKEN_LIST_DEL:
-      initialState.tokenList.splice(
-        initialState.tokenList.findIndex(
-          (a) =>
-            a.address.toLowerCase() === action.payload.address.toLowerCase()
-        ),
-        1
-      );
+      initialState.tokenList.splice(initialState.tokenList.findIndex(tkn => rEq(tkn.addr, action.payload.address)), 1);
       return {
         ...state,
         tokenList: initialState.tokenList,
@@ -75,11 +71,6 @@ const persist = (state = initialState, action) => {
       };
     case actionTypes.LOGOUT:
       return initialState;
-    case actionTypes.SAVE_REFFRAL_ADDRESS:
-      return {
-        ...state,
-        referralAddress: action.payload,
-      };
     case actionTypes.CHECK_USER_LPTOKENS:
       return {
         ...state,

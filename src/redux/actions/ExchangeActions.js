@@ -4,57 +4,51 @@ import { UserService } from "../../services/UserService";
 import { checkUserLpTokens, saveUserLpTokens } from "./PersistActions";
 import { WETH } from "../../assets/tokens";
 import { ExchangeService } from "../../services/ExchangeService";
+import { contains, isAddr, rEq } from "../../services/utils/global";
+import { try2weth } from "../../services/utils/trading";
 
-export const searchTokenByNameOrAddress =
-  (address) => async (dispatch, getState) => {
+const TC = ContractServices.TokenContract;
+
+export const searchTokenByNameOrAddress = q => async (_, getState) => {
     try {
       const {
-        persist: { tokenList },
+        persist: { tokenList, priAccount },
       } = getState();
-
-      if (address.length === 42) {
-        const filteredTokenList = tokenList.filter((token) =>
-          token.address.toLowerCase().includes(address.toLowerCase())
-        );
-        if (filteredTokenList.length > 0) {
-          return filteredTokenList;
-        }
-        const tokenDecimal = await ContractServices.getDecimals(address);
-        const tokenName = await ContractServices.getTokenName(address);
-        const tokenSymbol = await ContractServices.getTokenSymbol(address);
-        const tokenBalance = await ContractServices.getTokenBalance(address);
+      q = try2weth(q);
+      if (isAddr(q)) {
+        const filtered = tokenList.filter(tkn => rEq(tkn.addr, q));
+        if (filtered.length > 0) return filtered;
+        TC.setTo(q);
+        const tokenDecimal = await TC.decimals();
+        const tokenName = await TC.name();
+        const tokenSymbol = await TC.symbol();
+        const tokenBalance = await TC.balanceOf(priAccount);
         const obj = {
           icon: default_icon,
           name: tokenName,
-          address,
-          isAdd: true,
-          isDel: false,
-          decimals: tokenDecimal,
-          symbol: tokenSymbol,
+          addr: q,
+          bal: tokenBalance,
+          isAdded: !0,
+          isDeleted: !1,
+          dec: tokenDecimal,
+          sym: tokenSymbol,
         };
         tokenList.push(obj);
         return tokenList;
       }
-      return tokenList.filter((token) =>
-        token.name.toLowerCase().includes(address.toLowerCase())
-      );
+      return tokenList.filter(tkn => contains(tkn.name, q));
     } catch (error) {
       console.log("Error: ", error);
       return error;
     }
   };
 
-export const delTokenFromList = (data) => async (dispatch, getState) => {
+export const delTokenFromList = d => async (_, getState) => {
   try {
     const {
       persist: { tokenList },
     } = getState();
-    tokenList.splice(
-      tokenList.findIndex(
-        (a) => a.address.toLowerCase() === data.address.toLowerCase()
-      ),
-      1
-    );
+    tokenList.splice(tokenList.findIndex(tkn => rEq(tkn.addr, d.address)), 1);
     return tokenList;
   } catch (error) {
     console.log("Error: ", error);
@@ -118,17 +112,17 @@ export const commonLpToken = (lp) => {
         const reserves = await ExchangeService.getReserves(lp.pair);
 
         if (lp.token0.toLowerCase() === WETH.toLowerCase()) {
-          token0Obj = tokenList.find((d) => d.address === "BNB");
+          token0Obj = tokenList.find((d) => d.addr === "BNB");
         } else {
           token0Obj = tokenList.find(
-            (d) => d.address.toLowerCase() === lp.token0.toLowerCase()
+            (d) => d.addr.toLowerCase() === lp.token0.toLowerCase()
           );
         }
         if (lp.token1.toLowerCase() === WETH.toLowerCase()) {
-          token1Obj = tokenList.find((d) => d.address === "BNB");
+          token1Obj = tokenList.find((d) => d.addr === "BNB");
         } else {
           token1Obj = tokenList.find(
-            (d) => d.address.toLowerCase() === lp.token1.toLowerCase()
+            (d) => d.addr.toLowerCase() === lp.token1.toLowerCase()
           );
         }
         //lp deposit
@@ -191,18 +185,18 @@ export const addLpToken = (lp) => {
 
           if (lp.token0.toLowerCase() === WETH.toLowerCase()) {
             lp.token0 = 'BNB';
-            token0Obj = tokenList.find((d) => d.address === "BNB");
+            token0Obj = tokenList.find((d) => d.addr === "BNB");
           } else {
             token0Obj = tokenList.find(
-              (d) => d.address.toLowerCase() === lp.token0.toLowerCase()
+              (d) => d.addr.toLowerCase() === lp.token0.toLowerCase()
             );
           }
           if (lp.token1.toLowerCase() === WETH.toLowerCase()) {
             lp.token1 = 'BNB';
-            token1Obj = tokenList.find((d) => d.address === "BNB");
+            token1Obj = tokenList.find((d) => d.addr === "BNB");
           } else {
             token1Obj = tokenList.find(
-              (d) => d.address.toLowerCase() === lp.token1.toLowerCase()
+              (d) => d.addr.toLowerCase() === lp.token1.toLowerCase()
             );
           }
           //lp deposit

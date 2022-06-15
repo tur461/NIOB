@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Route, Redirect, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import { useLocation, withRouter } from "react-router";
 import Header from "../../components/Header/Header";
 import Sidebar from "../../components/Sidebar/Sidebar";
@@ -8,7 +8,6 @@ import FarmPlanets from "../../pages/FarmPlanets/FarmPlanets";
 import Footer from "../../components/Footer/Footer";
 import Trade from "../../pages/Trade/Trade";
 import AddLiquidity from "../../pages/Trade/AddLiquidity";
-import { rootName } from "../../constant";
 import PoolGalaxy from "../../pages/PoolGalaxy/PoolGalaxy";
 import ReactGA from 'react-ga';
 

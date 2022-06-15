@@ -2,15 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { Col, Row, Modal, Button, Form, InputGroup, FormControl } from 'react-bootstrap'
 import './GetLPToken.scss'
 import { FarmService } from '../../services/FarmService'
-import { toast } from '../Toast/Toast'
 
 
 const WithDrawLPToken = props => {
     const [symbolsArr] = useState(["e", "E", "+", "-"]);
-    const [niobWithdrawable, setNiob] = useState(0);
+    const [saitamaWithdrawable, setNiob] = useState(0);
     useEffect(() => {
         
-        if (props.isNiobWithdrawabe && props?.stakeData?.isLocked) init();
+        if (props.isSaitamaWithdrawabe && props?.stakeData?.isLocked) init();
     }, []);
 
     const init = async () => {
@@ -20,7 +19,7 @@ const WithDrawLPToken = props => {
 
     const checkIfAmountGreaterThanWithdrawable = (value, isLocked) => {
         // console.log('oooo', props.farms.isLocked);
-        // if ( (props.isNiobWithdrawabe && props?.stakeData?.isLocked) && value > niobWithdrawable) {
+        // if ( (props.isSaitamaWithdrawabe && props?.stakeData?.isLocked) && value > saitamaWithdrawable) {
             // toast.error('Amount greater than withdrawable !')
         // } else {
             props.depositWithdraw('withdraw', isLocked);
@@ -37,8 +36,8 @@ const WithDrawLPToken = props => {
                     <Col className="lp_tokens">
                         <Form className="lptokn_area">
                             <p className="text-end"><span>{props.stakeData?.balance}</span> {props.stakeData?.lpTokenDetails?.lpTokenName} available</p>
-                            {/* {(props.isNiobWithdrawabe && props?.stakeData?.isLocked) &&
-                                <p className="text-end"><span>{niobWithdrawable ? niobWithdrawable?.toFixed(4) : 0}</span> Withdrawable Niob</p>} */}
+                            {/* {(props.isSaitamaWithdrawabe && props?.stakeData?.isLocked) &&
+                                <p className="text-end"><span>{saitamaWithdrawable ? saitamaWithdrawable?.toFixed(4) : 0}</span> Withdrawable Niob</p>} */}
                             <InputGroup>
                                 <FormControl
                                     onKeyDown={(evt) => { symbolsArr.includes(evt.key) && evt.preventDefault() }}

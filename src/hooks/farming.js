@@ -1,4 +1,4 @@
-import { rootName } from "../constant";
+import { rootName } from "../services/constant";
 import { BigNumber } from "bignumber.js";
 import { toast } from "../components/Toast/Toast";
 import useCommon from "../redux/volatiles/common";

@@ -8,20 +8,15 @@ import Button from "../Button/Button";
 import ConnectWallet from "../ConnectWallet/ConnectWallet";
 import { login, logout, versionManager } from "../../redux/actions"
 import { ContractServices } from "../../services/ContractServices";
+import { WALLET_TYPE } from "../../services/constant";
 const Header = props => {
     const dispatch = useDispatch();
     const P = useSelector(state => state.persist);
     const [show, setShow] = useState(!1);
     useEffect(_ => {
-        const init = async _ => {
-            await dispatch(versionManager());
-            if (P.walletType) {
-                await ContractServices.setWalletType(P.walletType);
-            } else {
-                dispatch(logout());
-            }
-        };
-        init();
+        dispatch(versionManager());
+        if (P.walletType) ContractServices.setWalletType(P.walletType);
+        else dispatch(logout());
         addListeners();
     }, []);
     const handleShow = _ => setShow(!0);
@@ -29,8 +24,8 @@ const Header = props => {
     const prepWalletConnectModal = _ => P.isConnected ? setShow(!show) : setShow(!0);
 
     const addListeners = async _ => {
-        let addr = P.walletType === 'Metamask' ? 
-        await ContractServices.tryGetAccount('') : P.walletType === 'BinanceChain' ?
+        let addr = WALLET_TYPE.isMMask(P.walletType) ? 
+        await ContractServices.tryGetAccount('') : WALLET_TYPE.isBinance(P.walletType) ?
         await ContractServices.isBinanceChainInstalled() : null;
         ContractServices.walletWindowListener();
         addr &&

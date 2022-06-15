@@ -4,14 +4,16 @@ import { toast } from "../components/Toast/Toast";
 import { ContractServices } from "./ContractServices";
 import { BigNumber } from "bignumber.js";
 import { rEq, toDec, toFull } from "./utils/global";
+import { ABI, ADDRESS } from "./constant";
 
 const TokenContract = ContractServices.TokenContract;
 
 const PairContract = (_ => {
   let inst = null;
   return a => {
-    if(a) return ContractServices.getContract(a, MAIN_CONTRACT_LIST.pair.abi)
-    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.pair.address, MAIN_CONTRACT_LIST.pair.abi);
+    console.log('PAIR ABI', ABI.PAIR);
+    if(a) return ContractServices.getContract(a, ABI.PAIR)
+    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.pair.address, ABI.PAIR);
     return inst;
   }
 })();
@@ -19,8 +21,8 @@ const PairContract = (_ => {
 const RouterContract = (_ => {
   let inst = null;
   return a => {
-    if(a) return ContractServices.getContract(a, MAIN_CONTRACT_LIST.router.abi)
-    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.router.address, MAIN_CONTRACT_LIST.router.abi);
+    if(a) return ContractServices.getContract(a, ADDRESS.ROUTER)
+    inst = inst || ContractServices.getContract(ADDRESS.ROUTER, ADDRESS.ROUTER);
     return inst;
   }
 })();
@@ -28,8 +30,8 @@ const RouterContract = (_ => {
 const FactoryContract = (_ => {
   let inst = null;
   return a => {
-    if(a) return ContractServices.getContract(a, MAIN_CONTRACT_LIST.factory.abi)
-    inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.factory.address, MAIN_CONTRACT_LIST.factory.abi);
+    if(a) return ContractServices.getContract(a, ABI.FACTORY)
+    inst = inst || ContractServices.getContract(ADDRESS.FACTORY, ABI.FACTORY);
     return inst;
   }
 })();
@@ -612,12 +614,12 @@ const swapExactETHForTokens = async (data, handleBalance) => {
         .on('transactionHash', (hash) => {
           resolve(hash);
         })
-        .on('receipt', (receipt) => {
+        .on('receipt', _ => {
           handleBalance();
           toast.success('Swap transaction executed successfully');
         })
-        .on('error', (error, receipt) => {
-          reject(error);
+        .on('error', (err, _) => {
+          reject(err);
         });
     } catch (error) {
       reject(error);
@@ -1043,7 +1045,7 @@ const splitSignature = async (signature) => {
   return result;
 }
 
-const swapTokensForExactETH = async (data) => {
+const swapTokensForExactETH = async data => {
   return new Promise(async (resolve, reject) => {
     try {
       let {

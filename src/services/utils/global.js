@@ -1,13 +1,10 @@
-import { ADDRESS } from "../../constant";
+import { ADDRESS } from "../constant";
 import { BigNumber } from "bignumber.js"
 
 export const zero = v => !!!v;
 
-export const contains = (s, c) => s.indexOf(c) > -1;
 
 export const isDefined = x => !!x;
-
-export const isBnb = x => x === 'BNB';
 
 export const tgl = v => v-1 ? 1 : 2;
 
@@ -17,6 +14,8 @@ export const toBgFix = v => BigNumber(v).toFixed();
 
 export const isZero = addr => addr === ADDRESS.ZERO;
 
+export const contains = (s, c) => s.indexOf(c) > -1;
+
 export const isNonZero = addr => addr !== ADDRESS.ZERO;
 
 export const toDec = (v, dec) => Number(v) / 10 ** Number(dec);
@@ -25,7 +24,15 @@ export const toFull = (v, dec) => Number(v) * 10 ** Number(dec);
 
 export const tStamp = (a=0) => Math.floor(new Date().getTime() / 1000) + a;
 
+export const iContains = (s, c) => s.toLowerCase().indexOf(c.toLowerCase()) > -1;
+
 export const hasVal = v => typeof v == 'string' && !v.length ? !1 : parseFloat(v) === 0 ? !1 : !0;
+
+export const obj2list = o => {
+    let t = [];
+    Object.keys(o).forEach(_ => t.push(o[_]));
+    return [...t];
+};
 
 export const rDefined = function() {
     for(let a=arguments, i=0, l=a.length; i<l;)

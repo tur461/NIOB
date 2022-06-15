@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "../components/Toast/Toast";
 import { removeToken } from "../Helpers/storageHelper"
-import { AUTH_TOKEN_KEY } from "../constant"
+import { AUTH_TOKEN_KEY } from "./constant"
 export { _fetch as fetch };
 
 function handleError(error, reject) {

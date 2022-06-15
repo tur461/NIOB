@@ -3,7 +3,7 @@ import { Col, Row, Modal } from "react-bootstrap";
 import Button from "../Button/Button";
 import "./RecentTransactions.scss";
 import { useSelector } from "react-redux";
-import { BSC_SCAN } from "../../constant";
+import { BSC_SCAN } from "../../services/constant";
 
 const RecentTransactions = ({ show, handleClose }) => {
   const recentTransactions = useSelector(

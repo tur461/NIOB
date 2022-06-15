@@ -8,17 +8,13 @@ import { useDispatch, useSelector } from "react-redux";
 import useFarming from "../../redux/volatiles/farming";
 import Searchicon from "../../assets/images/search.png";
 import { FarmService } from "../../services/FarmService";
-import NIOB from "../../assets/images/token_icons/NIOB.svg";
 import { startLoading, stopLoading } from "../../redux/actions";
 import GetLPToken from "../../components/GetLPToken/GetLPToken";
 import FarmIcon from "../../assets/images/Farm-Header-Logo.svg";
-import PlanetCard from "../../components/PlanetCard/PlanetCard";
-import BUSD from "../../assets/images/token_icons/BUSD-Token.svg";
-import { ReferralsServices } from "../../services/ReferralsServices";
 import WithDrawLPToken from "../../components/GetLPToken/WithDrawLPToken";
 import { Container, Col, Row, Form, InputGroup, FormControl } from "react-bootstrap";
 import TransactionalModal from "../../components/TransactionalModal/TransactionalModal";
-import { isAddr, isZero, zero } from "../../services/utils/global";
+import { zero } from "../../services/utils/global";
 import { toast } from "../../components/Toast/Toast";
 import Active from "./Active";
 import Inactive from "./Inactive";
@@ -44,8 +40,6 @@ const FarmPlanets = (props) => {
     if(!P.isConnected) return toast.error('please connect wallet!');
     try {
       dsp(startLoading());
-      let ref = await ReferralsServices.getReferrer(P.priAccount);
-      farming.setReferrer(isZero(ref) && isAddr(P.referralAddress) ? P.referralAddress : ref);
       const pL = Number(await FarmService.poolLength());
       farming.setPoolLength(pL);
       for (let i = 0; i < pL; ++i) {
@@ -80,9 +74,9 @@ const FarmPlanets = (props) => {
                 <div className="desc">
                   <h1 className="title_hd">Farm Planets</h1>
                   <p>
-                    There is so much to explore! NIOB Swap offers multiple
+                    There is so much to explore! Saitama Swap offers multiple
                     farming opportunities to you. Get amazing rewards by staking
-                    your LP tokens in return for additional NIOB Tokens.
+                    your LP tokens in return for additional Saitama Tokens.
                   </p>
                 </div>
               </div>
@@ -97,7 +91,7 @@ const FarmPlanets = (props) => {
               <div className="serch_field">
                 <Form.Label>Search</Form.Label>
                 <InputGroup>
-                  <FormControl id="search" placeholder="Niob" />
+                  <FormControl id="search" placeholder="Saitama" />
                   <Button className="search_btn">
                     <img src={Searchicon} />
                   </Button>
@@ -168,7 +162,7 @@ const FarmPlanets = (props) => {
         setMaxValue={Farmer.setMaxValue}
         show={farming.showStakeWithdraw}
         closeStakeModal={Farmer.handleWithdrawClose}
-        isNiobWithdrawabe={false}
+        isSaitamaWithdrawabe={false}
       />
       <TransactionalModal
         show={farming.showTransactionModal}

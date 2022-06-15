@@ -4,10 +4,6 @@ import React, { useEffect, useState } from "react";
 import iconDropDown from "../../assets/images/down-arrow.png";
 
 const SelectCoin = (props) => {
-  const [symbolsArr] = useState(["e", "E", "+", "-"]);
-  useEffect(_ => {
-    console.log('token value changed:', props.tokenValue);
-  }, [props.tokenValue])
   return (
     <Col className={`selectCoin_style ${props.className}`}>
       <Row className="mx-0">
@@ -16,7 +12,7 @@ const SelectCoin = (props) => {
           <input
             type="number"
             disabled={props.disabled}
-            onKeyDown={(evt) => { symbolsArr.includes(evt.key) && evt.preventDefault() }}
+            onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()}
             onChange={props.onChange}
             placeholder={props.placeholder}
             value={props.tokenValue}

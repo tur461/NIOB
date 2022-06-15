@@ -3,7 +3,7 @@ import {Container, Tab, Tabs, Col, Row} from "react-bootstrap";
 
 import Exchange from "./Exchange";
 import Liquidity from "././Liquidity";
-import {rootName} from '../../constant'
+import {rootName} from '../../services/constant'
 import "./Trade.scss";
 import AddLiquidity from "./AddLiquidity";
 import ImportPool from "./ImportPool";

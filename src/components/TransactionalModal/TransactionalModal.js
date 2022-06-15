@@ -2,7 +2,7 @@ import React from "react";
 import { Col, Row, Modal, Button } from "react-bootstrap";
 import "./TransactionalModal.scss";
 import { useSelector } from "react-redux";
-import { BSC_SCAN } from "../../constant";
+import { BSC_SCAN } from "../../services/constant";
 import checkicon from "../../assets/images/check_icon.svg";
 
 const TransactionalModal = ({ show, handleClose, txHash }) => {

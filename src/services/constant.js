@@ -1,3 +1,8 @@
+import Saitama from '../assets/images/token_icons/Saitama.png';
+import Eth from '../assets/images/token_icons/ETH-Token.svg';
+import Gen from '../assets/images/token_icons/TRON.svg';
+import { obj2list } from './utils/global';
+
 export const rootName = "";
 export const HOME_ROUTE = process.env.REACT_APP_HOME_ROUTE;
 export const API_HOST = process.env.REACT_APP_API_URL;
@@ -34,8 +39,26 @@ export const AUDIT_LINK = 'https://docs.anchorswap.finance/audit/';
 
 export const MINIMUM_LIQUIDITY = 10 ** 3;
 
+export const ABI = {
+  FACTORY: require('../assets/ABI/factory.ABI.json'),
+  ROUTER: require('../assets/ABI/router.ABI.json'),
+  PAIR: require('../assets/ABI/pair.ABI.json'),
+  TOKEN: require('../assets/ABI/tokenContract.ABI.json'),
+  SAITAMA: require('../assets/ABI/Saitama.json'),
+  STAKING: require('../assets/ABI/SaitamaStaking.json'),
+  SMA_FARM: require('../assets/ABI/farmABI.json'),
+}
+
 export const ADDRESS = {
+  NATIVE: 'NATIVE',
   ZERO: '0x' + '0'.repeat(40),
+  WETH: '0xE93323D0AD8CF7269E322d38D317aAa06580Aa96',
+  SAITAMA: '0x352E956eB0247792842ABD234d3f7425BBf544c2',
+  SMA_STAKING: '0x6DF6a2D4ce73Fc937625Db2E5fb5762F248B30F3',
+  SMA_FARM: '',
+  PAIR: '',
+  ROUTER: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
+  FACTORY: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
 }
 
 export const VAL = {
@@ -120,7 +143,64 @@ export const T_TYPE = {
 export const WALLET_TYPE = {
   M_MASK: 'Metamask',
   B_NANCE: 'BinanceChain',
+  W_CONNECT: 'Walletconnect',
   isMMask: w => w === WALLET_TYPE.M_MASK,
   isBinance: w => w === WALLET_TYPE.B_NANCE,
+  isWalletConnect: w => w === WALLET_TYPE.W_CONNECT,
 }
+
+export const TOKENS = {
+  ETH: {
+    name: 'ether token',
+    dec: 18,
+    sym: 'ETH',
+    icon: Eth,
+    bal: '',
+    isAdded: !0,
+    isDeleted: !1,
+    addr: 'NATIVE',
+  },
+  WETH: {
+    name: 'wrapped ether token',
+    dec: 18,
+    sym: 'WETH',
+    icon: Eth,
+    bal: '',
+    isAdded: !0,
+    isDeleted: !1,
+    addr: '0xE93323D0AD8CF7269E322d38D317aAa06580Aa96',
+  },
+  TUR: {
+    name: 'tur token',
+    dec: 18,
+    sym: 'TUR',
+    icon: Gen,
+    bal: '',
+    isAdded: !0,
+    isDeleted: !1,
+    addr: '0xEe8F3Df788B0357d35D66F9023626f99f29a8351',
+  },
+  STEEP: {
+    name: 'steep labs token',
+    dec: 18,
+    sym: 'STEEP',
+    icon: Gen,
+    bal: '',
+    isAdded: !0,
+    isDeleted: !1,
+    addr: '0x8605c0c5E361dd897A5526558C48E7ff0D51353c',
+  },
+  SAITAMA: {
+    name: 'saitama token',
+    dec: 18,
+    sym: 'SAITAMA',
+    icon: Saitama,
+    bal: '',
+    isAdded: !0,
+    isDeleted: !1,
+    addr: '0x352E956eB0247792842ABD234d3f7425BBf544c2',
+  }
+}
+
+export const TOKEN_LIST = obj2list(TOKENS)
 

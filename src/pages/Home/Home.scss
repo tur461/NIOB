@@ -216,7 +216,7 @@
           @include fluid-type(320px, 1920px, 16px, 20px);
           margin-bottom: 20px;
         }
-        .niobStats {
+        .saitamaStats {
           padding-left: 0; margin-bottom: 0;
           li {
             margin-bottom: 8px;
@@ -228,7 +228,7 @@
             }
           }
         }
-        .NiobSwap {
+        .saitamaSwap {
           padding: 0 30px;
           position: relative;
           &:before {
@@ -261,7 +261,7 @@
             display: inherit;
           }
         }
-        .niobImg {
+        .saitamaImg {
           // background: url("../../assets/images/swap-bg.jpg") no-repeat;
           background-position: center center;
           background-size: cover;
@@ -317,7 +317,7 @@
       }
     }
   }
-  .niobImg.tweet_Img {
+  .saitamaImg.tweet_Img {
     display: none !important;
 }
 
