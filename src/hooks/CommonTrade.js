@@ -402,7 +402,7 @@ const useCommonTrade = (props) => {
 
     const handleSearchToken = async d => {
         try {
-            common.setFilteredTokenList(dsp(searchTokenByNameOrAddress(d)));
+            common.setFilteredTokenList(await dsp(searchTokenByNameOrAddress(d)));
         } catch (e) {
             toast.error("Something went wrong!");
         }
