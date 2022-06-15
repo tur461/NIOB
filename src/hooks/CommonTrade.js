@@ -55,14 +55,20 @@ const useCommonTrade = (props) => {
         const symbol = token.sym;
         addr.push(try2weth(token.addr));
         tknOther.addr && addr.push(try2weth(tknOther.addr));
-        if(addr.length === 1) return dsp(stopLoading())
-        if(rEq(...addr)) {
+        TC.setTo(addr[0]);
+        bal = await TC.balanceOf(P.priAccount);
+        common.setTokenCurrency(symbol, selected);
+        common.setToken(token, selected);
+        common.setTokenBalance(bal, selected);
+        common.setFilteredTokenList(P.tokenList);
+        common.setModalCurrency(!common.modalCurrency);
+        if(addr.length > 1 && rEq(...addr)) {
             console.log('tokens cant be same!');
             dsp(stopLoading())
             return toast.error('please select dissimilar tokens!');
         }
         if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
-        if (rDefined(...addr)) {
+        if (addr.length > 1 && rDefined(...addr)) {
             let cPair = ADDRESS.ZERO;
             console.log('3 getPair', addr);
             cPair = await ExchangeService.getPair(...addr);
@@ -71,13 +77,6 @@ const useCommonTrade = (props) => {
                 dsp(stopLoading());
                 return toast.error('pair not available!!');
             }
-            TC.setTo(addr[0]);
-            bal = await TC.balanceOf(P.priAccount);
-            common.setTokenCurrency(symbol, selected);
-            common.setToken(token, selected);
-            common.setTokenBalance(bal, selected);
-            common.setFilteredTokenList(P.tokenList);
-            common.setModalCurrency(!common.modalCurrency);
             console.log('3:', cPair);
             common.setHasPriceImpact(!0);
 
