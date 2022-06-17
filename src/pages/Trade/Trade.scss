@@ -304,4 +304,28 @@
     }
   }
 }
+.swapBtn_col, .btn-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.approve-section {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: .5rem;
+  &>div {
+    display: flex;
+  }
+}
+
+.error-box {
+  padding: .4rem;
+  background-color: red;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-align: center;
+}
 

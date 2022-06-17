@@ -1,10 +1,10 @@
 import "./Trade.scss";
 import { T_TYPE } from "../../services/constant";
-import React, { useEffect } from "react";
-import { isEth, try2weth } from "../../services/utils/trading";
+import React, { useEffect, useRef } from "react";
+import { isEth } from "../../services/utils/trading";
 import useLiquidity from "../../hooks/liquidity";
 import { Container, Col } from "react-bootstrap";
-import useLiquid from "../../redux/volatiles/liquid";
+import Loader from "../../components/Loader";
 import useCommonTrade from "../../hooks/CommonTrade";
 import useCommon from "../../redux/volatiles/common";
 import Plusicon from "../../assets/images/plus_yellow.png";
@@ -21,6 +21,8 @@ import ConnectWallet from "../../components/ConnectWallet/ConnectWallet";
 import SettingModal from "../../components/Modal/SettingModal/SettingModal";
 import ModalCurrency from "../../components/Modal/ModalCurrency/ModalCurrency";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
+import log from "../../services/logging/logger";
+import { iContains } from "../../services/utils/global";
 
 const AddLiquidity = (props) => {
   const common = useCommon(s => s);
@@ -29,9 +31,17 @@ const AddLiquidity = (props) => {
   const P = useSelector(s => s.persist);
 
   const TC = ContractServices.TokenContract;
+  const ref = useRef(!0);
+  useEffect(_ => {
+    if(ref.current) {
+      log.i('[AddLiquidity] a hard reload happened');
+      common.reset();
+      ref.current = !1;
+    } // else log.i('[AddLiquidity] a soft reload happened');
+  })
   
   useEffect(() => {
-    common.setFilteredTokenList(P.tokenList.filter((token) => token.name.toLowerCase().includes(common.search.toLowerCase())));
+    common.setFilteredTokenList(P.tokenList.filter(token => iContains(token.name, common.search)));
     init();
   }, [common.search, P.tokenList]);
 
@@ -41,11 +51,15 @@ const AddLiquidity = (props) => {
       let bal = '0';
       if (lptoken) {
         let i = lptoken.token0Obj ? 0 : lptoken.token0Obj ? 1 : -1;
-        if(isEth(lptoken[`token${i}Obj`].addr))
-          bal = await ContractServices.getETHBalance(P.priAccount);
-        else {
-          TC.setTo(lptoken[`token${i}Obj`].addr);
-          bal = await TC.balanceOf(P.priAccount);
+        try {
+          if(isEth(lptoken[`token${i}Obj`].addr))
+            bal = await ContractServices.getETHBalance(P.priAccount);
+          else {
+            TC.setTo(lptoken[`token${i}Obj`].addr);
+            bal = await TC.balanceOf(P.priAccount);
+          }
+        } catch(e) {
+          log.e('Reason:', e.reason);
         }
         common.setCurrentPair(lptoken.pair);
         common.setLpTokenBalance(lptoken.balance);
@@ -99,12 +113,13 @@ const AddLiquidity = (props) => {
                 placeholder="0.0"
                 inputLabel="Input"
                 max={common.isMax}
+                disabled={common.isFetching}
                 value={common.token1Currency}
                 coinImage={common.token1?.icon}
                 tokenValue={common.token1Value}
                 label={`Balance: ${common.token1Balance}`}
                 onMax={() => cTrade.handleMaxBalance(T_TYPE.A)}
-                onClick={() => cTrade.onHandleOpenModal(T_TYPE.A)}
+                onClick={() => cTrade.openSelectTokenModal(T_TYPE.A)}
                 onChange={(e) => cTrade.handleInput(e.target.value, T_TYPE.A)}
               />
             }
@@ -118,6 +133,7 @@ const AddLiquidity = (props) => {
             {
               <SelectCoin
                 max={!1}
+                disabled={common.isFetching}
                 className="mb-0"
                 placeholder="0.0"
                 inputLabel="Input"
@@ -125,79 +141,97 @@ const AddLiquidity = (props) => {
                 coinImage={common.token2?.icon}
                 tokenValue={common.token2Value}
                 label={`Balance: ${common.token2Balance}`}
-                onClick={() => cTrade.onHandleOpenModal(T_TYPE.B)}
+                onClick={() => cTrade.openSelectTokenModal(T_TYPE.B)}
                 onChange={(e) => cTrade.handleInput(e.target.value, T_TYPE.B)}
               />
             }
-            {common.poolShareShown && (
-              <Col className="poolSec">
-                <h6>PRICES AND POOL SHARE</h6>
-                <div className="poolDiv">
-                  <span>
-                    {liquidity.calculateFraction(T_TYPE.A)} per
-                    <br />
-                    <small>
-                      {" "}
-                      {common.token2Currency} per {common.token1Currency}
-                    </small>
-                  </span>
-                  <span>
-                    {liquidity.calculateFraction(T_TYPE.B)} per
-                    <br />
-                    <small>
-                      {" "}
-                      {common.token1Currency} per {common.token2Currency}
-                    </small>
-                  </span>
-                  <span>
-                    {common.sharePoolValue}% <br />
-                    <small>Share of Pool</small>
-                  </span>
-                </div>
-              </Col>
-            )}
-            {common.currentPair && (
-              <Col className="lp-class">
-                <h4>LP Tokens in your Wallet</h4>
-                <ul className="LptokensList">
-                  <li>
-                    <span>
-                      <img
-                        alt="icon 1"
-                        className="sc-fWPcDo bUpjCL"
-                        src={common.token1?.icon}
-                      />
-                      <img
-                        alt="icon 2"
-                        className="sc-fWPcDo bUpjCL"
-                        src={common.token2?.icon}
-                      />
-                      &nbsp;&nbsp;
-                      {`${common.token1Currency}/${common.token2Currency}`}:
-                    </span>{" "}
-                    <span>{common.lpTokenBalance?.toFixed(5)}</span>
-                  </li>
-                  <li>
-                    {common.token1.symbol}: <span>{common.token1Deposit}</span>
-                  </li>
-                  <li>
-                    {" "}
-                    {common.token2.symbol}: <span>{common.token2Deposit}</span>
-                  </li>
-                </ul>
-              </Col>
-            )}
+            {
+              common.isFetching ? <Loader stroke='white' text='Fetching prices..'/> :
+              (
+                common.poolShareShown ? (
+                  <Col className="poolSec">
+                    <h6>PRICES AND POOL SHARE</h6>
+                    <div className="poolDiv">
+                      <span>
+                        {liquidity.calculateFraction(T_TYPE.A)} per
+                        <br />
+                        <small>
+                          {" "}
+                          {common.token2Currency} per {common.token1Currency}
+                        </small>
+                      </span>
+                      <span>
+                        {liquidity.calculateFraction(T_TYPE.B)} per
+                        <br />
+                        <small>
+                          {" "}
+                          {common.token1Currency} per {common.token2Currency}
+                        </small>
+                      </span>
+                      <span>
+                        {common.sharePoolValue}% <br />
+                        <small>Share of Pool</small>
+                      </span>
+                    </div>
+                  </Col>
+                ) :
+                common.pairNotExist ? (
+                  <Col className="lp-class">
+                    <h4>LP Tokens in your Wallet</h4>
+                    <ul className="LptokensList">
+                      <li>
+                        <span>
+                          <img
+                            alt="icon 1"
+                            className="sc-fWPcDo bUpjCL"
+                            src={common.token1?.icon}
+                          />
+                          <img
+                            alt="icon 2"
+                            className="sc-fWPcDo bUpjCL"
+                            src={common.token2?.icon}
+                          />
+                          &nbsp;&nbsp;
+                          {`${common.token1Currency}/${common.token2Currency}`}:
+                        </span>{" "}
+                        <span>{common.lpTokenBalance?.toFixed(5)}</span>
+                      </li>
+                      <li>
+                        {common.token1.symbol}: <span>{common.token1Deposit}</span>
+                      </li>
+                      <li>
+                        {" "}
+                        {common.token2.symbol}: <span>{common.token2Deposit}</span>
+                      </li>
+                    </ul>
+                  </Col>
+                ) : <></>
+              )
+            }
+            
           </div>
           <Col className="swapBtn_col">
-            {!common.token1Approved ? cTrade.getApprovalButton(T_TYPE.A) : <></>}
-            {!common.token2Approved ? cTrade.getApprovalButton(T_TYPE.B) : <></>}
-
-            <ButtonPrimary
-              disabled={common.disabled}
-              className="swapBtn dismissBtn"
-              title={common.btnText || 'Supply'}
-              onClick={() => liquidity.checkAddLiquidity()}
-            />
+            {
+              common.isErr ?
+              <div className="error-box">
+                {common.errText}
+              </div> : 
+              (
+                <div className="btn-wrapper">
+                    <div className="approve-section">
+                      {!common.token1Approved ? cTrade.getApprovalButton(T_TYPE.A) : <></>}
+                      {!common.token2Approved ? cTrade.getApprovalButton(T_TYPE.B) : <></>}
+                    </div>
+      
+                    <ButtonPrimary
+                      disabled={common.isErr}
+                      className="swapBtn dismissBtn"
+                      title='Add Liquidity'
+                      onClick={() => liquidity.checkAddLiquidity()}
+                    />
+                </div>
+              )
+            }
           </Col>
         </CardCustom>
       </Container>
@@ -210,7 +244,7 @@ const AddLiquidity = (props) => {
         currencyName={common.selectedCurrency}
         searchToken={cTrade.handleSearchToken}
         handleOrder={common.FilteredTokenList}
-        selectCurrency={cTrade.onHandleSelectCurrency}
+        selectCurrency={cTrade.selectToken}
       />
       <ConnectWallet
         show={common.show1}

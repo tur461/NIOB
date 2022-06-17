@@ -1,17 +1,20 @@
 import React from "react";
 import useCommon from "../redux/volatiles/common"
-import { toast } from "../components/Toast/Toast";
 import { useDispatch, useSelector } from "react-redux";
 import ButtonPrimary from "../components/Button/Button";
 import { ExchangeService } from "../services/ExchangeService";
 import { ContractServices } from "../services/ContractServices";
-import { MAIN_CONTRACT_LIST} from "../assets/tokens";
-import { ADDRESS, LIQUIDITY_PROVIDER_FEE, MINIMUM_LIQUIDITY, STR, T_TYPE, VAL } from "../services/constant";
+import { ADDRESS, ERR, LIQUIDITY_PROVIDER_FEE, MINIMUM_LIQUIDITY, MISC, STR, T_TYPE, VAL } from "../services/constant";
 import { addTransaction, searchTokenByNameOrAddress, startLoading, stopLoading } from "../redux/actions";
-import { hasVal, isAddr, isDefined, isNonZero, rDefined, rEq, tgl, toBgFix, toDec, toFull, zero } from "../services/utils/global";
-import { isIP_A, isIP_B, togIP, isEth, try2weth } from "../services/utils/trading";
+import { hasVal, isAddr, isDefined, isNonZero, rDefined, rEq, tgl, toBgFix, toDec, toFull, typingGuard, zero } from "../services/utils/global";
+import { isIP_A, isIP_B, togIP, isEth, try2weth, isWeth } from "../services/utils/trading";
+import log from "../services/logging/logger";
+import l_t from "../services/logging/l_t";
+import toast from "../services/logging/toast";
 
-const useCommonTrade = (props) => {
+let timeOut = null;
+
+const useCommonTrade = props => {
     const dsp = useDispatch();
     const common = useCommon(s => s);
     const P = useSelector(s => s.persist);
@@ -24,11 +27,90 @@ const useCommonTrade = (props) => {
     const settingClose = () => common.setSettingShow(!1);
     const handleCloseRecent = () => common.setShowRecent(!1);
     const settingHandleShow = () => common.setSettingShow(!0);
+    
+    const _getIdx = tt => tt - 1 ? 1 : 0;
+    const _getToken = tt => common[`token${tt}`];
+    const _balanceNotEnough = async (addr, amt) => amt > await getBalance(addr);
+    const _vals = (a, tt) => ({v1: isIP_A(tt) ? a : '', v2: isIP_A(tt) ? a : ''});
+    
+    const _tryGetPair = async pair => {
+        const pr = await ExchangeService.getPair(...pair);
+        log.i('pair:', pair, 'pr:', pr);
+        const exists = isAddr(pr);
+        if(exists) common.setCurrentPair(pr);
+        else l_t.e(ERR.PAIR_NOT_EXIST.msg);
+        common.setPair(exists ? pr : ADDRESS.ZERO);
+        common.setPairNotExist(!exists);
+        return !exists;
+    }
 
-    const onHandleOpenModal = (tt) => {
-        console.log('dropdown:', tt);
+    const selectToken = async (token, selected, isSwap) => {
+        if (!P.isConnected) return toast.e("Connect wallet first!");
+        common.setSearch('');
+        handleClose();
+        dsp(startLoading())
+        log.i('token 1 addr:', _getToken(T_TYPE.A).addr, try2weth(_getToken(T_TYPE.A).addr))
+        let bal = 0, 
+            addr = _getIdx(selected) ? [
+                try2weth(_getToken(T_TYPE.A).addr),
+                try2weth(token.addr),
+            ] : [
+                try2weth(token.addr),
+                try2weth(_getToken(T_TYPE.B).addr),
+            ]
+        if(rDefined(...addr)) common.setAddrPair(addr);
+        
+        const symbol = token.sym;
+        TC.setTo(addr[0]);
+        bal = await TC.balanceOf(P.priAccount);
+        common.setTokenCurrency(symbol, selected);
+        common.setToken(token, selected);
+        common.setTokenBalance(bal, selected);
+        common.setFilteredTokenList(P.tokenList);
+        common.setModalCurrency(!common.modalCurrency);
+        if(addr.length > 1 && rDefined(...addr) && rEq(...addr)) {
+            common.setIsErr(!0)
+            common.setErrText(ERR.SAME_TOKENS.msg)
+            dsp(stopLoading())
+            return l_t.e(ERR.SAME_TOKENS.msg);
+        }
+        if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
+        if (addr.length > 1 && rDefined(...addr)) {
+            let pairNotExist = await _tryGetPair(addr);
+            if(isSwap && pairNotExist) {
+                common.setIsErr(!0)
+                common.setErrText(ERR.PAIR_NOT_EXIST.msg)
+                dsp(stopLoading());
+                return l_t.e(ERR.PAIR_NOT_EXIST.msg);
+            }
+            common.setHasPriceImpact(!0);
+
+            if (isSwap) {
+                TC.setTo(addr[0]);
+                const dec1 = await TC.decimals();
+                TC.setTo(addr[1]);
+                const dec2 = await TC.decimals();
+                const reserves = await ExchangeService.getReserves(common.pair);
+                TC.setTo(common.pair);
+                const lpTokenBalance = await TC.balanceOf(P.priAccount);
+                calcLiqPercentForSelCurrency(reserves, dec1, dec2, lpTokenBalance, common.pair);
+                common.setIsFirstLP(!1);
+                common.showPoolShare(!0);
+                common.setLpTokenBalance(lpTokenBalance);
+            } else {
+                common.setCurrentPair('');
+                common.setIsFirstLP(!0);
+                common.showPoolShare(!0);
+                common.setLpTokenBalance(0);
+            }
+        }
+        dsp(stopLoading())
+    };
+
+    const openSelectTokenModal = async tt => {
+        log.i('dropdown:', tt);
         if (!P.isConnected) {
-        return toast.error("Connect wallet first!");
+        return toast.e("Connect wallet first!");
         }
         common.setShow(!0);
         let i = tt-1 ? 2 : 1;
@@ -38,225 +120,146 @@ const useCommonTrade = (props) => {
         common.setSelectedCurrency(common[`token${i}Currency`]);
     };
 
-    const onHandleSelectCurrency = async (token, selected) => {
-        try {
-            await _onHandleSelectCurrency(token, selected);
-        } catch(e) {
-            console.log('BIG ERROR:', e);
-        }
-    }
-
-    const _onHandleSelectCurrency = async (token, selected) => {
-        if (!P.isConnected) return toast.error("Connect wallet first!");
-        common.setSearch('');
-        handleClose();
-        dsp(startLoading())
-        let tknOther = common[`token${togIP(selected)}`], addr = [], bal = 0;
-        const symbol = token.sym;
-        addr.push(try2weth(token.addr));
-        tknOther.addr && addr.push(try2weth(tknOther.addr));
-        TC.setTo(addr[0]);
-        bal = await TC.balanceOf(P.priAccount);
-        common.setTokenCurrency(symbol, selected);
-        common.setToken(token, selected);
-        common.setTokenBalance(bal, selected);
-        common.setFilteredTokenList(P.tokenList);
-        common.setModalCurrency(!common.modalCurrency);
-        if(addr.length > 1 && rEq(...addr)) {
-            console.log('tokens cant be same!');
-            dsp(stopLoading())
-            return toast.error('please select dissimilar tokens!');
-        }
-        if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
-        if (addr.length > 1 && rDefined(...addr)) {
-            let cPair = ADDRESS.ZERO;
-            console.log('3 getPair', addr);
-            cPair = await ExchangeService.getPair(...addr);
-            console.log('3:', addr);
-            if(!isAddr(cPair)) {
-                dsp(stopLoading());
-                return toast.error('pair not available!!');
-            }
-            console.log('3:', cPair);
-            common.setHasPriceImpact(!0);
-
-            if (isNonZero(cPair)) {
-                common.setCurrentPair(cPair);
-                TC.setTo(addr[0]);
-                const dec1 = await TC.decimals();
-                TC.setTo(addr[1]);
-                const dec2 = await TC.decimals();
-                console.log('reserves');
-                const reserves = await ExchangeService.getReserves(cPair);
-                console.log('4:', reserves);
-                TC.setTo(cPair);
-                const lpTokenBalance = await TC.balanceOf(P.priAccount);
-                calcLiqPercentForSelCurrency(reserves, dec1, dec2, lpTokenBalance, cPair);
-                common.setIsFirstLP(!1);
-                common.showPoolShare(!0);
-                common.setLpTokenBalance(lpTokenBalance);
-            } else {
-                common.setCurrentPair('');
-                common.setIsFirstLP(!0);
-                common.showPoolShare(!0);
-                common.setLpTokenBalance(0);
-                console.log('pair doesnt exist:', cPair);
-                toast.error('pair doesn\'t exist!');
-            }
-        }
-        dsp(stopLoading())
-    };
-
-    const swapHelper = async (amt, addr, tt) => {
-        let addrForPriceImpact = [], res=[], tAddr;
-        
-        let tPair = [addr[tt-1], addr[togIP(tt)-1]]
-        let pairAddr = await ExchangeService.getPair(...tPair);
-        if (pairAddr || (tAddr = await normalizePair(...tPair))) {
-            res = await ExchangeService[`getAmounts${isIP_A(tt) ? 'Out' : 'In'}`](amt, addr);
-            addrForPriceImpact = pairAddr ? addr.map(a => a) : tAddr.map(p => p);
-            !pairAddr && common.setHasPriceImpact(!0);
-        } else if(!tAddr) throw new Error('pair not available');
-        let finalAmount = '';
-        if (res.length) {
-            common.setExact(tt);
-            finalAmount = Number(res[isIP_A(tt) ? res.length - 1 : 0].toFixed(8));
-            const ratio = Number(amt) / finalAmount;
-            common.setSharePoolValue(ratio.toFixed(10));
-            let out = toBgFix(toFull(finalAmount, common[`token${togIP(tt)}`].dec));
-            common.setMinReceived(Number(out) - (Number(out) * P.slippage / 100));
-            calculatePriceImpact(amt, addrForPriceImpact);
-        }
-        return {addr: [...addrForPriceImpact], amt2: finalAmount};
-        
-    }
-
-    const liquidityHelper = async (amount, tkn) => {
-        let tAddr = try2weth(tkn.addr);
-        let p = common.currentPair;
-        let amt2 = '';
-        if (p) {
-            const tk0 = await ExchangeService.getTokenZero(p);
-            const tk1 = await ExchangeService.getTokenOne(p);
-            const reserves = await ExchangeService.getReserves(p);
-            TC.setTo(tk0);
-            let dec = [];
-            dec.push(await TC.decimals());
-            TC.setTo(tk1);
-            dec.push(await TC.decimals());
-            
-            if (rDefined(tk0, reserves)) {
-                let i = rEq(tAddr, tk0) ? [1,0] : [0,1];
-                amt2 = (toDec(amount * reserves[i[0]], dec[i[0]]) / toDec(reserves[i[1]], dec[i[1]])).toFixed(5); 
-            } else return toast.error('pair doesn\'t exist');
-        }
-        return amt2;
-    }
-
     const hasBalance = async (amount, addr) => {
-        console.log('has balance:', amount, addr)
+        log.i('has balance:', amount, addr)
         TC.setTo(addr);
         let b = await TC.balanceOf(P.priAccount);
         return b >= amount;
     }
 
-    const handleInput = async (amount, tt, isSwap) => {
-        console.log('handling token value:', amount, tt, common[`token${togIP(tt)}Currency`]);
+    function _genCriteriaOk(ip) {
+        let r = !0;
+        if(!hasVal(ip)) r = !1;
+        else if(!rDefined(common.addrPair)) {
+            r = !1;
+            l_t.e(ERR.TOKEN_ADDR_NDEF.msg);
+        }
+        else if(rEq(common.token2Currency, STR.SEL_TKN)) {
+            r = !1;
+            l_t.e(ERR.SEL_TOKEN.msg);
+        }
+        common.setIsErr(!r);
+        return r;
+    }
+
+    async function _swapCriteriaOk(ip, aList, cList) {
+        let r = !0, t='';
+        if(await _balanceNotEnough(aList[0], ip)) {
+            r = !1;
+            t = ERR.LOW_BAL.msg + cList[0];
+        }
+        else if(common.pairNotExist) {
+            r = !1;
+            t = ERR.PAIR_NOT_EXIST.msg;
+        } 
+        else if(
+            (!isEth(aList[0]) && !isWeth(aList[0])) && 
+            !(await isAllowanceEnough(ip, T_TYPE.A))
+        ){
+            log.e('need of approval for token 1');
+            common.setTokenApproved(!1, T_TYPE.A);
+        }
+        !r && l_t.e(t);
+        common.setIsErr(!r);
+        !r && common.setErrText(t);
+        return r;
+    }
+
+    async function _liquidityCriteriaOk(ip, aList, cList, tt) {
+        let r = !0, t='';
+        if(await _balanceNotEnough(aList[_getIdx(tt)], ip)) {
+            r = !1;
+            t = ERR.LOW_BAL.msg + cList[_getIdx(tt)];
+        }
+        else if(
+            common.pairNotExist && 
+            !hasVal(common.token1Value) && 
+            !hasVal(common.token1Value)
+        ) r = !1;
+        else if(
+            (!isEth(aList[_getIdx(tt)]) && !isWeth(aList[_getIdx(tt)])) && 
+            !(await isAllowanceEnough(ip, tt))
+            ){
+            log.e('need of approval for token ' + tt);
+            common.setTokenApproved(!1, tt);
+        }
+        !r && l_t.e(t);
+        common.setIsErr(!r);
+        !r && common.setErrText(t)
+        return r;
+    }
+
+    function handleInput(ip, tt, iss) {
+        clearTimeout(timeOut);
+        timeOut = setTimeout(async _ => {
+            if(_genCriteriaOk(ip)) {
+                await (iss ? handleIP_swap(ip, tt) : handleIP_liquidity(ip, tt));
+                common.setFetching(!1);
+            } else if(iss && !hasVal(ip)) common.setTokenValue(ip, togIP(tt));
+        }, MISC.TYPE_DELAY);
+        common.setTokenValue(ip, tt);
+    }
+
+    async function handleIP_swap(ip, tt) {
         common.setFetching(!0);
-        if(!hasVal(amount)) {
-            common.setBtnText('');
-            common.setFetching(!1);
-            return common.setTokenValue(amount, T_TYPE.AB);
-        }
-        if (rEq(common[`token${togIP(tt)}Currency`], STR.SEL_TKN)) {
-            common.setTokenValue(amount, tt);
-            common.setTokenValue('', togIP(tt));
-            common.setFetching(!1);
-            return common.setBtnText(STR.SEL_TKN);
-        }
-        common.setTokenValue(amount, tt);
-        let amt = [amount],
-            i = togIP(tt),
-            tkn = common[`token${tt}`],
-            tkn2 = common[`token${togIP(tt)}`],
-            addr = [try2weth(common.token1.addr), try2weth(common.token2.addr)]; 
+        let addrList = common.addrPair, 
+            cList = [common.token1Currency, common.token2Currency];
         
-        const bal = await checkBalance(tkn.addr);
-        if (amount > bal) {
-            common.setDisabled(!0);
-            common.setBtnText(`Insufficient ${tkn.sym} balance`);
-            common.setFetching(!1);
-            return;
-        }
-        common.setBtnText('');
-        common.setDisabled(!1);
-        let d = {}, apvd = await checkForAllowance(amount, tt);
+        if(!(await _swapCriteriaOk(ip, addrList, cList))) return;
 
-        if (apvd && rDefined(tkn.addr, common[`token${i}`].addr)) {
-            if(isSwap) {
-                try {
-                    d = await swapHelper(amount, [...addr], tt);
-                    addr = d.addr;
-                    amt.push(d.amt2);
-                } catch(e) {
-                    common.setDisabled(!0);
-                    common.setBtnText(e.message);
-                    common.setFetching(!1);
-                    return toast.error(e.message);
-                }
-            } else {
-                let a = await liquidityHelper(amount, tkn);
-                amt.push(a);
-                apvd = await checkForAllowance(a, togIP(tt));
-            }
-        }
-        console.log('d:', d, amt, tkn2);
+        common.setExact(tt);
+        log.i('pair', addrList);
+        const res = await ExchangeService[`getAmounts${isIP_A(tt) ? 'Out' : 'In'}`](ip, addrList);
+        common.setHasPriceImpact(!0);
         
-        if(isIP_B(tt) && await hasBalance(amt[1], tkn2.addr)) {
-            common.setDisabled(!0);
-            common.setTokenValue(amt[1], 1);
-            common.setBtnText(`Insufficient ${tkn2.sym} balance`);
-            common.setFetching(!1);
-            return;
+        let finalAmount = '';
+        if (res.length) {
+            finalAmount = Number(res[isIP_A(tt) ? res.length - 1 : 0].toFixed(8));
+            const ratio = Number(ip) / finalAmount;
+            common.setSharePoolValue(ratio.toFixed(10));
+            let out = toBgFix(toFull(finalAmount, _getToken(togIP(tt)).dec));
+            common.setMinReceived(Number(out) - (Number(out) * P.slippage / 100));
+            calculatePriceImpact(ip, addrList);
         }
-        common.setTokenValue(amt[1], togIP(tt));
-        if(isIP_B(tt)) { let t = amt[1]; amt[1] = amt[0]; amt[0] = t; }
-        if (rDefined(...addr)) {
-            let cPair = await ExchangeService.getPair(...addr);
-            if (isNonZero(cPair)) {
-                const reserves = await ExchangeService.getReserves(cPair);
-                const ratio = await calculateLiquidityPercentage(reserves, ...amt);
-                TC.setTo(cPair);
-                common.setDisabled(!1);
-                common.setIsFirstLP(!1);
-                common.setCurrentPair(cPair);
-                common.setSharePoolValue(ratio);
-                common.setLpTokenBalance(await TC.balanceOf(P.priAccount));
-            } else {
-                common.setDisabled(!0);
-                common.setIsFirstLP(!0);
-                common.setCurrentPair('');
-                common.setLpTokenBalance(0);
-            }
-            common.showPoolShare(!0);
-        }
-        common.setFetching(!1);
-    };
+        common.setTokenValue(finalAmount, togIP(tt));
+    }
 
-    const handleTokenApproval = async (tt) => {
+    async function handleIP_liquidity(ip, tt) {
+        let addrList = common.addrPair,
+            cList = [common.token1Currency, common.token2Currency];
+        if(!(await _liquidityCriteriaOk(ip, addrList, cList, tt))) return;
+
+        if(common.pairNotExist) return;
+
+        const token = await ExchangeService.getTokens(common.pair);
+        const reserves = await ExchangeService.getReserves(common.pair);
+        TC.setTo(token[0]);
+        let dec = [];
+        dec.push(await TC.decimals());
+        TC.setTo(token[1]);
+        dec.push(await TC.decimals());
+        
+        const i = rEq(addrList[_getIdx(tt)], token[0]) ? [1,0] : [0,1];
+        const amt2 = (toDec(ip * reserves[i[0]], dec[i[0]]) / toDec(reserves[i[1]], dec[i[1]])).toFixed(5);
+        common.setTokenValue(amt2, togIP(tt));
+    }
+
+    const handleTokenApproval = async tt => {
         const acc = await ContractServices.getDefaultAccount();
         if (isDefined(acc) && !rEq(acc, P.priAccount)) 
-            return !!toast.error("Wallet address doesn`t match!");
+            return !!toast.e("Wallet address doesn`t match!");
         if (common.isApprovalConfirmed)
             return !!toast.info("Token approval is processing");
         
         let tkn = common[`token${tt}`];
         let addr = try2weth(tkn.addr);
+        log.i('token:', addr);
         try {
             dsp(startLoading());
             TC.setTo(addr);
-            const r = await TC.approve(MAIN_CONTRACT_LIST.router.address, VAL.MAX_256);
-            if (rEq(4001, r.code)) toast.error("User denied transaction signature.");
+            const r = await TC.approve(ADDRESS.ROUTER, VAL.MAX_256, P.priAccount);
+            log.s('approved:', r);
+            if (rEq(4001, r.code)) toast.e("User denied transaction signature.");
             else {
                 common.setTokenApproved(!0, tt);
                 let data = {message: `Approve`, tx: r.transactionHash};
@@ -264,15 +267,15 @@ const useCommonTrade = (props) => {
                 dsp(addTransaction(data));
             }
         } catch (err) {
-            console.log(err);
-            toast.error("Transaction Reverted!");
+            log.i(err);
+            toast.e("Transaction Reverted!");
         } finally {
             dsp(stopLoading());
         }
     };
 
     const handleMaxBalance = async tt => {
-        if (!P.isConnected) return toast.error('Connect wallet first!');
+        if (!P.isConnected) return toast.e('Connect wallet first!');
         let addr = try2weth(common.token1.addr);
         TC.setTo(addr);
         handleInput(await TC.balanceOf(P.priAccount), tt, !1);
@@ -280,7 +283,6 @@ const useCommonTrade = (props) => {
     }
 
     const getApprovalButton = tt => {
-        console.log('getting approval button for tt:', tt);
         return !common[`token${tt}Approved`] ? (
             <div className="col button_unlockWallet">
                 <ButtonPrimary
@@ -293,36 +295,36 @@ const useCommonTrade = (props) => {
         ) : null;
     }
     
-    const checkForAllowance = async (amount, tt) => {
-        if(!P.isConnected) return !!toast.error("Connect wallet first!");
+    const isAllowanceEnough = async (amount, tt) => {
+        log.i('checking allowance:', amount, tt);
+        if(!P.isConnected) return !!toast.e("Connect wallet first!");
         let tkn = common[`token${tt}`];
         let addr = try2weth(tkn.addr);
         TC.setTo(addr);
-        console.log('checking allowance');
-        let allowance = await TC.allowanceOf(P.priAccount, MAIN_CONTRACT_LIST.router.address);
+        log.i('checking allowance');
+        let allowance = await TC.allowanceOf(P.priAccount, ADDRESS.ROUTER);
         allowance = toDec(allowance, tkn.dec);
-        console.log('allowance:', amount, allowance);
-        if (amount > allowance) {
-            common.setTokenApproved(!1, tt);
-            return !1;
-        }
-        common.setDisabled(!0);
-        common.setTokenApproved(!0, tt);
-        return !0;
+        log.i('allowance:', amount, allowance, amount <= allowance);
+        return amount <= allowance;
     };
 
-    const checkBalance = async addr => {
-        if (isEth(addr)) return await ContractServices.getETHBalance(P.priAccount);
+    const getBalance = async addr => {
+        let bal = 0;
+        if (isEth(addr) || isWeth(addr)) 
+            bal = await ContractServices.getETHBalance(P.priAccount);
         else {
             TC.setTo(addr)
-            return await TC.balanceOf(P.priAccount);
+            bal = await TC.balanceOf(P.priAccount);
         } 
+        
+        log.i('getting balance:', addr, bal);
+        return bal;
     }
 
     const handleBalance = async _ => {
         let ex = common.exact;
         const addr = try2weth(common[`token${tgl(ex)}`].addr);
-        common.setTokenBalance(await checkBalance(addr), ex);
+        common.setTokenBalance(await getBalance(addr), ex);
     }
 
     async function calculateLiquidityPercentage(reserve, amount0, amount1) {
@@ -400,35 +402,35 @@ const useCommonTrade = (props) => {
         }
     }
 
-    const handleSearchToken = async d => {
+    const searchToken = async d => {
         try {
             common.setFilteredTokenList(await dsp(searchTokenByNameOrAddress(d)));
         } catch (e) {
-            toast.error("Something went wrong!");
+            toast.e("Something went wrong!");
         }
     }
 
     const handleClose = _ => common.setShow(!1);
 
     const cTrade = {
+        getBalance,
         handleClose,
-        handleInput,
+        selectToken,
         handleShow1,
-        checkBalance,
+        handleInput,
+        searchToken,
         settingClose,
         handleClose1,
+        normalizePair,
         handleBalance,
         handleMaxBalance,
-        handleSearchToken,
         handleCloseRecent,
-        onHandleOpenModal,
-        checkForAllowance,
+        isAllowanceEnough,
         settingHandleShow,
         getApprovalButton,
         handleTokenApproval,
+        openSelectTokenModal,
         calculatePriceImpact,
-        onHandleSelectCurrency,
-        normalizePair,
     }
 
     return cTrade;

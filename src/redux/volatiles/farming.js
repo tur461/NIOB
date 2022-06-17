@@ -1,7 +1,8 @@
 import create from 'zustand';
 import { ADDRESS } from '../../services/constant';
+import { clone } from '../../services/utils/global';
 
-const useFarming = create((set, get) => ({
+const initialState = {
     checked: !1,
     currentIndex: -1,
     
@@ -25,7 +26,10 @@ const useFarming = create((set, get) => ({
     stakeConfirmation: 0,
     showStakeWithdraw: !1,
     showTransactionModal: !1,
+}
 
+const useFarming = create((set, get) => ({
+    ...clone(initialState),
     setSomeState: val => {
         set(s => ({...s, someState: val}));
     },
@@ -88,6 +92,7 @@ const useFarming = create((set, get) => ({
     setShowTransactionModal: sh => {
         set(s => ({...s, showTransactionModal: sh}));
     },
+    reset: _ => set(s => ({...clone(initialState)})),
 }))
 
 export default useFarming;

@@ -6,35 +6,6 @@ import { useDispatch } from "react-redux";
 import { tokenListAdd, tokenListDel } from "../../../redux/actions";
 
 const ModalCurrency = ({ show, handleClose, tokenList, searchByName, searchToken, selectCurrency, tokenType, currencyName }) => {
-  const dispatch = useDispatch();
-  const [values, setValues] = useState({ tokenSearch: "" });
-
-  // Set Token Search Input Value and Pass to Parent Component (Add Liquidity)
-  const handleChange = (e, name) => {
-    searchByName(e.target.value);
-    setValues({ ...values, [name]: e.target.value });
-  };
-
-  const [isAdded, setTokenAdd] = useState(true);
-  const handleTokenList = (data) => {
-    data.isAdd = false;
-    data.isDel = true;
-    dispatch(tokenListAdd(data))
-    setTokenAdd(false);
-  }
-  const handleRemoveTokenList = async (data) => {
-    dispatch(tokenListDel(data))
-    searchByName('');
-    window.location.reload();
-  }
-
-  useEffect(() => {
-    if (!show) { setValues({ tokenSearch: "" }) }
-    return () => {
-      // cleanup function here
-    }
-  }, [show, searchByName]);
-
   return (
     <Modal
       scrollable={true}

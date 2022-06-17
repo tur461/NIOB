@@ -1,9 +1,14 @@
-import { ADDRESS, T_TYPE } from "../constant";
+import { ADDRESS, TOKENS, T_TYPE } from "../constant";
+import log from "../logging/logger";
 import { rEq } from "./global";
+
+log.i('ALL TOKENS:', TOKENS);
 
 const isEth = addr => rEq(addr, ADDRESS.NATIVE);
 
-const try2weth = addr => rEq(addr, ADDRESS.NATIVE) ? ADDRESS.WETH : addr;
+const isWeth = addr => rEq(addr, TOKENS.WETH.addr);
+
+const try2weth = addr => rEq(addr, ADDRESS.NATIVE) ? TOKENS.WETH.addr : addr;
 
 const isIP_A = ipt => rEq(ipt, T_TYPE.A);
 
@@ -17,5 +22,6 @@ export {
     togIP,
     isIP_A,
     isIP_B,
+    isWeth,
     try2weth,
 }

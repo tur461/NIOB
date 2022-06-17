@@ -77,7 +77,7 @@ const Exchange = (props) => {
             disabled={common.isFetching && common.exact-1}
             label={`Balance: ${common.token1Balance}`}
             onMax={() => cTrade.handleMaxBalance(T_TYPE.A)}
-            onClick={() => cTrade.onHandleOpenModal(T_TYPE.A)}
+            onClick={() => cTrade.openSelectTokenModal(T_TYPE.A)}
             onChange={e => cTrade.handleInput(e.target.value, T_TYPE.A, !0)}
           />
           <div 
@@ -94,7 +94,7 @@ const Exchange = (props) => {
             tokenValue={common.token2Value}
             disabled={common.isFetching && !(common.exact-1)}
             label={`Balance: ${common.token2Balance}`}
-            onClick={() => cTrade.onHandleOpenModal(T_TYPE.B)}
+            onClick={() => cTrade.openSelectTokenModal(T_TYPE.B)}
             onChange={e => cTrade.handleInput(e.target.value, T_TYPE.B, !0)}
           />
           {P.slippage ?
@@ -119,23 +119,23 @@ const Exchange = (props) => {
                 <h5>{`${P.slippage}%`}</h5>
               </div>
             </Col> : <></>}
-          {!common.token1Approved ? cTrade.getApprovalButton(T_TYPE.A) : <></>}
-          {!common.token2Approved ? cTrade.getApprovalButton(T_TYPE.B) : <></>}
+          <div className="approve-section">
+            {!common.token1Approved ? cTrade.getApprovalButton(T_TYPE.A) : <></>}
+            {!common.token2Approved ? cTrade.getApprovalButton(T_TYPE.B) : <></>}
+          </div>
           <Col className="swapBtn_col">
+            
             {
-              (
-                common.disabled && !P.priAccount
-              ) && <ButtonPrimary className="swapBtn" onClick={() => setWalletShow(!0)} title={'Unlock Wallet'} />
-            }
-            {
-              (
-                common.disabled && P.priAccount
-              ) && <ButtonPrimary disabled={common.disabled} className="swapBtn" title={common.btnText || 'Swap'} />
-            }
-            {
-              (
-                !common.disabled && P.priAccount
-              ) && <ButtonPrimary className="swapBtn" onClick={() => swap.openSwapModal()} title={common.btnText || 'Swap'} />
+              common.isErr ?
+              <div className="error-box">
+                {common.errText}
+              </div> :
+              <ButtonPrimary 
+                className="swapBtn" 
+                disabled={common.isErr || common.isFetching} 
+                title={common.isFetching ? 'please wait...' : 'Swap'} 
+                onClick={_ => Xchange.handleSwap()}
+              />
             }
           </Col>
         </CardCustom>
@@ -157,7 +157,7 @@ const Exchange = (props) => {
         searchToken={cTrade.handleSearchToken}
         currencyName={common.selectedCurrency}
         handleOrder={common.setFilteredTokenList}
-        selectCurrency={cTrade.onHandleSelectCurrency}
+        selectCurrency={cTrade.selectToken}
       />
       <ConnectWallet
         show={walletShow}

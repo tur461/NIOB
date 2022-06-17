@@ -68,7 +68,7 @@ const PublicRoutes = () => {
             handleNavCollapse();
           }
         }}
-        tradeDropdown={!tradeDropdown}
+        // tradeDropdown={!tradeDropdown}
         onOpenChange={(open) => {
           alert("fd");
           openCloseTradeDropdown(!open);

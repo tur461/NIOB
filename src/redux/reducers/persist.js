@@ -1,7 +1,6 @@
 import { TOKEN_LIST, WALLET_TYPE } from "../../services/constant";
 import { rEq } from "../../services/utils/global";
 import { actionTypes } from "../actions/PersistActions";
-console.log('TOKEN_LIST', TOKEN_LIST);
 
 const initialState = {
   walletType: WALLET_TYPE.M_MASK,

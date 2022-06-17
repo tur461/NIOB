@@ -4,7 +4,7 @@ import { UserService } from "../../services/UserService";
 import { checkUserLpTokens, saveUserLpTokens } from "./PersistActions";
 import { WETH } from "../../assets/tokens";
 import { ExchangeService } from "../../services/ExchangeService";
-import { contains, isAddr, rEq } from "../../services/utils/global";
+import { contains, iContains, isAddr, rEq } from "../../services/utils/global";
 import { try2weth } from "../../services/utils/trading";
 
 const TC = ContractServices.TokenContract;
@@ -36,7 +36,7 @@ export const searchTokenByNameOrAddress = q => async (_, getState) => {
         tokenList.push(obj);
         return tokenList;
       }
-      return tokenList.filter(tkn => contains(tkn.name, q));
+      return tokenList.filter(tkn => iContains(tkn.name, q));
     } catch (error) {
       console.log("Error: ", error);
       return error;

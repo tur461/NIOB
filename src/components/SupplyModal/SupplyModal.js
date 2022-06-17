@@ -77,7 +77,7 @@ const SupplyModal = ({
                 <Button
                   className="approveBtn"
                   disabled={liquidityConfirmation}
-                  onClick={() => addLiquidity()}
+                  onClick={e => {e.preventDefault(); addLiquidity()}}
                 >
                   {isUserConnected ? "Create Pool & Supply" : "Unlock Wallet"}
                 </Button>

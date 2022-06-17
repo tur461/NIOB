@@ -5,13 +5,13 @@ import { ContractServices } from "./ContractServices";
 import { BigNumber } from "bignumber.js";
 import { rEq, toDec, toFull } from "./utils/global";
 import { ABI, ADDRESS } from "./constant";
+import log from "./logging/logger";
 
 const TokenContract = ContractServices.TokenContract;
 
 const PairContract = (_ => {
   let inst = null;
   return a => {
-    console.log('PAIR ABI', ABI.PAIR);
     if(a) return ContractServices.getContract(a, ABI.PAIR)
     inst = inst || ContractServices.getContract(MAIN_CONTRACT_LIST.pair.address, ABI.PAIR);
     return inst;
@@ -21,8 +21,8 @@ const PairContract = (_ => {
 const RouterContract = (_ => {
   let inst = null;
   return a => {
-    if(a) return ContractServices.getContract(a, ADDRESS.ROUTER)
-    inst = inst || ContractServices.getContract(ADDRESS.ROUTER, ADDRESS.ROUTER);
+    if(a) return ContractServices.getContract(a, ABI.ROUTER)
+    inst = inst || ContractServices.getContract(ADDRESS.ROUTER, ABI.ROUTER);
     return inst;
   }
 })();
@@ -53,27 +53,24 @@ const getTokenOne = pairAddr => PairContract(pairAddr).methods.token1().call();
 const getTokenZero = pairAddr => PairContract(pairAddr).methods.token0().call();
 
 const _getAmounts = async (amount, pair, isIn) => {
-  let contract = rEq(pair[0], TOKEN_LIST[1].address) || rEq(pair[1], TOKEN_LIST[1].address) ? RouterContract()
-    : (rEq(pair[0], TOKEN_LIST[0].address) || rEq(pair[0], TOKEN_LIST[2].address)) && 
-      (rEq(pair[1], TOKEN_LIST[0].address) || rEq(pair[1], TOKEN_LIST[2].address)) ? RouterContract() 
-      : RouterContract(MAIN_CONTRACT_LIST.panCakeRouter.address);
-    TokenContract.setTo(pair[0]);
-    console.log('is in', isIn)
-    let dec = await TokenContract.decimals(),
-        decAmountIn = BigNumber(toFull(amount, dec)).toFixed(),
-        res = await (
-          isIn ? 
-          contract.methods.getAmountsIn(decAmountIn, pair) : 
-          contract.methods.getAmountsOut(decAmountIn, pair)
-        ).call();
-    
-    let amounts = [];
-    for (
-      let i = 0; 
-      i < res.length; 
-      TokenContract.setTo(pair[i]), amounts.push(toDec(res[i++], await TokenContract.decimals()))
-    );
-    return amounts;
+  let contract = RouterContract();
+  TokenContract.setTo(pair[0]);
+  console.log('is in', isIn)
+  let dec = await TokenContract.decimals(),
+      decAmountIn = BigNumber(toFull(amount, dec)).toFixed(),
+      res = await (
+        isIn ? 
+        contract.methods.getAmountsIn(decAmountIn, pair) : 
+        contract.methods.getAmountsOut(decAmountIn, pair)
+      ).call();
+  
+  let amounts = [];
+  for (
+    let i = 0; 
+    i < res.length; 
+    TokenContract.setTo(pair[i]), amounts.push(toDec(res[i++], await TokenContract.decimals()))
+  );
+  return amounts;
 }
 
 const getAmountsOut = (amountIn, pair) => _getAmounts(amountIn, pair, !1);
@@ -164,14 +161,14 @@ const addLiquidityETH = async (data) => {
         amountETHMin,
         to,
         deadline,
-        valueOfExact
+        ethValue
       } = data;
       const web3 = ContractServices.Web_3();
-      valueOfExact = await web3.utils.toHex(valueOfExact);
+      ethValue = await web3.utils.toHex(ethValue);
 
       const contract = RouterContract();
       const gasPrice = await ContractServices.getGasPrice();
-      // valueOfExact = await web3.utils.toHex(valueOfExact);
+      // ethValue = await web3.utils.toHex(ethValue);
 
       const gas = await contract.methods.addLiquidityETH(
         otherTokenzAddr,
@@ -180,7 +177,7 @@ const addLiquidityETH = async (data) => {
         amountETHMin,
         to,
         deadline
-      ).estimateGas({ from: to, valueOfExact });
+      ).estimateGas({ from: to, ethValue });
 
       contract.methods.addLiquidityETH(
         otherTokenzAddr,
@@ -189,7 +186,7 @@ const addLiquidityETH = async (data) => {
         amountETHMin,
         to,
         deadline
-      ).send({ from: to, gasPrice, gas, valueOfExact })
+      ).send({ from: to, gasPrice, gas, ethValue })
         .on('transactionHash', (hash) => {
           resolve(hash);
         })
@@ -594,6 +591,7 @@ const swapExactETHForTokens = async (data, handleBalance) => {
         deadline,
         value
       } = data;
+      log.i('swapExactETHForTokens:', data);
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
       const gasPrice = await ContractServices.getGasPrice();
@@ -610,7 +608,7 @@ const swapExactETHForTokens = async (data, handleBalance) => {
         path,
         to,
         deadline
-      ).send({ from: to, gasPrice, gas, value })
+      ).send({ from: to, gasPrice, value })
         .on('transactionHash', (hash) => {
           resolve(hash);
         })
@@ -637,6 +635,7 @@ const swapETHForExactTokens = async (data) => {
         deadline,
         value
       } = data;
+      log.i('swapETHForExactTokens:', data);
       const web3 = ContractServices.Web_3();
       const contract = RouterContract();
       const gasPrice = await ContractServices.getGasPrice();
@@ -653,7 +652,7 @@ const swapETHForExactTokens = async (data) => {
         path,
         to,
         deadline
-      ).send({ from: to, gasPrice, gas, value })
+      ).send({ from: to, gasPrice, value })
         .on('transactionHash', (hash) => {
           resolve(hash);
         })

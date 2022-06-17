@@ -2,16 +2,19 @@ import create from 'zustand';
 import { STR, TOKENS, T_TYPE } from "../../services/constant";
 import { TOKEN_LIST } from "../../assets/tokens";
 import defaultImg from '../../assets/images/token_icons/default.svg'
+import { clone } from '../../services/utils/global';
 
-
-
-const useCommon = create((set, get) => ({
+const initialState = {
+    addrPair: [],
+    
     btnText: '',
     
     currentPair: '',
+    createPairNeeded: !1,
 
     disabled: !0,
     
+    errText: '',
     exact: T_TYPE.A,
 
     isFetching: !1,
@@ -19,6 +22,7 @@ const useCommon = create((set, get) => ({
     
     hasPriceImpact: !1,
     
+    isErr: !1,
     isMax: !0, 
     isFirstLP: !1,
     isLiqConfirmed: !1,
@@ -29,7 +33,9 @@ const useCommon = create((set, get) => ({
     minReceived: 0,
     modalCurrency: !1,
     
+    pair: [],
     priceImpact: 0,
+    pairNotExist: !1,
     poolShareShown: !1,
     
     show: !1,
@@ -58,9 +64,24 @@ const useCommon = create((set, get) => ({
     token2Currency: STR.SEL_TKN,
     token1Icon: TOKENS.ETH.icon,
     token1Currency: TOKENS.ETH.sym,
+}
 
+const useCommon = create((set, get) => ({
+    ...clone(initialState),
+    setErrText: errText => {
+        set(s => ({...s, errText}));
+    },
+    setIsErr: isErr => {
+        set(s => ({...s, isErr}));
+    },
     setShow: show => {
         set(s => ({...s, show}));
+    },
+    setPairNotExist: pairNotExist => {
+        set(s => ({...s, pairNotExist}));
+    },
+    setAddrPair: addrPair => {
+        set(s => ({...s, addrPair: [...addrPair]}));
     },
     setBtnText: btnText => {
         set(s => ({...s, btnText}));
@@ -80,6 +101,9 @@ const useCommon = create((set, get) => ({
     setFetching: isFetching => {
         set(s => ({...s, isFetching}));
     },
+    setCreatePairNeeded: createPairNeeded => {
+        set(s => ({...s, createPairNeeded}));
+    },
     setSearch: search => {
         set(s => ({...s, search}));
     },
@@ -88,6 +112,9 @@ const useCommon = create((set, get) => ({
     },
     setIsMax: isMax => {
         set(s => ({...s, isMax}));
+    },
+    setPair: pair => {
+        set(s => ({...s, pair}));
     },
     setMinReceived: mr => {
         set(s => ({...s, minReceived: mr}));
@@ -176,6 +203,7 @@ const useCommon = create((set, get) => ({
     showTransactionModal: transactionModalShown => {
         set(s => ({...s, transactionModalShown}));
     },
+    reset: _ => set(s => ({...clone(initialState)})),
 }))
 
 export default useCommon;

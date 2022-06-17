@@ -48,7 +48,7 @@ const TokenContract = (_ => {
   let _inst = {};
   let inst = null,p=[];
   
-  const gas = (m, p) => inst.methods[m](...p).estimateGas();
+  const gas = (m, p, from) => inst.methods[m](...p).estimateGas({from});
   const getInstance = a => a in _inst ? _inst[a] : (_inst[a] = new (Web_3()).eth.Contract(TOKEN_ABI, a));
   return {
     setTo: a => inst = getInstance(a),
@@ -66,8 +66,8 @@ const TokenContract = (_ => {
       await inst.methods['totalSupply']().call(), 
       await inst.methods['decimals']().call()
     ),
-    approve: async (spender, amount) => {
-      p = [spender, amount]; return inst.methods['approve'](...p).send({gasPrice: await gas('approve', p)});
+    approve: async (spender, amount, from) => {
+      p = [spender, amount]; await gas('approve', p, from); return inst.methods['approve'](...p).send({from});
     },
   }
 })();

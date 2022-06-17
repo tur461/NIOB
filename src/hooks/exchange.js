@@ -10,8 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { ExchangeService } from "../services/ExchangeService";
 import { ContractServices } from "../services/ContractServices";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
-import { isDefined, isNonZero, rEq, toBgFix, toDec, toFlr, tStamp } from "../services/utils/global";
-import { isEth, isIP_A, togIP } from "../services/utils/trading";
+import { isDefined, isNonZero, rEq, toBgFix, toDec, toFlr, toFull, tStamp } from "../services/utils/global";
+import { isEth, isIP_A, isWeth, togIP } from "../services/utils/trading";
+import log from "../services/logging/logger";
 
 
 const useXchange = (props) => {
@@ -22,22 +23,21 @@ const useXchange = (props) => {
     const P = useSelector(s => s.persist);
 
     const handleSwap = async () => {
-        const acc = await ContractServices.getDefaultAccount();
-        if (isDefined(acc) && !rEq(acc, P.priAccount))  return toast.error('Wallet address doesn`t match!');
         swap.closeSwapModal();
 
         let dl = tStamp(P.deadline * 60);
 
-        let addr = [common.token1.address, common.token2.address];
+        let addr = common.addrPair;
 
-        let [a1, isEthIP_1, v1]= isEth(addr[0]) ? [ADDRESS.WETH, !0, common.token1Value] : [addr[0], !1, 0];
-        let [a2, isEthIP_2, v2]= isEth(addr[1]) ? [ADDRESS.WETH, !0, common.token2Value] : [addr[1], !1, 0];
+        let [a1, isEthIP_1, v1]= [addr[0], isWeth(addr[0]), common.token1Value];
+        let [a2, isEthIP_2, v2]= [addr[1], isWeth(addr[1]), common.token2Value];
         let value = isEthIP_1 ? v1 : isEthIP_2 ? v2 : 0; 
         value = value > 0 ? BigNumber(value * 10 ** 18).toFixed() : 0;
-        console.log('a1, a2, value', a1, a2, value);
+        console.log('a1, a2, value', a1, a2, value, isEthIP_1, isEthIP_2);
         if (isEthIP_1) {
             dsp(startLoading());
-            const data = await handleBNBSwapForTK1(dl, value);
+            const data = await handleEthSwapForTK1(dl, value);
+            data['path'] = [...addr];
             try {
                 const result = isIP_A(common.exact) ?
                 await ExchangeService.swapExactETHForTokens(data, cTrade.handleBalance) :
@@ -47,7 +47,7 @@ const useXchange = (props) => {
                 common.showTransactionModal(!0);
                 common.setShowSupplyModal(!1);
                 const data = {
-                    message: `Swap ${common.token1.symbol} and ${common.token2.symbol}`,
+                    message: `Swap ${common.token1.sym} and ${common.token2.sym}`,
                     tx: result
                 };
                 dsp(addTransaction(data));
@@ -61,22 +61,19 @@ const useXchange = (props) => {
             }
         } else if (isEthIP_2) {
             dsp(startLoading());
-            const data = await handleBNBSwapForTK2(dl, value);
+            const data = await handleEthSwapForTK2(dl, value);
+            data['path'] = [...addr];
             try {
                 const result = isIP_A(common.exact) ?
-
                 await ExchangeService.swapExactTokensForETH(data, a1, a2) :
-
                 await ExchangeService.swapTokensForExactETH(data, a1, a2);
-
                 dsp(stopLoading());
-
                 if (result) {
                 common.setTxHash(result);
                 common.showTransactionModal(!0);
                 common.setShowSupplyModal(!1);
                 const data = {
-                    message: `Swap ${common.token1.symbol} and ${common.token2.symbol}`,
+                    message: `Swap ${common.token1.sym} and ${common.token2.sym}`,
                     tx: result
                 };
                 dsp(addTransaction(data));
@@ -137,8 +134,8 @@ const useXchange = (props) => {
 
     const handleSwapAmountIn = async (dl, v) => {
         let i = common.exact, x = [
-        toDec(common[`token${i}Value`], common[`token${i}`].decimals),
-        toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].decimals),
+        toDec(common[`token${i}Value`], common[`token${i}`].dec),
+        toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].dec),
         ], d = {
             value: v,
             path: [],
@@ -151,34 +148,32 @@ const useXchange = (props) => {
         return {...d}; 
     }
 
-    const handleBNBSwapForTK1 = async (dl, v) => {
+    const handleEthSwapForTK1 = async (dl, v) => {
         console.log('swap TK1', dl, v, common.exact);
         let tv = common[`token${togIP(common.exact)}Value`]
-        let dec = common[`token${togIP(common.exact)}`].decimals;
-        let x = toBgFix(toFlr(toDec(tv, dec)));
+        let dec = common[`token${togIP(common.exact)}`].dec;
+        log.i('dec:', dec);
         let d = {
             value: v,
             deadline: dl,
             to: P.priAccount,
-            path: [WETH, common.token2.address],
-            amountOutMin: toBgFix(toFlr(Number(x) - (Number(x) * P.slippage / 100))).toString(),
+            amountOutMin: toFlr(Number(tv) - (Number(tv) * P.slippage / 100)),
         };
         console.log('[swap] handle bnb for tk1:', v, common.exact, d);
         return {...d};
     }
 
-    const handleBNBSwapForTK2 = async (dl, v) => {
+    const handleEthSwapForTK2 = async (dl, v) => {
         console.log('swap TK2', dl, v);
         let i = common.exact, 
             d = {
                 value: v,  
                 deadline: dl,
-                to: P.priAccount,
-                path: [common.token1.address, WETH],
+                to: P.priAccount
             };
         
-        let x = toDec(common[`token${i}Value`],  common[`token${i}`].decimals); 
-        let y = toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].decimals);
+        let x = toDec(common[`token${i}Value`],  common[`token${i}`].dec); 
+        let y = toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].dec);
         
         if (!(i-1)) {
         d['amountIn'] = toBgFix(toFlr(x));

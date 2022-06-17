@@ -1,6 +1,7 @@
 import create from 'zustand';
+import { clone } from '../../services/utils/global';
 
-const usePlanet = create((set, get) => ({
+const initialState = {
     apr: 0,
     approvalConfirmation: !1,
     balance: 0,
@@ -21,6 +22,10 @@ const usePlanet = create((set, get) => ({
     showApproveButton: !0,
     totalSupply: 0,
     worth: 0,
+}
+
+const usePlanet = create((set, get) => ({
+    ...clone(initialState),
     
     setROI: v => {
         set(s => ({...s, roi: {...v}}));
@@ -62,6 +67,7 @@ const usePlanet = create((set, get) => ({
     setAnchorDollarValue: v => {
         set(s => ({...s, dollarValue: v}));
     },
+    reset: _ => set(s => ({...clone(initialState)})),
     
 }))
 

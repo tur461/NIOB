@@ -52,13 +52,17 @@ export const ABI = {
 export const ADDRESS = {
   NATIVE: 'NATIVE',
   ZERO: '0x' + '0'.repeat(40),
-  WETH: '0xE93323D0AD8CF7269E322d38D317aAa06580Aa96',
+  WETH: '0xc778417E063141139Fce010982780140Aa0cD5Ab',
   SAITAMA: '0x352E956eB0247792842ABD234d3f7425BBf544c2',
   SMA_STAKING: '0x6DF6a2D4ce73Fc937625Db2E5fb5762F248B30F3',
   SMA_FARM: '',
   PAIR: '',
   ROUTER: '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
   FACTORY: '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
+}
+
+export const MISC = {
+  TYPE_DELAY: 350,
 }
 
 export const VAL = {
@@ -71,6 +75,8 @@ export const TKN = {
 
 export const STR = {
   SEL_TKN: 'Select a token',
+  BAL_NOT_ENOUGH: 'Insufficient balance of ',
+  ALW_NOT_ENOUGH: 'Insufficient allowance of ',
 }
 
 console.log('process env:', process.env);
@@ -168,7 +174,7 @@ export const TOKENS = {
     bal: '',
     isAdded: !0,
     isDeleted: !1,
-    addr: '0xE93323D0AD8CF7269E322d38D317aAa06580Aa96',
+    addr: '0xc778417E063141139Fce010982780140Aa0cD5Ab',
   },
   TUR: {
     name: 'tur token',
@@ -203,4 +209,30 @@ export const TOKENS = {
 }
 
 export const TOKEN_LIST = obj2list(TOKENS)
+
+class ErrObj {
+  id = -1;
+  msg = '';
+  loc = '';
+  dat = null;
+  static ctr = 0;
+  static create(m) {
+      let inst = new ErrObj();
+      inst.id = ErrObj.ctr;
+      inst.msg = m;
+      ++ErrObj.ctr;
+      return inst;
+  }
+}
+
+export const ERR = {
+  LOW_BAL: ErrObj.create('Balance low for '),
+  SEL_TOKEN: ErrObj.create('Please select token!'),
+  PAIR_NOT_EXIST: ErrObj.create('Pair doesn\'t exist!'),
+  XCESV_IP_AMT: ErrObj.create('Excessive input amount!'),
+  INSUF_OP_AMT: ErrObj.create('Insufficient output amount!'),
+  SAME_TOKENS: ErrObj.create('Please select dissimilar tokens!'),
+  TOKEN_ADDR_NDEF: ErrObj.create('one or both of the token address/s invalid!') 
+
+}
 

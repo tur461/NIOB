@@ -1,4 +1,4 @@
-import { ADDRESS } from "../constant";
+import { ADDRESS, MISC } from "../constant";
 import { BigNumber } from "bignumber.js"
 
 export const zero = v => !!!v;
@@ -18,6 +18,8 @@ export const contains = (s, c) => s.indexOf(c) > -1;
 
 export const isNonZero = addr => addr !== ADDRESS.ZERO;
 
+export const clone = o => JSON.parse(JSON.stringify(o));
+
 export const toDec = (v, dec) => Number(v) / 10 ** Number(dec);
 
 export const toFull = (v, dec) => Number(v) * 10 ** Number(dec);
@@ -27,6 +29,7 @@ export const tStamp = (a=0) => Math.floor(new Date().getTime() / 1000) + a;
 export const iContains = (s, c) => s.toLowerCase().indexOf(c.toLowerCase()) > -1;
 
 export const hasVal = v => typeof v == 'string' && !v.length ? !1 : parseFloat(v) === 0 ? !1 : !0;
+
 
 export const obj2list = o => {
     let t = [];
@@ -67,4 +70,9 @@ export const LS = {
     add: (k, v) => localStorage.setItem(k, v),
     dec: k => localStorage.setItem(k, LS.getNum(k) - 1),
     inc: k => localStorage.setItem(k, LS.getNum(k) + 1),
+}
+const k = 'timeOut';
+export const typingGuard = (cbk, p) => {
+    LS.has(k) && clearTimeout(LS.get(k));
+    LS.add(k, setTimeout(_ => cbk(...p), MISC.TYPE_DELAY));
 }
