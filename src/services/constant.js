@@ -231,6 +231,7 @@ export const ERR = {
   PAIR_NOT_EXIST: ErrObj.create('Pair doesn\'t exist!'),
   XCESV_IP_AMT: ErrObj.create('Excessive input amount!'),
   INSUF_OP_AMT: ErrObj.create('Insufficient output amount!'),
+  PATH_NOT_EXIST: ErrObj.create('No path exist in the pair!'),
   SAME_TOKENS: ErrObj.create('Please select dissimilar tokens!'),
   TOKEN_ADDR_NDEF: ErrObj.create('one or both of the token address/s invalid!') 
 

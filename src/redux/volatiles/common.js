@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { STR, TOKENS, T_TYPE } from "../../services/constant";
+import { ADDRESS, STR, TOKENS, T_TYPE } from "../../services/constant";
 import { TOKEN_LIST } from "../../assets/tokens";
 import defaultImg from '../../assets/images/token_icons/default.svg'
 import { clone } from '../../services/utils/global';
@@ -33,9 +33,10 @@ const initialState = {
     minReceived: 0,
     modalCurrency: !1,
     
-    pair: [],
+    path: null,
+    pair: ADDRESS.ZERO,
     priceImpact: 0,
-    pairNotExist: !1,
+    pairExist: !0,
     poolShareShown: !1,
     
     show: !1,
@@ -74,11 +75,14 @@ const useCommon = create((set, get) => ({
     setIsErr: isErr => {
         set(s => ({...s, isErr}));
     },
+    setPath: path => {
+        set(s => ({...s, path}));
+    },
     setShow: show => {
         set(s => ({...s, show}));
     },
-    setPairNotExist: pairNotExist => {
-        set(s => ({...s, pairNotExist}));
+    setPairExist: pairExist => {
+        set(s => ({...s, pairExist}));
     },
     setAddrPair: addrPair => {
         set(s => ({...s, addrPair: [...addrPair]}));
