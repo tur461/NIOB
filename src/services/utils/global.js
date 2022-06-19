@@ -79,15 +79,21 @@ const typingGuard = (cbk, p) => {
 
 const indexOf = (s, q) => s.indexOf(q);
 
-const validateTxParams = p => p.map(v => {
+const _remPoint = v => {
+    const i = indexOf(v, '.');
+    if(contains(v, '.')) return v.substring(0, i);
+    return v;
+}
 
-    if(v instanceof String) {
-        const i = indexOf(v, '.');
-        if(contains(v, '.')) return v.substring(0, i);
-        return v;
-    }
-});
-
+const remPoint = p => {
+    return p instanceof Array ? p.map(v => {
+    if(v instanceof String) _remPoint(v)
+    return v;
+}) : p instanceof Object ? Object.keys(p).reduce((a, b) => {
+    if(p[b] instanceof String) a[b] = _remPoint(p[b])
+    else a[b] = p[b];
+}, {}) : p instanceof String ? _remPoint(p) : p;
+}
 export {
     LS,
     rEq,
@@ -103,11 +109,11 @@ export {
     isZero,
     toBgFix,
     obj2list,
+    remPoint,
     rDefined,
     contains,
     isDefined,
     iContains,
     isNonZero,
     typingGuard,
-    validateTxParams,
 }

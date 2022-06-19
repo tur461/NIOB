@@ -102,9 +102,9 @@ const useXchange = (props) => {
     }
     
     // 1st is eth
-    async function _swapEthForExactTokens (vList, tList, _) {
+    async function _swapEthForExactTokens (vList, tList, amtIn) {
         log.s('_swapEthForExactTokens');
-        const ethVal = vList[0];
+        const ethVal = amtIn;
         const amountOut = vList[1];
         const path = tList.map(t => try2weth(t.addr));
         const to = P.priAccount;

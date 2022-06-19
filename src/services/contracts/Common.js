@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import l_t from "../logging/l_t";
-import { rEq, toDec, toFull, validateTxParams } from "../utils/global";
+import { remPoint, rEq, toFull } from "../utils/global";
 import { ERR, MISC, NETWORK, WALLET_TYPE } from "../constant";
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import log from "../logging/logger";
@@ -67,8 +67,11 @@ function _call(inst, meth, p=[]) {
 
 async function _send(abi, inst, meth, xtra, p=[]) {
     // const txObj = {...xtra, ..._getData(abi, meth, p)}
-    p = validateTxParams(p);
-    log.i('_send', meth, p);
+    p = remPoint(p);
+    const x = xtra.value;
+    if(x) xtra.value = remPoint(x);
+
+    log.i('_send', meth, p, xtra);
     try {
         await _gas(inst, meth, xtra, p);
     } catch(e) {
