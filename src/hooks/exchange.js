@@ -181,17 +181,22 @@ const useXchange = (props) => {
                 log.i('no token is eth');
                 tx = await (exactIn ? _swapExactTokensForTokens(...prm) : _swapTokensForExactTokens(...prm));
             }
-        } catch(e) {}
-        dsp(addTransaction({
-            tx, 
-            message: `Swap ${ethToken ? 'Eth' : tList[0].sym} and ${tList[1].sym}`
-        })) 
-        common.setTxHash(tx);
+            dsp(addTransaction({
+                tx, 
+                message: `Swap ${ethToken ? 'Eth' : tList[0].sym} and ${tList[1].sym}`
+            }));
+            common.setTxHash(tx);
+        } catch(e) {
+            log.e(e.reason);
+            log.e(e.message);
+            log.e(e);
+        } finally {
+            dsp(stopLoading());
+        }
         common.showTransactionModal(!0);
         common.setShowSupplyModal(!1);
         // use swap-confirmed
         common.setLiqConfirmed(!1);
-        dsp(stopLoading());
     }
 
     const _getSwapAmountInData = (dl, v) => {

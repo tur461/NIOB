@@ -165,7 +165,7 @@ const AddLiquidity = (props) => {
                     </div>
                   </Col>
                 ) :
-                common.pairNotExist ? (
+                !common.pairExist ? (
                   <Col className="lp-class">
                     <h4>LP Tokens in your Wallet</h4>
                     <ul className="LptokensList">
@@ -217,8 +217,14 @@ const AddLiquidity = (props) => {
                       disabled={common.isErr}
                       className="swapBtn dismissBtn"
                       title='Add Liquidity'
-                      onClick={() => liquidity.checkAddLiquidity()}
+                      onClick={_ => { _.preventDefault(); liquidity.addLiquidity(); }}
                     />
+                    {
+                      common.isTxErr ?
+                      <div className='tx-error-box'>
+                        Transaction Error: <span>{common.txErr}</span>
+                      </div> : <></>
+                    }
                 </div>
               )
             }
@@ -242,6 +248,8 @@ const AddLiquidity = (props) => {
         handleClose={cTrade.handleClose1}
       />
       <SettingModal
+        slippageSet={common.setSlippage}
+        deadLineSet={common.setDeadline}
         show={common.settingShow}
         handleClose={cTrade.settingClose}
         handleShow={cTrade.settingHandleShow}

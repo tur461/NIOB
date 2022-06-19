@@ -187,6 +187,11 @@ const ERR = {
 
 }
 
+const TX_ERR = {
+  DEF: 'Unknown Transaction Error!',
+  USR_TX_DENIAL: 'User denied transaction:Transaction Rejected!',
+}
+
 export {
   ABI,
   ERR,
@@ -196,6 +201,7 @@ export {
   LINKS,
   T_TYPE,
   TOKENS,
+  TX_ERR,
   NETWORK,
   ADDRESS,
   addCommas,

@@ -30,7 +30,7 @@ const TransactionalModal = ({ show, handleClose, txHash }) => {
               target="_blank"
               rel="noreferrer"
             >
-              View on BscScan
+              View on EtherScan
             </a>
             <div className="no_record">
               <button type="button" className="btn buttonStyle full" onClick={handleClose}>Close</button>

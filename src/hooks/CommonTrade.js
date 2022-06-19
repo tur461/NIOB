@@ -102,11 +102,12 @@ const useCommonTrade = _ => {
             ] : [
                 try2weth(token.addr),
                 try2weth(_getToken(T_TYPE.B).addr),
-            ];
-        if(rDefined(...addr)) common.setAddrPair(addr);
+            ], singleToken=!1;
+        if(isAddr(addr[0]) && isAddr(addr[1])) common.setAddrPair(addr);
+        else if(isAddr(addr[0]) || isAddr(addr[1])) singleToken = !0;
         else return l_t.e(ERR.TOKEN_ADDR_NDEF.msg);
 
-        if(rEq(...addr)) {
+        if(!singleToken && rEq(...addr)) {
             common.setIsErr(!0)
             common.setErrText(ERR.SAME_TOKENS.msg)
             dsp(stopLoading())
@@ -119,7 +120,12 @@ const useCommonTrade = _ => {
         common.setFilteredTokenList(P.tokenList);
         common.setTokenCurrency(token.sym, selected);
         common.setModalCurrency(!common.modalCurrency);
-        
+        if(singleToken) {
+            common.setIsFirstLP(!0);
+            common.showPoolShare(!0);
+            common.setLpTokenBalance(0);
+            return dsp(stopLoading());
+        }
         if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
         let pairExist = await _checkIfPairExists(addr);
         if(_areTokensBoth(addr)) {
@@ -146,10 +152,6 @@ const useCommonTrade = _ => {
     }
 
     const openSelectTokenModal = async tt => {
-        log.i('dropdown:', tt);
-        if (!P.isConnected) {
-        return toast.e("Connect wallet first!");
-        }
         common.setShow(!0);
         let i = tt-1 ? 2 : 1;
         common.setModalCurrency(!0);
@@ -309,7 +311,6 @@ const useCommonTrade = _ => {
         
         let tkn = common[`token${tt}`];
         let addr = try2weth(tkn.addr);
-        log.i('token:', addr);
         try {
             dsp(startLoading());
             TC.setTo(addr);
@@ -352,12 +353,10 @@ const useCommonTrade = _ => {
     }
     
     const isAllowanceEnough = async (amount, tt) => {
-        log.i('checking allowance:', amount, tt);
         if(!P.isConnected) return !!toast.e("Connect wallet first!");
         let tkn = common[`token${tt}`];
         let addr = try2weth(tkn.addr);
         TC.setTo(addr);
-        log.i('checking allowance');
         let allowance = await TC.allowanceOf([P.priAccount, ADDRESS.ROUTER]);
         allowance = toDec(allowance, tkn.dec);
         log.i('allowance:', amount, allowance, amount <= allowance);

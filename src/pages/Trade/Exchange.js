@@ -1,5 +1,5 @@
 import "./Trade.scss";
-import { T_TYPE } from "../../services/constant";
+import { MISC, T_TYPE } from "../../services/constant";
 import { Container, Col } from 'react-bootstrap'
 import React, { useState, useEffect } from "react";
 import useCommonTrade from "../../hooks/CommonTrade";
@@ -21,7 +21,7 @@ import TransactionalModal from "../../components/TransactionalModal/Transactiona
 import useSwap from "../../redux/volatiles/swap";
 import useXchange from "../../hooks/exchange";
 import Loader from "../../components/Loader";
-import { iContains } from "../../services/utils/global";
+import { iContains, toDec, xpand } from "../../services/utils/global";
 import { getEthBalance } from "../../services/contracts/Common";
 
 const Exchange = (props) => {
@@ -52,7 +52,7 @@ const Exchange = (props) => {
 
   const init = async () => {
     if (P.isConnected)
-      common.setTokenBalance(await getEthBalance(P.priAccount), T_TYPE.A);
+      common.setTokenBalance(toDec(await getEthBalance(P.priAccount), MISC.DEF_DEC), T_TYPE.A);
   };
 
   
@@ -140,14 +140,16 @@ const Exchange = (props) => {
             }
           </Col>
         </CardCustom>
-        {(!common.disabled && P.priAccount) &&
-          <div className="card_style card_style_bottom">
-            <ul>
-              <li>Minimum received:<span>{common.minReceived / 10 ** 18}</span></li>
-              <li>Price impact:<span>{common.priceImpact}%</span></li>
-              <li>Liquidity provider fee:<span>{Xchange.liquidityProviderFee()}</span></li>
-            </ul>
-          </div>}
+        {
+          !common.isFetching && !common.isErr ?
+            <div className="details-section">
+              <ul>
+                <li>Minimum received:<span>{common.minReceived / 10 ** 18}</span></li>
+                <li>Price impact:<span>{common.priceImpact}%</span></li>
+                <li>Liquidity provider fee:<span>{Xchange.liquidityProviderFee()}</span></li>
+              </ul>
+            </div> : !common.isErr ? <Loader stroke='white' text='please wait..'/> : <></>
+          }
       </Container>
       <ModalCurrency
         show={common.show}
@@ -172,28 +174,31 @@ const Exchange = (props) => {
         handleShow={cTrade.settingHandleShow}
         handleClose={cTrade.settingClose}
       />
-      {swap.isSwapModalOpen && <SwapModal
-        show={swap.isSwapModalOpen}
-        handleSwap={Xchange.handleSwap}
-        priceImpact={common.priceImpact}
-        tokenOneValue={common.token1Value}
-        tokenTwoValue={common.token2Value}
-        tokenOneIcon={common.token1?.icon}
-        tokenTwoIcon={common.token2?.icon}
-        sharePoolValue={common.sharePoolValue}
-        tokenOneCurrency={common.token1Currency}
-        tokenTwoCurrency={common.token2Currency}
-        liquidityProviderFee={Xchange.liquidityProviderFee()}
-        closeModal={() => swap.closeSwapModal()}
-      />}
+      {
+        swap.isSwapModalOpen ?
+        <SwapModal
+          show={swap.isSwapModalOpen}
+          handleSwap={Xchange.handleSwap}
+          priceImpact={common.priceImpact}
+          tokenOneValue={common.token1Value}
+          tokenTwoValue={common.token2Value}
+          tokenOneIcon={common.token1?.icon}
+          tokenTwoIcon={common.token2?.icon}
+          sharePoolValue={common.sharePoolValue}
+          tokenOneCurrency={common.token1Currency}
+          tokenTwoCurrency={common.token2Currency}
+          liquidityProviderFee={Xchange.liquidityProviderFee()}
+          closeModal={() => swap.closeSwapModal()}
+        /> : <></>
+      }
       <RecentTransactions
         show={common.showRecent}
-        handleClose={cTrade.handleCloseRecent}
+        handleClose={_ => common.setShowRecent(!1)}
       />
       <TransactionalModal 
         txHash={common.txHash} 
         show={common.transactionModalShown} 
-        handleClose={common.showTransactionModal} 
+        handleClose={_ => common.showTransactionModal(!1)} 
       />
     </>
 

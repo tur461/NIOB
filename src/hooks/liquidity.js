@@ -6,7 +6,7 @@ import useCommon from "../redux/volatiles/common";
 import { useDispatch, useSelector } from "react-redux";
 import { isWeth, togIP } from "../services/utils/trading";
 import RouterContract from "../services/contracts/Router";
-import {rDefined, toDec, toFull, tStamp, xpand, zero } from "../services/utils/global";
+import {parseTxErr, rDefined, toDec, toFull, tStamp, xpand, zero } from "../services/utils/global";
 import { addTransaction, checkUserLpTokens, startLoading, stopLoading } from "../redux/actions";
 
 const useLiquidity = _ => {
@@ -28,9 +28,9 @@ const useLiquidity = _ => {
 
         let p = [
             tkn.addr,
-            amtTokenDzd.toFixed(),
-            amtTokenMin.toFixed(),
-            ethVal.toFixed(),
+            xpand(amtTokenDzd),
+            xpand(amtTokenMin),
+            xpand(ethVal),
             P.priAccount,
             cTrade.getDeadline(),
         ]
@@ -73,21 +73,31 @@ const useLiquidity = _ => {
         dsp(startLoading());
         let ethToken = cTrade.getEthToken();
         log.i('ethToken:', ethToken);
-        if(ethToken) {
-            const oTkn = cTrade.getOtherToken();
-            hash = await _addLiquidityEthWithToken(valList, ethToken, oTkn);
-            dsp(addTransaction({tx: hash, message: `Add ETH and ${oTkn.tkn.sym}`}));
-        } else {
-            const tkns = cTrade.getTokens();
-            hash = await _addLiquidityTokenWithToken(valList, tkns)
-            dsp(addTransaction({tx: hash, message: `Add ${tkns[0].sym} and ${tkns[1].sym}`}));
+        
+        try {
+            if(ethToken) {
+                const oTkn = cTrade.getOtherToken();
+                hash = await _addLiquidityEthWithToken(valList, ethToken, oTkn);
+                dsp(addTransaction({tx: hash, message: `Add ETH and ${oTkn.tkn.sym}`}));
+            } else {
+                const tkns = cTrade.getTokens();
+                hash = await _addLiquidityTokenWithToken(valList, tkns)
+                dsp(addTransaction({tx: hash, message: `Add ${tkns[0].sym} and ${tkns[1].sym}`}));
+            }
+        } catch(e) {
+            e = parseTxErr(e);
+            l_t.e(e);
+            common.setIsTxErr(!0);
+            return common.setTxErr(e);
+        } finally {
+            dsp(stopLoading());
+            common.setShowSupplyModal(!1);
         }
-        dsp(stopLoading());
+        // dsp(checkUserLpTokens(!1));
+        common.setIsTxErr(!1);
         common.setTxHash(hash);
-        common.showTransactionModal(!0);
-        common.setShowSupplyModal(!1);
-        dsp(checkUserLpTokens(!1));
         common.setLiqConfirmed(!1);
+        common.showTransactionModal(!0);
     };
 
     const calculateFraction = tt => {

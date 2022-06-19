@@ -25,6 +25,7 @@ const initialState = {
     
     isErr: !1,
     isMax: !0, 
+    isTxErr: !1,
     isFirstLP: !1,
     isLiqConfirmed: !1,
     isApprovalConfirmed: !1,
@@ -52,6 +53,7 @@ const initialState = {
     transactionModalShown: !1,
     
     txHash: '',
+    txErr: '',
     token2: {},
     token1Value: '',
     token2Value: '',
@@ -76,6 +78,12 @@ const useCommon = create((set, get) => ({
     },
     setIsErr: isErr => {
         set(s => ({...s, isErr}));
+    },
+    setIsTxErr: isTxErr => {
+        set(s => ({...s, isTxErr}));
+    },
+    setTxErr: txErr => {
+        set(s => ({...s, txErr}));
     },
     setPath: path => {
         set(s => ({...s, path}));

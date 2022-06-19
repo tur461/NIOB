@@ -87,7 +87,7 @@ function getGasPrice() {
 }
 
 async function getEthBalance (addr) {
-    return toFull(await (Web_3()).eth.getBalance(addr), MISC.DEF_DEC);
+    return await (Web_3()).eth.getBalance(addr);
 }
 
 async function setupWalletEventListeners () {

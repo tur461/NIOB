@@ -115,6 +115,14 @@
     .swapBtn_col {
       display: flex;
       justify-content: space-between;
+      .error-box {
+        padding: .4rem;
+        background-color: red;
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 800;
+        text-align: center;
+      }
       .swapBtn {
         width: 206px;
         font-size: 16px;
@@ -125,6 +133,20 @@
         &.dismissBtn {
           background-color: $dimbg;
           background-image: none;
+        }
+      }
+
+      .tx-error-box {
+        padding: 1rem;
+        background: transparent;
+        border: 1px solid red;
+        border-radius: 1rem;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 800;
+        color: red;
+        span {
+          margin-left: 1rem;
         }
       }
     }
@@ -143,6 +165,16 @@
         margin: 5px 0;
       }
     }
+    
+    .approve-section {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: .5rem;
+      &>div {
+        display: flex;
+      }
+    }
+    
     .settingSec {
       display: flex;
       justify-content: space-between;
@@ -155,6 +187,16 @@
           font-size: 16px;
           margin-bottom: 0px;
         }
+      }
+    }
+    
+    .details-section {
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+      span {
+        margin-left: .5rem;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
       }
     }
   }
@@ -309,23 +351,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
-}
-
-.approve-section {
-  display: flex;
-  justify-content: space-around;
+  margin-top: .5rem;
   margin-bottom: .5rem;
-  &>div {
-    display: flex;
-  }
 }
 
-.error-box {
-  padding: .4rem;
-  background-color: red;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 800;
-  text-align: center;
-}
+
+
 

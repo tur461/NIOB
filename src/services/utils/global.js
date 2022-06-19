@@ -1,5 +1,5 @@
-import { ADDRESS, MISC } from "../constant";
 import { BigNumber } from "bignumber.js"
+import { ADDRESS, MISC, TX_ERR } from "../constant";
 
 const zero = v => !!!v;
 
@@ -11,17 +11,11 @@ const obj2list = o => {
 
 const isDefined = x => !!x;
 
-const tgl = v => v-1 ? 1 : 2;
-
 const toFlr = v => Math.floor(v);
 
 const toBgFix = v => BigNumber(v).toFixed();
 
-const isZero = addr => addr === ADDRESS.ZERO;
-
 const contains = (s, c) => s.indexOf(c) > -1;
-
-const isNonZero = addr => addr !== ADDRESS.ZERO;
 
 const clone = o => JSON.parse(JSON.stringify(o));
 
@@ -29,9 +23,9 @@ const toDec = (v, dec) => Number(v) / 10 ** Number(dec);
 
 const toFull = (v, dec) => Number(v) * 10 ** Number(dec);
 
-const xpand  = v => v.toLocaleString('fullwide', {useGrouping: !1});
-
 const tStamp = (a=0) => Math.floor(Date.now() / 1000) + a;
+
+const xpand  = v => v.toLocaleString('fullwide', {useGrouping: !1});
 
 const iContains = (s, c) => s.toLowerCase().indexOf(c.toLowerCase()) > -1;
 
@@ -71,6 +65,7 @@ const LS = {
     dec: k => localStorage.setItem(k, LS.getNum(k) - 1),
     inc: k => localStorage.setItem(k, LS.getNum(k) + 1),
 }
+
 const k = 'timeOut';
 const typingGuard = (cbk, p) => {
     LS.has(k) && clearTimeout(LS.get(k));
@@ -92,8 +87,19 @@ const remPoint = p => {
 }) : p instanceof Object ? Object.keys(p).reduce((a, b) => {
     if(p[b] instanceof String) a[b] = _remPoint(p[b])
     else a[b] = p[b];
+    return a;
 }, {}) : p instanceof String ? _remPoint(p) : p;
 }
+
+const parseTxErr = e => {
+    const errs = Object.keys(TX_ERR);
+    for(let i=0,j=[]; i<errs.length; ++i) {
+        j = TX_ERR[errs[i]].split(':');
+        if(iContains(e.message, j[0])) return j[1];
+    }
+    return TX_ERR.DEF;
+}
+
 export {
     LS,
     rEq,
@@ -106,7 +112,6 @@ export {
     tStamp,
     xpand,
     hasVal,
-    isZero,
     toBgFix,
     obj2list,
     remPoint,
@@ -114,6 +119,6 @@ export {
     contains,
     isDefined,
     iContains,
-    isNonZero,
+    parseTxErr,
     typingGuard,
 }
