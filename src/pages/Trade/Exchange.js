@@ -22,6 +22,7 @@ import useSwap from "../../redux/volatiles/swap";
 import useXchange from "../../hooks/exchange";
 import Loader from "../../components/Loader";
 import { iContains } from "../../services/utils/global";
+import { getEthBalance } from "../../services/contracts/Common";
 
 const Exchange = (props) => {
   const swap = useSwap(s => s);
@@ -51,7 +52,7 @@ const Exchange = (props) => {
 
   const init = async () => {
     if (P.isConnected)
-      common.setTokenBalance(await ContractServices.getETHBalance(P.priAccount), T_TYPE.A);
+      common.setTokenBalance(await getEthBalance(P.priAccount), T_TYPE.A);
   };
 
   
@@ -134,7 +135,7 @@ const Exchange = (props) => {
                 className="swapBtn" 
                 disabled={common.isErr || common.isFetching} 
                 title={common.isFetching ? 'please wait...' : 'Swap'} 
-                onClick={_ => Xchange.handleSwap()}
+                onClick={_ => Xchange.performSwap()}
               />
             }
           </Col>
@@ -165,6 +166,8 @@ const Exchange = (props) => {
         handleClose={cTrade.handleClose1}
       />
       <SettingModal
+        slippageSet={common.setSlippage}
+        deadLineSet={common.setDeadline}
         show={common.settingShow}
         handleShow={cTrade.settingHandleShow}
         handleClose={cTrade.settingClose}

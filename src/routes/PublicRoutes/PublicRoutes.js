@@ -10,6 +10,7 @@ import Trade from "../../pages/Trade/Trade";
 import AddLiquidity from "../../pages/Trade/AddLiquidity";
 import PoolGalaxy from "../../pages/PoolGalaxy/PoolGalaxy";
 import ReactGA from 'react-ga';
+import Staking from "../../pages/Trade/Staking";
 
 const PublicRoutes = () => {
   const location = useLocation();
@@ -84,11 +85,12 @@ const PublicRoutes = () => {
           exact={true}
         />
         <Route path={"/trade/:tab/:fillter?"} component={Trade} exact={true} />
-        <Route
+        {/* <Route
               path={'/trade/addLiquidity'}
               component={AddLiquidity}
               exact={true} 
-          />
+          />*/
+        <Route path={"/trade/staking"} component={Staking} exact={true} />}
         <Route path={"/poolgalaxy"} component={PoolGalaxy} exact={true} />
       </Switch>
       <Footer />

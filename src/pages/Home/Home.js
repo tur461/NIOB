@@ -2,7 +2,6 @@ import "./Home.scss";
 import Web3 from "web3";
 import { Link } from "react-router-dom";
 import { BigNumber } from "bignumber.js";
-import { rootName } from "../../services/constant";
 import React, { useEffect, useState } from "react";
 import Button from "../../components/Button/Button";
 import { toast } from "../../components/Toast/Toast";
@@ -29,6 +28,11 @@ import {
   stopLoading,
   saveFotterValues,
 } from "../../redux/actions";
+import TokenContract from "../../services/contracts/TokenContract";
+import { tryGetAccount } from "../../services/contracts/Common";
+import RouterContract from "../../services/contracts/Router";
+import FactoryContract from "../../services/contracts/Factory";
+import PairContract from "../../services/contracts/PairContract";
 
 
 const Home = () => {
@@ -61,7 +65,7 @@ const Home = () => {
   const [topFarms, setTopFarms] = useState([]);
   const [topFarmApy, setTopFarmApy] = useState("");
 
-  let TC = ContractServices.TokenContract;;
+  let TC = TokenContract;
 
   useEffect(_ => {
     (async () => {
@@ -72,124 +76,124 @@ const Home = () => {
   }, []);
 
   const init = async () => {
-    const res = await ContractServices.tryGetAccount();
-    if (P.isConnected && res) {
-      getMarketCap();
-      getBurnedToken();
-      getSaitamaPerBlock();
-      try {
-        const pL = Number(await FarmService.poolLength());
-        setPoolLength(pL);
-        // let farmsTemp = [];
-        let totalLockedRewards = 0;
-        let totalRewards = 0;
-        let totalLiquidity = 0;
-        let options = [];
-        TC.setTo(TOKEN_LIST[1].address)
-        const res = await TC.balanceOf(P.priAccount);
-        setAmount(res);
-        let allAPRs = [];
-        for (let i = 0; i < pL; i++) {
-          const res = await FarmService.totalPoolInfo(i);
-          const userInfo = await FarmService.userInfo(i, P.priAccount);
-          const { poolInfo, latest } = res;
+    // const res = await tryGetAccount();
+    // if (P.isConnected && res) {
+    //   getMarketCap();
+    //   getBurnedToken();
+    //   getSaitamaPerBlock();
+    //   try {
+    //     const pL = Number(await FarmService.poolLength());
+    //     setPoolLength(pL);
+    //     // let farmsTemp = [];
+    //     let totalLockedRewards = 0;
+    //     let totalRewards = 0;
+    //     let totalLiquidity = 0;
+    //     let options = [];
+    //     TC.setTo(TOKEN_LIST[1].address)
+    //     const res = await TC.balanceOf(P.priAccount);
+    //     setAmount(res);
+    //     let allAPRs = [];
+    //     for (let i = 0; i < pL; i++) {
+    //       const res = await FarmService.totalPoolInfo(i);
+    //       const userInfo = await FarmService.userInfo(i, P.priAccount);
+    //       const { poolInfo, latest } = res;
 
-          if (poolInfo.lpToken != undefined) {
-            TC.setTo(poolInfo.lpToken);
-            const allowance = await TC.allowanceOf(MAIN_CONTRACT_LIST.farm.address);
-            let check = BigNumber(allowance).isGreaterThanOrEqualTo(BigNumber(2 * 255 - 1)) ? !1 : !0;
-            const reserve = await ExchangeService.getReserves(ANCHOR_BUSD_LP);
-            const tokenZero = await ExchangeService.getTokenZero(
-              ANCHOR_BUSD_LP
-            );
-            const tokenOne = await ExchangeService.getTokenOne(ANCHOR_BUSD_LP);
-            const anchorPerBlock = Number(await FarmService.pantherPerBlock());
-            const price = await getPriceInUsd(tokenZero, tokenOne, reserve);
+    //       if (poolInfo.lpToken != undefined) {
+    //         TC.setTo(poolInfo.lpToken);
+    //         const allowance = await TC.allowanceOf(MAIN_CONTRACT_LIST.farm.address);
+    //         let check = BigNumber(allowance).isGreaterThanOrEqualTo(BigNumber(2 * 255 - 1)) ? !1 : !0;
+    //         const reserve = await PairContract.getReserves(ANCHOR_BUSD_LP);
+    //         const tokenZero = await ExchangeService.getTokenZero(
+    //           ANCHOR_BUSD_LP
+    //         );
+    //         const tokenOne = await ExchangeService.getTokenOne(ANCHOR_BUSD_LP);
+    //         const anchorPerBlock = Number(await FarmService.pantherPerBlock());
+    //         const price = await getPriceInUsd(tokenZero, tokenOne, reserve);
 
-            totalLockedRewards +=
-              (latest - poolInfo.lastRewardBlock) *
-              price *
-              (anchorPerBlock / 10 ** 18);
-            setTotalLockedRewards(totalLockedRewards);
+    //         totalLockedRewards +=
+    //           (latest - poolInfo.lastRewardBlock) *
+    //           price *
+    //           (anchorPerBlock / 10 ** 18);
+    //         setTotalLockedRewards(totalLockedRewards);
 
-            const farmPoolInfo = await FarmService.farmAndPoolInfo(i);
-            const { farm, pool } = farmPoolInfo;
-            if (farm) {
-              let res = await handleTotalLiquidity(farm.lpToken);
+    //         const farmPoolInfo = await FarmService.farmAndPoolInfo(i);
+    //         const { farm, pool } = farmPoolInfo;
+    //         if (farm) {
+    //           let res = await handleTotalLiquidity(farm.lpToken);
 
-              const lpTokenDetailsTemp = await FarmService.getLpTokenDetails(
-                poolInfo.lpToken
-              );
-              let apr = await calculateAPR(farm.allocPoint, res);
-              setTopFarms((topFarms) => [
-                ...topFarms,
-                {
-                  symbol0: lpTokenDetailsTemp.symbol0,
-                  symbol1: lpTokenDetailsTemp.symbol1,
-                  newLiquidity: res,
-                  newApr: apr,
-                },
-              ]);
-              allAPRs.push(apr);
-              totalLiquidity += Number(res);
-            }
-            if (pool) {
-              const poolInfoForSaitama = await FarmService.poolInfo(i, "2");
-              // console.log("poolInfoForSaitama", poolInfoForSaitama);
-              let res = await handleTotalLiquidityForPool(pool.lpToken);
-              const tokenAmount = await ExchangeService.getTokenStaked(
-                pool.lpToken
-              );
-              let price = rEq(pool.lpTokenaddress, TOKEN_LIST[2].address) ? 1 
-              : await getPrice(await ExchangeService.getPair(pool.lpToken, TOKEN_LIST[2].address))
-              if (poolInfoForSaitama.allocPoint === "30") setSaitamaApr(await calculateAPR(poolInfoForSaitama.allocPoint, res));
-              const liq = tokenAmount * price;
-              totalLiquidity += Number(liq);
-              setLiquidity(totalLiquidity);
-            }
+    //           const lpTokenDetailsTemp = await FarmService.getLpTokenDetails(
+    //             poolInfo.lpToken
+    //           );
+    //           let apr = await calculateAPR(farm.allocPoint, res);
+    //           setTopFarms((topFarms) => [
+    //             ...topFarms,
+    //             {
+    //               symbol0: lpTokenDetailsTemp.symbol0,
+    //               symbol1: lpTokenDetailsTemp.symbol1,
+    //               newLiquidity: res,
+    //               newApr: apr,
+    //             },
+    //           ]);
+    //           allAPRs.push(apr);
+    //           totalLiquidity += Number(res);
+    //         }
+    //         if (pool) {
+    //           const poolInfoForSaitama = await FarmService.poolInfo(i, "2");
+    //           // console.log("poolInfoForSaitama", poolInfoForSaitama);
+    //           let res = await handleTotalLiquidityForPool(pool.lpToken);
+    //           const tokenAmount = await ExchangeService.getTokenStaked(
+    //             pool.lpToken
+    //           );
+    //           let price = rEq(pool.lpTokenaddress, TOKEN_LIST[2].address) ? 1 
+    //           : await getPrice(await ExchangeService.getPair(pool.lpToken, TOKEN_LIST[2].address))
+    //           if (poolInfoForSaitama.allocPoint === "30") setSaitamaApr(await calculateAPR(poolInfoForSaitama.allocPoint, res));
+    //           const liq = tokenAmount * price;
+    //           totalLiquidity += Number(liq);
+    //           setLiquidity(totalLiquidity);
+    //         }
 
-            if (i === pL - 1) {
-              const totalSupply = await getTotalSupply();
-              const saitamaValue = await getSaitamaDollarValue();
-              const obj = {
-                tvl: totalLiquidity,
-                totalSupply: totalSupply,
-                saitamaValue: saitamaValue,
-              };
-              dispatch(saveFotterValues(obj));
-            }
-            const rewards = Number(
-              Number(
-                (await FarmService.pendingPanther(i, P.priAccount)) /
-                10 ** 18
-              ).toFixed(3)
-            );
-            totalRewards += rewards;
-            setRewards(totalRewards);
+    //         if (i === pL - 1) {
+    //           const totalSupply = await getTotalSupply();
+    //           const saitamaValue = await getSaitamaDollarValue();
+    //           const obj = {
+    //             tvl: totalLiquidity,
+    //             totalSupply: totalSupply,
+    //             saitamaValue: saitamaValue,
+    //           };
+    //           dispatch(saveFotterValues(obj));
+    //         }
+    //         const rewards = Number(
+    //           Number(
+    //             (await FarmService.pendingPanther(i, P.priAccount)) /
+    //             10 ** 18
+    //           ).toFixed(3)
+    //         );
+    //         totalRewards += rewards;
+    //         setRewards(totalRewards);
 
-            const nextHarvestUntil = await FarmService.canHarvest(
-              i,
-              P.priAccount
-            );
-            if (
-              !check &&
-              rewards > 0 &&
-              Number(userInfo.nextHarvestUntil) > 0 &&
-              nextHarvestUntil
-            ) {
-              setShowHarvest(true);
-              options.push({ pid: i, lpToken: poolInfo.lpToken });
-            }
-          }
-        }
-        setTopFarmApy(Math.max.apply(Math, allAPRs));
-        setHarvestAll(options);
-      } catch (err) {
-        console.log(err);
-        setFarmAndStakeLoader(!1);
-        dispatch(stopLoading());
-      }
-    }
+    //         const nextHarvestUntil = await FarmService.canHarvest(
+    //           i,
+    //           P.priAccount
+    //         );
+    //         if (
+    //           !check &&
+    //           rewards > 0 &&
+    //           Number(userInfo.nextHarvestUntil) > 0 &&
+    //           nextHarvestUntil
+    //         ) {
+    //           setShowHarvest(true);
+    //           options.push({ pid: i, lpToken: poolInfo.lpToken });
+    //         }
+    //       }
+    //     }
+    //     setTopFarmApy(Math.max.apply(Math, allAPRs));
+    //     setHarvestAll(options);
+    //   } catch (err) {
+    //     console.log(err);
+    //     setFarmAndStakeLoader(!1);
+    //     dispatch(stopLoading());
+    //   }
+    // }
   };
   const calculateAPR = async (allocPoint, liquidity) => {
     const anchorPrice = await getPrice(ANCHOR_BUSD_LP);
@@ -290,51 +294,51 @@ const Home = () => {
     }
   }
 
-  const handleTotalLiquidity = async pairAddress => {
-    if (isAddr(pairAddress)) {
-      const tkn = await ExchangeService.getTokens(pairAddress)
-      const reserve = await ExchangeService.getReserves(pairAddress);
-      const dec = await ExchangeService.getDecimalPair(tkn);
-      let priceA = await getDollarAPR(tkn[0]);
-      let priceB = await getDollarAPR(tkn[1]);
-      const totalSupply = await ExchangeService.getTotalSupply(pairAddress);
-      const tokenStaked = await ExchangeService.getTokenStaked(pairAddress);
-      const liquidity =
-        (((reserve[0] / 10 ** dec[0]) * priceA +
-          (reserve[1] / 10 ** dec[1]) * priceB) /
-          totalSupply) *
-        tokenStaked;
-      return liquidity;
-    }
-    return 0;
-  };
+  // const handleTotalLiquidity = async pairAddress => {
+  //   if (isAddr(pairAddress)) {
+  //     const tkn = await ExchangeService.getTokens(pairAddress)
+  //     const reserve = await ExchangeService.getReserves(pairAddress);
+  //     const dec = await ExchangeService.getDecimalPair(tkn);
+  //     let priceA = await getDollarAPR(tkn[0]);
+  //     let priceB = await getDollarAPR(tkn[1]);
+  //     const totalSupply = await ExchangeService.getTotalSupply(pairAddress);
+  //     const tokenStaked = await ExchangeService.getTokenStaked(pairAddress);
+  //     const liquidity =
+  //       (((reserve[0] / 10 ** dec[0]) * priceA +
+  //         (reserve[1] / 10 ** dec[1]) * priceB) /
+  //         totalSupply) *
+  //       tokenStaked;
+  //     return liquidity;
+  //   }
+  //   return 0;
+  // };
   const options = {
     indicators: !1,
   };
-  const handleTotalLiquidityForPool = async (tokenAddress) => {
-    if (isAddr(tokenAddress)) {
-      const reserve = await ExchangeService.getTokenStaked(tokenAddress);
-      const tokenPairUSDT = await ExchangeService.getPair(
-        tokenAddress,
-        TOKEN_LIST[2].address
-      );
-      const tokenPairBNB = await ExchangeService.getPair(tokenAddress, WETH);
-      let priceA = 0;
-      if (rEq(tokenAddress, TOKEN_LIST[2].address)) priceA = 1;
-      else if (rEq(tokenAddress, WETH)) priceA = await getPrice(BNB_BUSD_LP);
+  // const handleTotalLiquidityForPool = async (tokenAddress) => {
+  //   if (isAddr(tokenAddress)) {
+  //     const reserve = await ExchangeService.getTokenStaked(tokenAddress);
+  //     const tokenPairUSDT = await ExchangeService.getPair(
+  //       tokenAddress,
+  //       TOKEN_LIST[2].address
+  //     );
+  //     const tokenPairBNB = await ExchangeService.getPair(tokenAddress, WETH);
+  //     let priceA = 0;
+  //     if (rEq(tokenAddress, TOKEN_LIST[2].address)) priceA = 1;
+  //     else if (rEq(tokenAddress, WETH)) priceA = await getPrice(BNB_BUSD_LP);
 
-      if (priceA == 0) {
-        if (isAddr(tokenPairUSDT)) priceA = await getPrice(tokenPairUSDT);
-        else if (isAddr(tokenPairBNB)) {
-          //priceA = await getPrice(tokenPairBNB);
-          priceA = 0;
-        }
-      }
-      const liquidity = reserve * priceA;
-      return Number(liquidity).toFixed(2);
-    }
-    return 0;
-  };
+  //     if (priceA == 0) {
+  //       if (isAddr(tokenPairUSDT)) priceA = await getPrice(tokenPairUSDT);
+  //       else if (isAddr(tokenPairBNB)) {
+  //         //priceA = await getPrice(tokenPairBNB);
+  //         priceA = 0;
+  //       }
+  //     }
+  //     const liquidity = reserve * priceA;
+  //     return Number(liquidity).toFixed(2);
+  //   }
+  //   return 0;
+  // };
 
   const history = useHistory();
   return (
@@ -353,7 +357,7 @@ const Home = () => {
                 our official docs. We’ll teach you step by step you to use SAITA
                 Swap and it’s assets.
               </p>
-              <Link className="captionFooter d-flex justify-content-between align-items-center">
+              <Link to='#' className="captionFooter d-flex justify-content-between align-items-center">
                 <span>SAITA Tutorial</span>
                 <span>
                   <Image
@@ -375,7 +379,7 @@ const Home = () => {
             <Carousel.Caption>
               <h3>First slide label</h3>
               <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-              <Link className="captionFooter d-flex justify-content-between align-items-center">
+              <Link to='#' className="captionFooter d-flex justify-content-between align-items-center">
                 <span>SAITA Tutorial</span>{" "}
                 <span>
                   <Image
@@ -397,7 +401,7 @@ const Home = () => {
             <Carousel.Caption>
               <h3>First slide label</h3>
               <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-              <Link className="captionFooter d-flex justify-content-between align-items-center">
+              <Link to='#' className="captionFooter d-flex justify-content-between align-items-center">
                 <span>SAITA Tutorial</span>{" "}
                 <span>
                   <Image
@@ -426,7 +430,7 @@ const Home = () => {
               <h3>Start your engine </h3>
               <p>Start your journey or improve your wallet portfolio:</p>
               <h3>SAITA Price: $0.50</h3>
-              <Link className="captionFooter d-flex justify-content-between align-items-center">
+              <Link to='#' className="captionFooter d-flex justify-content-between align-items-center">
                 <span>Buy SAITA Token </span> <span className="arrowIcon" />
               </Link>
             </div>
@@ -572,7 +576,7 @@ const Home = () => {
         <Col md={12}>
           <div className="farm_title">
             <h3>Top Farm Planets</h3>
-            <Button title="All Farms" onClick={() => { history.push(`${rootName}/farmplanets/active`) }} />
+            <Button title="All Farms" onClick={() => { history.push(`/farmplanets/active`) }} />
           </div>
         </Col>
         <Col xl={4} lg={12}>

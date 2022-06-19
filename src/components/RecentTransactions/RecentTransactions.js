@@ -3,7 +3,7 @@ import { Col, Row, Modal } from "react-bootstrap";
 import Button from "../Button/Button";
 import "./RecentTransactions.scss";
 import { useSelector } from "react-redux";
-import { BSC_SCAN } from "../../services/constant";
+import { NETWORK } from "../../services/constant";
 
 const RecentTransactions = ({ show, handleClose }) => {
   const recentTransactions = useSelector(
@@ -34,7 +34,7 @@ const RecentTransactions = ({ show, handleClose }) => {
                           <a
                             target="_blank"
                             rel="noreferrer noopener"
-                            href={`${BSC_SCAN}tx/${t.tx}`}
+                            href={`${NETWORK.LINK}tx/${t.tx}`}
                             className="success"
                           >
                             {t.message}

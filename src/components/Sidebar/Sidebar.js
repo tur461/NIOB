@@ -17,8 +17,8 @@ import Github from "../../assets/images/git.svg";
 import Globe from "../../assets/images/language-switcher-icon.svg";
 import "./Sidebar.scss";
 import useWindowDimensions from "../../hooks/getWindowDimensions";
-import { ANCHOR_BUSD_LP, DOCS } from "../../assets/tokens";
-import { ExchangeService } from "../../services/ExchangeService";
+import PairContract from "../../services/contracts/PairContract";
+import { ANCHOR_BUSD_LP } from "../../assets/tokens";
 
 const Sidebar = (props) => {
   const { width } = useWindowDimensions();
@@ -49,7 +49,8 @@ const Sidebar = (props) => {
   };
 
   const getNiobDollarValue = async () => {
-    const reserves = await ExchangeService.getReserves(ANCHOR_BUSD_LP);
+    PairContract.setTo(ANCHOR_BUSD_LP);
+    const reserves = await PairContract.getReserves();
     setNiobBusdValue(reserves[1] / reserves[0]);
   }
 
@@ -78,10 +79,11 @@ const Sidebar = (props) => {
           <MenuItem onClick={() => closeSidebar()} className={splitLocation[2] === "exchange" ? "active" : ""}>
             <Link to="/trade/exchange">Exchange</Link>
           </MenuItem>
-          <MenuItem onClick={() => closeSidebar()}
-            className={splitLocation[2] === "liquidity" ? "active" : ""}
-          >
+          <MenuItem onClick={() => closeSidebar()} className={splitLocation[2] === "liquidity" ? "active" : ""}>
             <Link to="/trade/liquidity">Liquidity</Link>
+          </MenuItem>
+          <MenuItem onClick={() => closeSidebar()}  className={splitLocation[2] === "staking" ? "active" : ""}>
+            <Link to="/trade/staking">Staking</Link>
           </MenuItem>
         </SubMenu>
         <MenuItem

@@ -7,7 +7,7 @@ import ReactTooltip from "react-tooltip";
 import TolerenceImg from "../../../assets/images/tolerence.png";
 import { Link } from "react-router-dom";
 
-const SettingModal = ({ show, handleClose }) => {
+const SettingModal = ({ show, handleClose, deadLineSet, slippageSet }) => {
   const dispatch = useDispatch();
 
   const slippage = useSelector(
@@ -26,13 +26,12 @@ const SettingModal = ({ show, handleClose }) => {
   const predefinedValues = [0.1, 0.5, 1];
 
   const handleChange = (e) => {
-    let v = parseFloat(e.target.value);
+    let v = e.target.value ? parseFloat(e.target.value) : 0.0;
     setValue(v);
     validateValue(v);
   };
   const validateValue = async (v) => {
     try {
-      setValue(v);
       v *= 100;
       v = parseInt(v);
       if (!Number.isNaN(v) && v > 0 && v < MAX_SLIPPAGE) {
@@ -42,7 +41,8 @@ const SettingModal = ({ show, handleClose }) => {
           return setError("Maximum allowed slippage value exceeded");
         }
         v /= 100;
-        await dispatch(saveSlippagePercentage(v));
+        slippageSet(v);
+        dispatch(saveSlippagePercentage(v));
         setError(null);
       } else {
         setError("Enter valid a slippage percentage");
@@ -53,11 +53,12 @@ const SettingModal = ({ show, handleClose }) => {
   };
 
   const changeDeadline = async (e) => {
-    const dl = parseInt(e.target.value);
+    const dl = e.target.value ? parseInt(e.target.value) : 0.0;
     setDeadline(dl);
     if (dl <= 0) {
       return setDeadlineError("Enter a valid deadline");
     }
+    deadLineSet(dl);
     dispatch(saveDeadline(dl));
     setDeadlineError(null);
   };

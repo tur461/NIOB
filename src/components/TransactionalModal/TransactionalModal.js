@@ -2,7 +2,7 @@ import React from "react";
 import { Col, Row, Modal, Button } from "react-bootstrap";
 import "./TransactionalModal.scss";
 import { useSelector } from "react-redux";
-import { BSC_SCAN } from "../../services/constant";
+import { NETWORK } from "../../services/constant";
 import checkicon from "../../assets/images/check_icon.svg";
 
 const TransactionalModal = ({ show, handleClose, txHash }) => {
@@ -26,7 +26,7 @@ const TransactionalModal = ({ show, handleClose, txHash }) => {
           <Col className="baseToken_style">
             <img src={checkicon} alt="icon" width="85" className="icon_color" />
             <a
-              href={`${BSC_SCAN}tx/${txHash}`}
+              href={`${NETWORK.LINK}tx/${txHash}`}
               target="_blank"
               rel="noreferrer"
             >

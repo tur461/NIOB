@@ -1,0 +1,203 @@
+@import "../../assets/theme/clr_var.scss";
+
+.container_wrap.referral_page {
+  background-image: none;
+  .custom_container {
+    z-index: 1;
+    max-width: 100%;
+    position: relative;
+  }
+  .timeto_connect {
+    background-image: unset !important;
+    background-size: contain;
+    padding: 75px;
+    position: relative;
+    background-repeat: no-repeat;
+    background-position: left -25px;
+    @media (max-width: 1440px) {
+      padding: 55px;
+      background-size: cover;
+    }
+    @media (max-width: 767px) {
+      padding: 15px;
+    }
+    &:before {
+      background: #1c1c2d;
+      position: absolute;
+      width: 100%;
+      content: "";
+      left: 0;
+      height: 100%;
+      right: 0;
+      top: 0;
+      opacity: 0.8;
+      z-index: 0;
+    }
+    .invite_othr {
+      padding-right: 100px;
+      @media (max-width: 1440px) {
+        padding-right: 30px;
+      }
+      @media (max-width: 767px) {
+        padding-right: 0px;
+      }
+      h2 {
+        margin: 25px 0;
+      }
+    }
+    .refflink {
+      background-color: #1c1c2d;
+      padding: 20px 35px 35px;
+      border-radius: 12px;
+      @media (max-width: 767px) {
+        padding: 20px;
+        margin-top: 20px;
+      }
+      h2 {
+        margin: 15px 0;
+      }
+      .share_anyone {
+        display: flex;
+        align-items: center;
+        p {
+          margin: 0;
+          font-weight: 600;
+        }
+        ul.shareable {
+          padding: 0;
+          display: flex;
+          margin-left: 15px;
+          margin-bottom: 0;
+          li {
+            margin-right: 10px;
+          }
+        }
+      }
+    }
+  }
+}
+.staking_block {
+  background: #032d3c;
+  max-width: 600px;
+  //   border: 1px solid #fff;
+  border-radius: 30px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 20px;
+  .staking_head {
+    text-align: center;
+    color: #fff;
+    border-radius: 30px;
+    // background-color: #072530;
+    position: relative;
+    p {
+      color: $white;
+      font-size: 24px;
+      padding: 20px 0;
+      margin: 0;
+      font-weight: 600;
+    }
+  }
+  .staking_content {
+    .form-control {
+      border-radius: 30px;
+      padding: 15px 25px;
+      margin: 15px auto;
+      font-size: 18px;
+      position: relative;
+      color: $white;
+      border: none;
+      background-color: #072530;
+      &:focus {
+        box-shadow: unset;
+      }
+    }
+    // p {
+    //   position: absolute;
+    //   right: 0;
+    // }
+    .duration_sec {
+      display: flex;
+      gap: 10px;
+      justify-content: end;
+      .time_duration {
+        border: #fff;
+        background-color: #072530;
+        background: transparent
+          linear-gradient(268deg, #8b26f4 0%, #c996cc 100%);
+        padding: 0 !important;
+        min-width: 70px;
+        height: 32px;
+        font-size: 12px;
+        &:focus {
+          box-shadow: unset;
+        }
+      }
+    }
+    .text_area {
+      padding: 10px 0;
+      display: flex;
+      //   flex-direction: column;
+      justify-content: space-between;
+      //   align-items: baseline;
+      p{
+        margin: 0;
+      }
+    }
+    .stake_btn {
+      border-radius: 50px;
+      background: transparent linear-gradient(268deg, #8b26f4 0%, #c996cc 100%);
+      margin: 10px 0;
+      width: 100%;
+      border-radius: 30px !important;
+      cursor: pointer;
+      &:hover {
+        background: transparent
+          linear-gradient(268deg, #c996cc 0%, #8b26f4 100%);
+      }
+      &:focus {
+        box-shadow: unset !important;
+      }
+    }
+  }
+  .para {
+    text-align: right;
+    padding: 5px 17px;
+  }
+}
+.duration_bits {
+  max-width: 600px;
+  border-radius: 20px;
+  text-align: center;
+  margin: 10px auto;
+  padding: 10px;
+  background-color: #072530;
+  .value_sec {
+    justify-content: space-between;
+    display: flex;
+    align-items: flex-start;
+    padding: 0 20px;
+    .value_amount {
+      gap: 10px;
+      justify-content: space-between;
+      p {
+        font-size: 14px !important;
+        margin: 0;
+      }
+    }
+    .unstake_btn {
+      width: 20%;
+      background: transparent linear-gradient(268deg, #8b26f4 0%, #c996cc 100%);
+      border-radius: 15px;
+      &:hover,
+      &:focus {
+        background: transparent
+          linear-gradient(268deg, #c996cc 0%, #8b26f4 100%);
+        box-shadow: unset !important;
+      }
+    }
+  }
+  h3 {
+    font-size: 18px;
+  }
+}

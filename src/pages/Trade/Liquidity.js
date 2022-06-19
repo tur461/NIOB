@@ -12,7 +12,6 @@ import ButtonLink from "../../components/buttonLink/ButtonLink";
 import "./Trade.scss";
 import RemoveLiquidity from "../../components/Modal/RemoveLiquidity/RemoveLiquidity";
 import { useDispatch, useSelector } from "react-redux";
-import { getUserLPTokens } from "../../redux/actions";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
 import TokenBalance from "./TokenBalance";
 
@@ -41,7 +40,6 @@ const Liquidity = ({ handleAddLiquidity, handleRemove }) => {
 
   const init = async () => {
     if (isUserConnected) {
-      await dispatch(getUserLPTokens());
     }
   };
 

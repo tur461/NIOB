@@ -1,5 +1,5 @@
 import create from 'zustand';
-import { ADDRESS, STR, TOKENS, T_TYPE } from "../../services/constant";
+import { ADDRESS, MISC, STR, TOKENS, T_TYPE } from "../../services/constant";
 import { TOKEN_LIST } from "../../assets/tokens";
 import defaultImg from '../../assets/images/token_icons/default.svg'
 import { clone } from '../../services/utils/global';
@@ -13,6 +13,7 @@ const initialState = {
     createPairNeeded: !1,
 
     disabled: !0,
+    deadline: MISC.DEF_DEADLINE,
     
     errText: '',
     exact: T_TYPE.A,
@@ -42,6 +43,7 @@ const initialState = {
     show: !1,
     show1: !1,
     search: '',
+    slippage: MISC.DEF_SLIPPAGE,
     showRecent: !1,
     settingShow: !1,
     showSupplyModal: !1,
@@ -98,6 +100,12 @@ const useCommon = create((set, get) => ({
     },
     setShowRecent: show => {
         set(s => ({...s, showRecent: show}));
+    },
+    setSlippage: slippage => {
+        set(s => ({...s, slippage}));
+    },
+    setDeadline: deadline => {
+        set(s => ({...s, deadline}));
     },
     setDisabled: disabled => {
         set(s => ({...s, disabled}));

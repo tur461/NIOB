@@ -15,73 +15,19 @@ import TrustWallet from '../../assets/images/trust-wallet.png'
 import Binance from '../../assets/images/Binance-chain.png'
 import MathWallet from '../../assets/images/mathwallet.png'
 import { WALLET_TYPE } from '../../services/constant'
+import { tryGetAccount } from '../../services/contracts/Common'
 
 const ConnectWallet = ({ show, handleClose }) => {
     const dispatch = useDispatch();
 
     const tryConnect2Wallet = async (walletType) => {
         try {
-            if (WALLET_TYPE.isBinance(walletType)) {
-                const account = await ContractServices.isBinanceChainInstalled();
-                if (account) {
-                    dispatch(login({ account, walletType }));
-                    handleClose(false);
-                    window.location.reload();
-                }
-            } else if (WALLET_TYPE.isWalletConnect(walletType)) {
-                try {
-                    const provider = new WalletConnectProvider({
-                        //infuraId: "8570afa4d18b4c5d9cb3a629b08de069",
-                        rpc: {
-                            97: 'https://data-seed-prebsc-2-s3.binance.org:8545/',
-                            56: "https://bsc-dataseed.binance.org/",
-                        },
-                        chainId: 56,
-                        network: "binance",
-                        qrcode: true,
-                        qrcodeModalOptions: {
-                            mobileLinks: [
-                                "rainbow",
-                                "metamask",
-                                "argent",
-                                "trust",
-                                "imtoken",
-                                "pillar",
-                            ],
-                            desktopLinks: [
-                                "encrypted ink",
-                            ]
-                        }
-                    });
-                    const results = await provider.enable();
-
-                    provider.on('accountsChanged', async (accounts) => {
-                        setTimeout(function () {
-                            window.location.reload()
-                        }, 500)
-                        let account = accounts[0]
-                        dispatch(login({ account, walletType }));
-                        handleClose(false);
-                        //return;
-                        // window.location.reload();
-                    });
-                    await ContractServices.callWeb3ForWalletConnect(provider);
-                    const account = await provider.accounts[0];
-                    dispatch(login({ account, walletType }));
-                    handleClose(false);
-                    //  window.location.reload();
-                } catch (error) {
-                    console.log(error, 'wallet error')
-                }
-
-            } else {
-                const account = await ContractServices.tryGetAccount(walletType);
-                if (account) {
-                    dispatch(login({ account, walletType }));
-                    handleClose(false);
-                    // window.location.reload();
-                }
+            const account = await tryGetAccount(walletType);
+            if (account) {
+                dispatch(login({ account, walletType }));
+                handleClose(false);
             }
+            
         } catch (err) {
             toast.error(err.message);
         }

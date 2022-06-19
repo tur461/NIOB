@@ -1,19 +1,15 @@
-import React from "react";
-import { ADDRESS, ERR, TOKENS, T_TYPE } from "../services/constant";
-import { WETH } from "../assets/tokens";
+import { ERR, T_TYPE } from "../services/constant";
 import { BigNumber } from "bignumber.js";
 import useCommonTrade from "./CommonTrade";
 import useSwap from "../redux/volatiles/swap";
 import { toast } from "../components/Toast/Toast";
 import useCommon from "../redux/volatiles/common";
 import { useDispatch, useSelector } from "react-redux";
-import { ExchangeService } from "../services/ExchangeService";
-import { ContractServices } from "../services/ContractServices";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
-import { isAddr, isDefined, isNonZero, rEq, toBgFix, toDec, toFlr, toFull, tStamp } from "../services/utils/global";
-import { isEth, isIP_A, isWeth, togIP } from "../services/utils/trading";
+import { toBgFix, toDec, toFlr, toFull, tStamp, xpand } from "../services/utils/global";
+import { isIP_A, isWeth, togIP, try2weth } from "../services/utils/trading";
+import RouterContract from "../services/contracts/Router";
 import log from "../services/logging/logger";
-
 
 const useXchange = (props) => {
     const dsp = useDispatch();
@@ -21,6 +17,8 @@ const useXchange = (props) => {
     const common = useCommon(s => s);
     const cTrade = useCommonTrade({});
     const P = useSelector(s => s.persist);
+
+    const _getDeadline = _ => tStamp(common.deadline * 60);
 
     const _getEthSwapDataForTK1 = (dl, v) => {
         let tv = common[`token${togIP(common.exact)}Value`]
@@ -45,99 +43,155 @@ const useXchange = (props) => {
         };
     }
 
-    const handleSwap = async () => {
+    // 2nd is eth
+    async function _swapExactTokensForEth (vList, tList, amtOut) {
+        log.s('_swapExactTokensForEth');
+        const ethVal = vList[1];
+        const amountIn = vList[0];
+        const amountOutMin = cTrade.getValueAfterSlippage(amtOut, tList[1].dec, !0);
+        const path = tList.map(t => try2weth(t.addr));
+        const to = P.priAccount;
+        const deadline = cTrade.getDeadline();
+
+        const tx = await RouterContract.swapExactTokensForETH({from: to, value: ethVal}, [
+            amountIn,
+            amountOutMin,
+            path,
+            to,
+            deadline,
+        ]);
+        return tx.transactionHash;
+    }
+
+    // 2nd is eth
+    async function _swapTokensForExactEth (vList, tList, amtIn) {
+        log.s('_swapTokensForExactEth');
+        const ethVal = vList[1];
+        const amountOut = vList[1];
+        const amountInMax = cTrade.getValueAfterSlippage(amtIn, tList[0].dec, !0);
+        const path = tList.map(t => try2weth(t.addr));
+        const to = P.priAccount;
+        const deadline = cTrade.getDeadline();
+
+        const tx = await RouterContract.swapTokensForExactETH({from: to, value: ethVal}, [
+            amountOut,
+            amountInMax,
+            path,
+            to,
+            deadline,
+        ]);
+        return tx.transactionHash;
+    }
+
+    // 1st is eth
+    async function _swapExactEthForTokens (vList, tList, amtOut) {
+        log.s('_swapExactEthForTokens');
+        const ethVal = vList[0];
+        const amountOutMin = cTrade.getValueAfterSlippage(amtOut, tList[1].dec, !0);
+        const path = tList.map(t => try2weth(t.addr));
+        const to = P.priAccount;
+        const deadline = cTrade.getDeadline();
+
+        const tx = await RouterContract.swapExactETHForTokens({from: to, value: ethVal}, [
+            amountOutMin,
+            path,
+            to,
+            deadline,
+        ]);
+        return tx.transactionHash;
+    }
+    
+    // 1st is eth
+    async function _swapEthForExactTokens (vList, tList, _) {
+        log.s('_swapEthForExactTokens');
+        const ethVal = vList[0];
+        const amountOut = vList[1];
+        const path = tList.map(t => try2weth(t.addr));
+        const to = P.priAccount;
+        const deadline = cTrade.getDeadline();
+
+        const tx = await RouterContract.swapETHForExactTokens({from: to, value: ethVal}, [
+            amountOut,
+            path,
+            to,
+            deadline,
+        ]);
+        return tx.transactionHash;
+    }
+    
+    // both r tokens
+    async function _swapExactTokensForTokens (vList, tList, amtOut) {
+        log.s('_swapExactTokensForTokens');
+        const amountIn = vList[0];
+        const amountOutMin = cTrade.getValueAfterSlippage(amtOut, tList[1].dec, !0);
+        const path = tList.map(t => t.addr);
+        const to = P.priAccount;
+        const deadline = cTrade.getDeadline();
+        const tx = await RouterContract.swapExactTokensForTokens({from: to}, [
+                amountIn,
+                amountOutMin,
+                path,
+                to,
+                deadline,
+        ]);
+        return tx.transactionHash;
+    }
+
+    // both r tokens
+    async function _swapTokensForExactTokens (vList, tList, amtIn) {
+        log.s('_swapTokensForExactTokens');
+        const amountOut = vList[1];
+        const amountInMax = cTrade.getValueAfterSlippage(amtIn, tList[0].dec, !1);
+        const path = tList.map(t => t.addr);
+        const to = P.priAccount;
+        const deadline = cTrade.getDeadline();
+        const tx = await RouterContract.swapTokensForExactTokens({from: to}, [
+                amountOut,
+                amountInMax,
+                path,
+                to,
+                deadline,
+        ]);
+        return tx.transactionHash;
+    }
+
+    const performSwap = async () => {
         swap.closeSwapModal();
-
-        let dl = tStamp(P.deadline * 60);
-
-        let addr = common.addrPair;
-
-        let [a1, isEthIP_1, v1]= [addr[0], isWeth(addr[0]), common.token1Value];
-        let [a2, isEthIP_2, v2]= [addr[1], isWeth(addr[1]), common.token2Value];
-        let value = isEthIP_1 ? v1 : isEthIP_2 ? v2 : 0; 
-        value = value > 0 ? BigNumber(value * 10 ** 18).toFixed() : 0;
-        if (isEthIP_1) {
-            dsp(startLoading());
-            const data = _getEthSwapDataForTK1(dl, value);
-            data['path'] = common.path;
-            try {
-                const result = isIP_A(common.exact) ?
-                await ExchangeService.swapExactETHForTokens(data, cTrade.handleBalance) :
-                await ExchangeService.swapETHForExactTokens(data);
-                if (result) {
-                common.setTxHash(result);
-                common.showTransactionModal(!0);
-                common.setShowSupplyModal(!1);
-                const data = {
-                    message: `Swap ${common.token1.sym} and ${common.token2.sym}`,
-                    tx: result
-                };
-                dsp(addTransaction(data));
+        let tx = null;
+        const exactIn = isIP_A(common.exact) ? !0 : !1;
+        const aList = common.addrPair;
+        const tList = cTrade.getTokens();
+        const vList = cTrade.getValueList().map((v, i) => xpand(toFull(v, tList[i].dec)));
+        const ethToken = cTrade.getEthToken();
+        dsp(startLoading());
+        try{
+            let amt = await cTrade.getAmount(vList, aList, exactIn);
+            const prm =[vList, tList, amt];   
+            if(ethToken) { // either of the tokens is eth!
+                if(ethToken.i) { // second token is eth! --> swap tokens for eth
+                    log.i('2nd token is eth');
+                    tx = await (exactIn ? _swapExactTokensForEth(...prm) : _swapTokensForExactEth(...prm));
+    
+                } else { // first token is eth! ---> swap eth for tokens
+                    log.i('1st token is eth');
+                    tx = await (exactIn ? _swapExactEthForTokens(...prm) : _swapEthForExactTokens(...prm));
+                    
                 }
-            } catch (err) {
-                const message = await ContractServices.web3ErrorHandle(err);
-                toast.error(message);
-            } finally {
-                dsp(stopLoading());
-                common.setLiqConfirmed(!1);
+            } else { // both are erc20 tokens! ---> swap tokens for tokens
+                log.i('no token is eth');
+                tx = await (exactIn ? _swapExactTokensForTokens(...prm) : _swapTokensForExactTokens(...prm));
             }
-        } else if (isEthIP_2) {
-            dsp(startLoading());
-            const data = _getEthSwapDataForTK2(dl, value);
-            data['path'] = common.path;
-            try {
-                if(!data['path']) throw new Error(ERR.PATH_NOT_EXIST.msg);
-                const result = isIP_A(common.exact) ?
-                await ExchangeService.swapExactTokensForETH(data, a1, a2) :
-                await ExchangeService.swapTokensForExactETH(data, a1, a2);
-                dsp(stopLoading());
-                if (result) {
-                common.setTxHash(result);
-                common.showTransactionModal(!0);
-                common.setShowSupplyModal(!1);
-                const data = {
-                    message: `Swap ${common.token1.sym} and ${common.token2.sym}`,
-                    tx: result
-                };
-                dsp(addTransaction(data));
-                }
-                common.setLiqConfirmed(!1);
-
-            } catch (err) {
-                dsp(stopLoading());
-                const message = await ContractServices.web3ErrorHandle(err);
-                toast.error(message);
-                common.setLiqConfirmed(!1);
-            }
-        } else {
-            dsp(startLoading());
-            let data = await _getSwapAmountInData(dl, value);
-            data['path'] = common.path;
-            try {
-                const result = common.exact === T_TYPE.A ?
-                await ExchangeService.swapExactTokensForTokens(data, a1, a2) :
-                await ExchangeService.swapTokensForExactTokens(data, a1, a2);
-                dsp(stopLoading());
-                if (result) {
-                common.setTxHash(result);
-                common.showTransactionModal(!0);
-                common.setShowSupplyModal(!1);
-
-                const data = {
-                    message: `Swap ${common.token1.symbol} and ${common.token2.symbol}`,
-                    tx: result
-                };
-                dsp(addTransaction(data));
-                }
-                common.setLiqConfirmed(!1);
-
-            } catch (err) {
-                dsp(stopLoading());
-                const message = await ContractServices.web3ErrorHandle(err);
-                toast.error(message);
-                common.setLiqConfirmed(!1);
-            }
-        }
+        } catch(e) {}
+        dsp(addTransaction({
+            tx, 
+            message: `Swap ${ethToken ? 'Eth' : tList[0].sym} and ${tList[1].sym}`
+        })) 
+        common.setTxHash(tx);
+        common.showTransactionModal(!0);
+        common.setShowSupplyModal(!1);
+        // use swap-confirmed
+        common.setLiqConfirmed(!1);
+        dsp(stopLoading());
     }
 
     const _getSwapAmountInData = (dl, v) => {
@@ -169,10 +223,6 @@ const useXchange = (props) => {
         common.setTokenCurrency(common.token2Currency, T_TYPE.A);
     }
     
-    const closeTransactionModal = () => {
-        common.showTransactionModal(!1);
-    }
-
     const liquidityProviderFee = () => {
         const value = common.exact === T_TYPE.A ? common.token1Value : common.token2Value;
         const tknCurrency = common.exact === T_TYPE.A ? common.token1Currency : common.token2Currency;
@@ -184,7 +234,7 @@ const useXchange = (props) => {
 
 
     const Xchange = {
-        handleSwap,
+        performSwap,
         liquidityProviderFee,
         handleSwitchCurrencies,
     }

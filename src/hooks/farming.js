@@ -1,5 +1,3 @@
-import { rootName } from "../services/constant";
-import { BigNumber } from "bignumber.js";
 import { toast } from "../components/Toast/Toast";
 import useCommon from "../redux/volatiles/common";
 import useFarming from "../redux/volatiles/farming";
@@ -7,7 +5,7 @@ import { FarmService } from "../services/FarmService";
 import { useDispatch, useSelector } from "react-redux";
 import { ContractServices } from "../services/ContractServices";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
-import { isDefined, rEq, toBgFix, toDec, toFull } from "../services/utils/global";
+import { isDefined, rEq, toBgFix, toFull } from "../services/utils/global";
 
 
 const useFarmer = (props) => {
@@ -28,7 +26,7 @@ const useFarmer = (props) => {
 
     const handleChange = _ => farming.setChecked(!farming.checked);
 
-    const handleTab = d => props.history.push(`${rootName}/farmplanets/${d}`);
+    const handleTab = d => props.history.push(`/farmplanets/${d}`);
 
     const setMaxValue = _ => farming.setStakeValue(farming.stakeData.balance);
     

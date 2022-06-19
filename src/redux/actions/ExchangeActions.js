@@ -1,16 +1,17 @@
-import { ContractServices } from "../../services/ContractServices";
-import default_icon from "../../assets/images/token_icons/default.svg";
-import { UserService } from "../../services/UserService";
-import { checkUserLpTokens, saveUserLpTokens } from "./PersistActions";
 import { WETH } from "../../assets/tokens";
-import { ExchangeService } from "../../services/ExchangeService";
-import { contains, iContains, isAddr, rEq } from "../../services/utils/global";
 import { try2weth } from "../../services/utils/trading";
+import PairContract from "../../services/contracts/PairContract";
+import TokenContract from "../../services/contracts/TokenContract";
+import { iContains, isAddr, rEq } from "../../services/utils/global";
+import default_icon from "../../assets/images/token_icons/default.svg";
+import { checkUserLpTokens, saveUserLpTokens } from "./PersistActions";
 
-const TC = ContractServices.TokenContract;
+const PC = PairContract;
+const TC = TokenContract;
 
 export const searchTokenByNameOrAddress = q => async (_, getState) => {
-    try {
+  const TC = TokenContract;
+  try {
       const {
         persist: { tokenList, priAccount },
       } = getState();
@@ -56,46 +57,14 @@ export const delTokenFromList = d => async (_, getState) => {
   }
 };
 
-export const getUserLPTokens = () => async (dispatch, getState) => {
-  try {
-    const {
-      persist: { updateUserLpTokens },
-    } = getState();
-    if (!updateUserLpTokens) {
-      dispatch(saveUserLpTokens([]));
-      let lpTokensCount = await UserService.getPairsCount();
-      lpTokensCount = lpTokensCount.data.count;
-
-      const limit = 100;
-      const totalPages = Math.ceil(lpTokensCount / limit);
-      // let lpTokensArr = [];
-      for (let page = 1; page <= totalPages; page++) {
-        let lpTokens = await UserService.getPairs({ page, limit });
-
-        lpTokens = lpTokens.data;
-        // lpTokensArr = lpTokensArr.concat(lpTokens);
-        for (let lp of lpTokens) {
-          await dispatch(commonLpToken(lp));
-        }
-
-        // console.log("LPTOKENS:", lpTokens);
-      }
-    }
-  } catch (error) {
-    console.log("Error: ", error);
-    return error;
-  }
-};
 export const commonLpToken = (lp) => {
   return async (dispatch, getState) => {
     try {
       const {
-        persist: { isUserConnected, tokenList, userLpTokens },
+        persist: { priAccount, tokenList, userLpTokens },
       } = getState();
-      const balance = await ContractServices.getTokenBalanceFull(
-        lp.pair,
-        isUserConnected
-      );
+      TC.setTo(lp.pair);
+      const balance = await TC.balanceOf(priAccount);
       if (balance > 0) {
         let userLpTokensArr = userLpTokens;
         let token0Obj = {},
@@ -104,12 +73,12 @@ export const commonLpToken = (lp) => {
           token1Deposit = 0,
           poolShare = "0",
           ratio = 0;
-        const totalSupply = await ContractServices.getTotalSupply(lp.pair);
+        const totalSupply = await TC.totalSupply();
 
         ratio = balance / totalSupply;
         poolShare = ((balance / totalSupply) * 100).toFixed(2);
-
-        const reserves = await ExchangeService.getReserves(lp.pair);
+        PC.setTo(lp.pair);
+        const reserves = await PC.getReserves();
 
         if (lp.token0.toLowerCase() === WETH.toLowerCase()) {
           token0Obj = tokenList.find((d) => d.addr === "BNB");
@@ -159,16 +128,13 @@ export const addLpToken = (lp) => {
   return async (dispatch, getState) => {
     try {
       const {
-        persist: { isUserConnected, tokenList, userLpTokens },
+        persist: { priAccount, tokenList, userLpTokens },
       } = getState();
       if (lp) {
         dispatch(checkUserLpTokens(true));
         let userLpTokensArr = userLpTokens;
-
-        const balance = await ContractServices.getTokenBalanceFull(
-          lp.pair,
-          isUserConnected
-        );
+        TC.setTo(lp.pair);
+        const balance = await TC.balanceOf(priAccount);
         if (balance > 0) {
           let token0Obj = {},
             token1Obj = {},
@@ -176,12 +142,14 @@ export const addLpToken = (lp) => {
             token1Deposit = 0,
             poolShare = "0",
             ratio = 0;
-          const totalSupply = await ContractServices.getTotalSupply(lp.pair);
+          
+          const totalSupply = await TC.totalSupply();
 
           ratio = balance / totalSupply;
           poolShare = ((balance / totalSupply) * 100).toFixed(2);
 
-          const reserves = await ExchangeService.getReserves(lp.pair);
+          PC.setTo(lp.pair);
+          const reserves = await PairContract.getReserves();
 
           if (lp.token0.toLowerCase() === WETH.toLowerCase()) {
             lp.token0 = 'BNB';

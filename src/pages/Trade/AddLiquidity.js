@@ -15,7 +15,6 @@ import ButtonBack from "../../components/buttonBack/ButtonBack";
 import SettingIcon from "../../assets/images/Settings-Icon.svg";
 import TimerIcon from "../../assets/images/ionic-ios-timer.svg";
 import { useSelector } from "react-redux";
-import { ContractServices } from "../../services/ContractServices";
 import SupplyModal from "../../components/SupplyModal/SupplyModal";
 import ConnectWallet from "../../components/ConnectWallet/ConnectWallet";
 import SettingModal from "../../components/Modal/SettingModal/SettingModal";
@@ -23,6 +22,8 @@ import ModalCurrency from "../../components/Modal/ModalCurrency/ModalCurrency";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
 import log from "../../services/logging/logger";
 import { iContains } from "../../services/utils/global";
+import { getEthBalance } from "../../services/contracts/Common";
+import TokenContract from "../../services/contracts/TokenContract";
 
 const AddLiquidity = (props) => {
   const common = useCommon(s => s);
@@ -30,7 +31,7 @@ const AddLiquidity = (props) => {
   const liquidity = useLiquidity({});
   const P = useSelector(s => s.persist);
 
-  const TC = ContractServices.TokenContract;
+  const TC = TokenContract;
   const ref = useRef(!0);
   useEffect(_ => {
     if(ref.current) {
@@ -53,7 +54,7 @@ const AddLiquidity = (props) => {
         let i = lptoken.token0Obj ? 0 : lptoken.token0Obj ? 1 : -1;
         try {
           if(isEth(lptoken[`token${i}Obj`].addr))
-            bal = await ContractServices.getETHBalance(P.priAccount);
+            bal = await getEthBalance(P.priAccount);
           else {
             TC.setTo(lptoken[`token${i}Obj`].addr);
             bal = await TC.balanceOf(P.priAccount);
@@ -78,25 +79,14 @@ const AddLiquidity = (props) => {
     <>
       <Container fluid className="swapScreen comnSection">
         <CardCustom>
-          <div className="settingSec">
-            <div className="in_title">
-              <ButtonBack />
-              <h4 className="ps-5">Add Liquidity</h4>
-            </div>
+        <div className="settingSec">
+            <h4>Exchange</h4>
             <div className="settingIcon">
-              <img
-                alt="icon 8"
-                src={TimerIcon}
-                className="timerImg"
-                onClick={() => cTrade.setShowRecent(!0)}
-              />
-              <img 
-                alt="icon 9" 
-                src={SettingIcon} 
-                onClick={() => cTrade.settinghandleShow(!0)}
-              />
+              <img src={TimerIcon} onClick={() => cTrade.setShowRecent(!0)} className="timerImg" alt="icon 01"/>
+              <img src={SettingIcon} onClick={() => cTrade.settingHandleShow(!0)} alt="icon 02"/>
             </div>
           </div>
+          
           {common.isFirstLP && (
             <div className="firstPro_Note">
               <p>You are the first liquidity provider.</p>

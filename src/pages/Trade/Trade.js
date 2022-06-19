@@ -3,7 +3,6 @@ import {Container, Tab, Tabs, Col, Row} from "react-bootstrap";
 
 import Exchange from "./Exchange";
 import Liquidity from "././Liquidity";
-import {rootName} from '../../services/constant'
 import "./Trade.scss";
 import AddLiquidity from "./AddLiquidity";
 import ImportPool from "./ImportPool";
@@ -22,7 +21,7 @@ const Trade = (props) => {
       const tab = window.open('https://www.binance.org/en/bridge?utm_source=Niob', '_blank');
       tab.focus();
     }
-    else history.push(`${rootName}/trade/${data}`)
+    else history.push(`/trade/${data}`)
   }
 
 
@@ -37,7 +36,7 @@ const Trade = (props) => {
       return toast.error('Connect wallet first!');
     }
     setLptoken(lp);
-    history.push(`${rootName}/trade/liquidity/addLiquidity`)
+    history.push(`/trade/liquidity/addLiquidity`)
   }
   const handleRemove = (lp) => {
     // console.log('hitt');
