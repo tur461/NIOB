@@ -145,7 +145,7 @@ const TOKENS = {
   },
   SAITAMA: {
     name: 'saitama token',
-    dec: 18,
+    dec: 9,
     sym: 'SAITAMA',
     icon: Saitama,
     bal: '',
@@ -190,6 +190,7 @@ const ERR = {
 const TX_ERR = {
   DEF: 'Unknown Transaction Error!',
   USR_TX_DENIAL: 'User denied transaction:Transaction Rejected!',
+  TX_FROM_FAILED: 'TRANSFER_FROM_FAILED:Transfer Failed. please check if approved!',
 }
 
 export {

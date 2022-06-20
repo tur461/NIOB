@@ -44,7 +44,7 @@ const useLiquidity = _ => {
     }
 
     async function _addLiquidityTokenWithToken(valList, tokens) {
-        log.i('val list:', valList);
+        log.i('val list:', valList, tokens);
         const amtDzdList = valList.map((v, i) => xpand(toFull(v, tokens[i].dec)));
         const amtMinList = common.pairExist ? amtDzdList.map((v, i) => cTrade.getValueAfterSlippage(v, tokens[i].dec, !0)) : [...amtDzdList];
         let p = [

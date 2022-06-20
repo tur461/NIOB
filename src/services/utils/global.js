@@ -1,5 +1,6 @@
 import { BigNumber } from "bignumber.js"
 import { ADDRESS, MISC, TX_ERR } from "../constant";
+import log from "../logging/logger";
 
 const zero = v => !!!v;
 
@@ -94,8 +95,14 @@ const remPoint = p => {
 const parseTxErr = e => {
     const errs = Object.keys(TX_ERR);
     for(let i=0,j=[]; i<errs.length; ++i) {
-        j = TX_ERR[errs[i]].split(':');
-        if(iContains(e.message, j[0])) return j[1];
+        j = TX_ERR[errs[i]].split(':');;
+        if(iContains(
+            e instanceof Object ? 
+            (e.message || e.reason) : 
+            e instanceof String ? 
+            e : '', 
+            j[0])
+        ) return j[1];
     }
     return TX_ERR.DEF;
 }

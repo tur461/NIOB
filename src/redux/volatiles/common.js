@@ -79,6 +79,11 @@ const useCommon = create((set, get) => ({
     setIsErr: isErr => {
         set(s => ({...s, isErr}));
     },
+    setDec: (dec, t) => {
+        let tkn = get()[`token${t}`];
+        tkn.dec = dec;
+        set(s => ({...s, [`token${t}`]: {...tkn}}));
+    },
     setIsTxErr: isTxErr => {
         set(s => ({...s, isTxErr}));
     },

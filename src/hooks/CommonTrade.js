@@ -116,6 +116,9 @@ const useCommonTrade = _ => {
 
         TC.setTo(addr[_getIdx(selected)]);
         common.setToken(token, selected);
+        const dec = await TC.decimals();
+        log.i('dec:', dec, selected);
+        common.setDec(dec, selected);
         common.setTokenBalance(await TC.balanceOf([P.priAccount]), selected);
         common.setFilteredTokenList(P.tokenList);
         common.setTokenCurrency(token.sym, selected);
