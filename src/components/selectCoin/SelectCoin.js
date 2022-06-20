@@ -8,7 +8,6 @@ const SelectCoin = (props) => {
     <Col className={`selectCoin_style ${props.className}`}>
       <Row className="mx-0">
         <Col className="selectCoin_left_style">
-          <label>{props.inputLabel}</label>
           <input
             type="number"
             disabled={props.disabled}
@@ -24,9 +23,7 @@ const SelectCoin = (props) => {
           />
         </Col>
         <Col className="selectCoin_right_style">
-          <label>{props.label}</label>
           <Col className="select_buttonStyle">
-            {props.max && <strong onClick={props.onMax}>MAX</strong>}
             <button onClick={props.onClick}>
               <div> {props.coinImage && <img src={props.coinImage} className="coin_Img" alt="icon 21"/>}
                 <strong style={{ fontSize: props.selectTokenText ? "" : "" }}>
@@ -35,6 +32,10 @@ const SelectCoin = (props) => {
               <img className="selectDropDownStyle" src={iconDropDown}  alt="icon 22"/>
             </button>
           </Col>
+          <label className="label-balance">
+            <span>{props.label}</span>
+            {props.showMaxBtn ? <span className="btn-max" onClick={props.onMax}><strong>MAX</strong></span>:<></>}
+          </label>
         </Col>
       </Row>
     </Col>

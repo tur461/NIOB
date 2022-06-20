@@ -190,6 +190,7 @@ const ERR = {
 const TX_ERR = {
   DEF: 'Unknown Transaction Error!',
   USR_TX_DENIAL: 'User denied transaction:Transaction Rejected!',
+  INSUF_FUNDS_GAS_N_VAL: 'gas * price + value:Insufficient funds. either increase eth or decrease input!',
   TX_FROM_FAILED: 'TRANSFER_FROM_FAILED:Transfer Failed. please check if approved!',
 }
 

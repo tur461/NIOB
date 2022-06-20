@@ -120,6 +120,8 @@ const useCommonTrade = _ => {
         log.i('dec:', dec, selected);
         common.setDec(dec, selected);
         common.setTokenBalance(await TC.balanceOf([P.priAccount]), selected);
+        common[`setShowBal${selected}`](!0);
+        common[`setShowMaxBtn${selected}`](!0);
         common.setFilteredTokenList(P.tokenList);
         common.setTokenCurrency(token.sym, selected);
         common.setModalCurrency(!common.modalCurrency);
@@ -253,9 +255,8 @@ const useCommonTrade = _ => {
         if(!hasVal(ip)) return common.setTokenValue(ip, togIP(tt));
         let addrList = common.addrPair, 
             cList = [common.token1Currency, common.token2Currency];
-        
-        if(!(await _swapCriteriaOk(ip, addrList, cList, tt))) return;
         common.setFetching(!0);
+        if(!(await _swapCriteriaOk(ip, addrList, cList, tt))) return common.setFetching(!1);;
         common.setExact(tt);
         log.i('pair', addrList);
         ip = xpand(toFull(ip, _getToken(tt).dec));
@@ -298,8 +299,9 @@ const useCommonTrade = _ => {
         
         const i = rEq(addrList[_getIdx(tt)], tokens[0]) ? [1,0] : [0,1];
         const amt2 = (toDec(ip * reserves[i[0]], dec[i[0]]) / toDec(reserves[i[1]], dec[i[1]])).toFixed(5);
-        
-        if(await _balanceNotEnough(addrList[_getIdx(togIP(tt))], amt2)) {
+
+        if(await _balanceNotEnough(addrList[_getIdx(togIP(tt))], toFull(amt2, dec[_getIdx(togIP(tt))]))) {
+            log.i('bal not enough');
             ip = ERR.LOW_BAL.msg + cList[_getIdx(togIP(tt))];
             l_t.e(ip);
             common.setIsErr(!0);
@@ -371,9 +373,9 @@ const useCommonTrade = _ => {
         if (isEth(addr) || isWeth(addr)) 
             bal = await getEthBalance(P.priAccount);
         else {
-            TC.setTo(addr)
-            bal = await TC.balanceOf([P.priAccount]);
-        } 
+            TC.setTo(addr);
+            bal = xpand(toFull(await TC.balanceOf([P.priAccount]), await TC.decimals()));
+        }
         
         log.i('getting balance:', addr, bal);
         return bal;

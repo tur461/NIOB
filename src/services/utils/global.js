@@ -92,10 +92,17 @@ const remPoint = p => {
 }, {}) : p instanceof String ? _remPoint(p) : p;
 }
 
+const fixBy = (s, n=3) => {
+    s = s+''
+    s = s.substring(0, indexOf(s, '.')+n+1)
+    return s.length > 5 ? s.substring(0, 5) + '..' : s;
+}
+
 const parseTxErr = e => {
+    log.i('typeof:', typeof e);
     const errs = Object.keys(TX_ERR);
     for(let i=0,j=[]; i<errs.length; ++i) {
-        j = TX_ERR[errs[i]].split(':');;
+        j = TX_ERR[errs[i]].split(':');
         if(iContains(
             e instanceof Object ? 
             (e.message || e.reason) : 
@@ -113,6 +120,7 @@ export {
     zero,
     clone,
     toFlr,
+    fixBy,
     toDec,
     isAddr,
     toFull,

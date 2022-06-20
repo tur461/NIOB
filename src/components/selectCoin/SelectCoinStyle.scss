@@ -1,9 +1,15 @@
 @import "../../assets/theme/clr_var.scss";
 @import "../../assets/theme/_mixins.scss";
+.selectCoin_style:hover, .selectCoin_style:focus {
+
+  border: 1px solid red;
+  border-radius: 1rem;
+}
 .selectCoin_style *:disabled {
   opacity: 0.4;
   cursor: none;
 }
+
 .selectCoin_style.col {
   
   margin-bottom: 42px;
@@ -103,8 +109,22 @@
       }
       margin-top: 10px;
     }
+    .label-balance {
+      font-size: .7rem !important;
+      span.btn-max {
+        margin-left: 1rem;
+        padding: .25rem;
+        border: 1px solid #ef71c0;
+        border-radius: .5rem;
+        cursor: pointer;
+      }
+    }
   }
   .selectCoin_left_style {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     padding: 0px;
     @media (max-width: 767.98px) {
       margin-top: 0px; 
@@ -120,7 +140,8 @@
     }
     input {
       width: 100%;
-      border: 0px;
+      padding: .5rem;
+      border: 0;
       background-color: transparent;
       font-size: 20px;
       line-height: 22px;
@@ -128,7 +149,6 @@
       font-weight: 700;
       color: $white;
       outline: none;
-      padding: 0;
       &::placeholder {
         color: $white;
         opacity: 1;

@@ -44,13 +44,17 @@ const initialState = {
     show: !1,
     show1: !1,
     search: '',
-    slippage: MISC.DEF_SLIPPAGE,
+    showBal1: !0,
+    showBal2: !1,
+    showMaxBtn1: !0,
+    showMaxBtn2: !1,
     showRecent: !1,
     settingShow: !1,
     showSupplyModal: !1,
     sharePoolValue: '100',
     selectedCurrency: '',
     transactionModalShown: !1,
+    slippage: MISC.DEF_SLIPPAGE,
     
     txHash: '',
     txErr: '',
@@ -86,6 +90,18 @@ const useCommon = create((set, get) => ({
     },
     setIsTxErr: isTxErr => {
         set(s => ({...s, isTxErr}));
+    },
+    setShowBal1: showBal1 => {
+        set(s => ({...s, showBal1}));
+    },
+    setShowBal2: showBal2 => {
+        set(s => ({...s, showBal2}));
+    },
+    setShowMaxBtn1: showMaxBtn1 => {
+        set(s => ({...s, showMaxBtn1}));
+    },
+    setShowMaxBtn2: showMaxBtn2 => {
+        set(s => ({...s, showMaxBtn2}));
     },
     setTxErr: txErr => {
         set(s => ({...s, txErr}));
@@ -181,6 +197,9 @@ const useCommon = create((set, get) => ({
         set(s => ({...s, currentPair}));
     },
     setTokenBalance: (b, t) => {
+        let tkn = get()[`token${t}`];
+        tkn.bal = b;
+        set(s => ({...s, [`token${t}`]: {...tkn}}));
         set(s => ({...s, [`token${t}Balance`]: b}));
     },
     setTokenApprovalNeeded: (a, t) => {

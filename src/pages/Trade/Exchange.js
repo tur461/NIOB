@@ -21,7 +21,7 @@ import TransactionalModal from "../../components/TransactionalModal/Transactiona
 import useSwap from "../../redux/volatiles/swap";
 import useXchange from "../../hooks/exchange";
 import Loader from "../../components/Loader";
-import { iContains, toDec, xpand } from "../../services/utils/global";
+import { fixBy, iContains, toDec, xpand } from "../../services/utils/global";
 import { getEthBalance } from "../../services/contracts/Common";
 
 const Exchange = (props) => {
@@ -71,32 +71,33 @@ const Exchange = (props) => {
             className="mb-0"
             placeholder="0.0"
             inputLabel="Input"
-            max={common.isMax}
             value={common.token1Currency}
             coinImage={common.token1?.icon}
             tokenValue={common.token1Value}
+            showMaxBtn={common.showMaxBtn1}
             disabled={common.isFetching && common.exact-1}
-            label={`Balance: ${common.token1Balance}`}
-            onMax={() => cTrade.handleMaxBalance(T_TYPE.A)}
             onClick={() => cTrade.openSelectTokenModal(T_TYPE.A)}
-            onChange={e => cTrade.handleInput(e.target.value, T_TYPE.A, !0)}
+            label={common.showBal1 ? `Balance: ${fixBy(common.token1.bal)}` : ''}
+            onMax={_ => !common.setShowMaxBtn1(!1) && cTrade.handleInput(common.token1.bal, T_TYPE.A, !0)}
+            onChange={e => !common.setShowMaxBtn1(!0) && cTrade.handleInput(e.target.value, T_TYPE.A, !0)}
           />
           <div 
             className="convert_plus" 
             onClick={Xchange.handleSwitchCurrencies}
           > <img src={ArrowDown} alt='icon 10'/> </div>
           <SelectCoin
-            max={!1}
             className="mb-0"
             placeholder="0.0"
             inputLabel="Input"
             value={common.token2Currency}
+            showMaxBtn={common.showMaxBtn2}
             coinImage={common.token2?.icon}
             tokenValue={common.token2Value}
             disabled={common.isFetching && !(common.exact-1)}
-            label={`Balance: ${common.token2Balance}`}
             onClick={() => cTrade.openSelectTokenModal(T_TYPE.B)}
-            onChange={e => cTrade.handleInput(e.target.value, T_TYPE.B, !0)}
+            label={common.showBal2 ? `Balance: ${fixBy(common.token2.bal)}` : ''}
+            onMax={_ => !common.setShowMaxBtn2(!1) && cTrade.handleInput(common.token2.bal, T_TYPE.B, !0)}
+            onChange={e => !common.setShowMaxBtn2(!0) && cTrade.handleInput(e.target.value, T_TYPE.B, !0)}
           />
           {P.slippage ?
             common.isFetching ? <Loader stroke='white' text='Fetching prices..'/> :

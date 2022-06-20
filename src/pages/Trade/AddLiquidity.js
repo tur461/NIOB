@@ -21,7 +21,7 @@ import SettingModal from "../../components/Modal/SettingModal/SettingModal";
 import ModalCurrency from "../../components/Modal/ModalCurrency/ModalCurrency";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
 import log from "../../services/logging/logger";
-import { iContains } from "../../services/utils/global";
+import { fixBy, iContains } from "../../services/utils/global";
 import { getEthBalance } from "../../services/contracts/Common";
 import TokenContract from "../../services/contracts/TokenContract";
 
@@ -102,15 +102,15 @@ const AddLiquidity = (props) => {
                 className="mb-0"
                 placeholder="0.0"
                 inputLabel="Input"
-                max={common.isMax}
                 disabled={common.isFetching}
                 value={common.token1Currency}
                 coinImage={common.token1?.icon}
                 tokenValue={common.token1Value}
-                label={`Balance: ${common.token1Balance}`}
-                onMax={() => cTrade.handleMaxBalance(T_TYPE.A)}
+                showMaxBtn={common.showMaxBtn1}
                 onClick={() => cTrade.openSelectTokenModal(T_TYPE.A)}
-                onChange={(e) => cTrade.handleInput(e.target.value, T_TYPE.A)}
+                label={common.showBal1 ? `Balance: ${fixBy(common.token1.bal)}` : ''}
+                onMax={_ => !common.setShowMaxBtn1(!1) && cTrade.handleInput(common.token1.bal, T_TYPE.A)}
+                onChange={e => !common.setShowMaxBtn1(!0) && cTrade.handleInput(e.target.value, T_TYPE.A)}
               />
             }
             <div className="convert_plus">
@@ -122,17 +122,18 @@ const AddLiquidity = (props) => {
             </div>
             {
               <SelectCoin
-                max={!1}
-                disabled={common.isFetching}
                 className="mb-0"
                 placeholder="0.0"
                 inputLabel="Input"
+                disabled={common.isFetching}
+                showMaxBtn={common.showMaxBtn2}
                 value={common.token2Currency}
                 coinImage={common.token2?.icon}
                 tokenValue={common.token2Value}
-                label={`Balance: ${common.token2Balance}`}
                 onClick={() => cTrade.openSelectTokenModal(T_TYPE.B)}
-                onChange={(e) => cTrade.handleInput(e.target.value, T_TYPE.B)}
+                label={common.showBal2 ? `Balance: ${fixBy(common.token2.bal)}` : ''}
+                onMax={_ => !common.setShowMaxBtn2(!1) && cTrade.handleInput(common.token2.bal, T_TYPE.B)}
+                onChange={e => !common.setShowMaxBtn2(!0) && cTrade.handleInput(e.target.value, T_TYPE.B)}
               />
             }
             {
@@ -214,9 +215,9 @@ const AddLiquidity = (props) => {
                     </div>
       
                     <ButtonPrimary
-                      disabled={common.isErr}
                       className="swapBtn dismissBtn"
-                      title='Add Liquidity'
+                      disabled={common.isErr || common.isFetching}
+                      title={common.isFetching ? 'please wait...' : 'Add Liquidity'}
                       onClick={_ => { _.preventDefault(); liquidity.addLiquidity(); }}
                     />
                     {
