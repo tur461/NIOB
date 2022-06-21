@@ -111,6 +111,7 @@ const TOKENS = {
     bal: '',
     isAdded: !0,
     isDeleted: !1,
+    isDisabled: !0,
     addr: 'NATIVE',
   },
   WETH: {
@@ -121,6 +122,7 @@ const TOKENS = {
     bal: '',
     isAdded: !0,
     isDeleted: !1,
+    isDisabled: !1,
     addr: '0xc778417E063141139Fce010982780140Aa0cD5Ab',
   },
   TUR: {
@@ -131,6 +133,7 @@ const TOKENS = {
     bal: '',
     isAdded: !0,
     isDeleted: !1,
+    isDisabled: !1,
     addr: '0xEe8F3Df788B0357d35D66F9023626f99f29a8351',
   },
   STEEP: {
@@ -141,6 +144,7 @@ const TOKENS = {
     bal: '',
     isAdded: !0,
     isDeleted: !1,
+    isDisabled: !1,
     addr: '0x8605c0c5E361dd897A5526558C48E7ff0D51353c',
   },
   SAITAMA: {
@@ -151,6 +155,7 @@ const TOKENS = {
     bal: '',
     isAdded: !0,
     isDeleted: !1,
+    isDisabled: !1,
     addr: '0x352E956eB0247792842ABD234d3f7425BBf544c2',
   }
 }

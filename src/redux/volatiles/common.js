@@ -19,7 +19,6 @@ const initialState = {
     exact: T_TYPE.A,
 
     isFetching: !1,
-    filteredTokenList: [],
     
     hasPriceImpact: !1,
     
@@ -50,6 +49,7 @@ const initialState = {
     showMaxBtn2: !1,
     showRecent: !1,
     settingShow: !1,
+    searchValue: '',
     showSupplyModal: !1,
     sharePoolValue: '100',
     selectedCurrency: '',
@@ -77,6 +77,9 @@ const initialState = {
 
 const useCommon = create((set, get) => ({
     ...clone(initialState),
+    setSearchValue: searchValue => {
+        set(s => ({...s, searchValue}));
+    },
     setErrText: errText => {
         set(s => ({...s, errText}));
     },
@@ -219,9 +222,6 @@ const useCommon = create((set, get) => ({
     },
     setSharePoolValue: sharePoolValue => {
         set(s => ({...s, sharePoolValue}));
-    },
-    setFilteredTokenList: l => {
-        set(s => ({...s, filteredTokenList: [...l]}));
     },
     setSelectedCurrency: selectedCurrency => {
         set(s => ({...s, selectedCurrency}));

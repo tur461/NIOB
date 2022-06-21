@@ -6,10 +6,11 @@ import { toast } from "../components/Toast/Toast";
 import useCommon from "../redux/volatiles/common";
 import { useDispatch, useSelector } from "react-redux";
 import { addTransaction, startLoading, stopLoading } from "../redux/actions";
-import { toBgFix, toDec, toFlr, toFull, tStamp, xpand } from "../services/utils/global";
+import { parseTxErr, toBgFix, toDec, toFlr, toFull, tStamp, xpand } from "../services/utils/global";
 import { isIP_A, isWeth, togIP, try2weth } from "../services/utils/trading";
 import RouterContract from "../services/contracts/Router";
 import log from "../services/logging/logger";
+import l_t from "../services/logging/l_t";
 
 const useXchange = (props) => {
     const dsp = useDispatch();
@@ -187,9 +188,8 @@ const useXchange = (props) => {
             }));
             common.setTxHash(tx);
         } catch(e) {
-            log.e(e.reason);
-            log.e(e.message);
-            log.e(e);
+            log.e(typeof e, e);
+            return l_t.e(parseTxErr(e));
         } finally {
             dsp(stopLoading());
         }

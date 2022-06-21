@@ -3,9 +3,9 @@ import useCommon from "../redux/volatiles/common"
 import { useDispatch, useSelector } from "react-redux";
 import ButtonPrimary from "../components/Button/Button";
 import { ExchangeService } from "../services/ExchangeService";
-import { ADDRESS, ERR, MISC, STR, THRESHOLD, TOKENS, T_TYPE, VAL } from "../services/constant";
+import { ADDRESS, ERR, MISC, STR, THRESHOLD, TOKENS, T_TYPE, VAL, TOKEN_LIST } from "../services/constant";
 import { addTransaction, searchTokenByNameOrAddress, startLoading, stopLoading } from "../redux/actions";
-import { hasVal, isAddr, isDefined, rDefined, rEq, toBgFix, toDec, toFull, tStamp, xpand, zero } from "../services/utils/global";
+import { hasVal, iContains, isAddr, isDefined, rDefined, rEq, toBgFix, toDec, toFull, tStamp, xpand, zero } from "../services/utils/global";
 import { isIP_A, isIP_B, togIP, isEth, try2weth, isWeth } from "../services/utils/trading";
 import log from "../services/logging/logger";
 import l_t from "../services/logging/l_t";
@@ -15,12 +15,15 @@ import FactoryContract from "../services/contracts/Factory";
 import { getEthBalance } from "../services/contracts/Common";
 import RouterContract from "../services/contracts/Router";
 import PairContract from "../services/contracts/PairContract";
+import useRetained from "../redux/retained";
+import UK_TKN_IMG from '../assets/images/token_icons/unknown-token.png';
 
 let timeOut = null;
 
 const useCommonTrade = _ => {
     const dsp = useDispatch();
     const common = useCommon(s => s);
+    const retainer = useRetained(s => s);
     const P = useSelector(s => s.persist);
 
     const PC = PairContract;
@@ -122,9 +125,10 @@ const useCommonTrade = _ => {
         common.setTokenBalance(await TC.balanceOf([P.priAccount]), selected);
         common[`setShowBal${selected}`](!0);
         common[`setShowMaxBtn${selected}`](!0);
-        common.setFilteredTokenList(P.tokenList);
         common.setTokenCurrency(token.sym, selected);
         common.setModalCurrency(!common.modalCurrency);
+        // retainer.setTokenDisabled(addr[_getIdx(selected)]);
+
         if(singleToken) {
             common.setIsFirstLP(!0);
             common.showPoolShare(!0);
@@ -161,7 +165,7 @@ const useCommonTrade = _ => {
         let i = tt-1 ? 2 : 1;
         common.setModalCurrency(!0);
         common.setTokenType(tt);
-        common.setFilteredTokenList(P.tokenList);
+        retainer.setTokenList(retainer.tokenListBackup);
         common.setSelectedCurrency(common[`token${i}Currency`]);
     }
 
@@ -458,11 +462,51 @@ const useCommonTrade = _ => {
         }
     }
 
-    const searchToken = async d => {
+    const _searchTokenByNameOrAddress = async q => {
+        const TC = TokenContract;
         try {
-            common.setFilteredTokenList(await dsp(searchTokenByNameOrAddress(d)));
-        } catch (e) {
-            toast.e("Something went wrong!");
+            let tList = retainer.tokenListBackup;
+            if(!q.length) return tList;
+            q = try2weth(q);
+            if (isAddr(q)) {
+                const f = tList.filter(tkn => rEq(tkn.addr, q));
+                if (f.length > 0) return f;
+                TC.setTo(q);
+                const dec = await TC.decimals();
+                const name = await TC.name();
+                const sym = await TC.symbol();
+                const bal = xpand(toFull(await TC.balanceOf([P.priAccount]), dec));
+                const obj = {
+                    icon: UK_TKN_IMG,
+                    name,
+                    addr: q,
+                    bal,
+                    isAdded: !0,
+                    isDeleted: !1,
+                    dec,
+                    sym,
+                };
+                retainer.add2TokenListBackup(obj);
+                tList.unshift(obj);
+                return tList;
+            }
+            return tList.filter(tkn => iContains(tkn.name, q));
+        } catch (er) {
+            log.i("Error: ", er);
+            return er;
+        }
+    };
+
+    const searchToken = async v => {
+        common.setSearchValue(v);
+        try {
+            log.i('q:', v);
+            v = await _searchTokenByNameOrAddress(v);
+            log.i('result:', v);
+            retainer.setTokenList(v);
+        } catch (er) {
+            log.e('search err:', er);
+            toast.e("token search failed!");
         }
     }
 

@@ -24,9 +24,11 @@ import log from "../../services/logging/logger";
 import { fixBy, iContains } from "../../services/utils/global";
 import { getEthBalance } from "../../services/contracts/Common";
 import TokenContract from "../../services/contracts/TokenContract";
+import useRetained from "../../redux/retained";
 
 const AddLiquidity = (props) => {
   const common = useCommon(s => s);
+  const retainer = useRetained(s => s);
   const cTrade = useCommonTrade({});
   const liquidity = useLiquidity({});
   const P = useSelector(s => s.persist);
@@ -37,14 +39,10 @@ const AddLiquidity = (props) => {
     if(ref.current) {
       log.i('[AddLiquidity] a hard reload happened');
       common.reset();
+      init();
       ref.current = !1;
     } // else log.i('[AddLiquidity] a soft reload happened');
   })
-  
-  useEffect(() => {
-    common.setFilteredTokenList(P.tokenList.filter(token => iContains(token.name, common.search)));
-    init();
-  }, [common.search, P.tokenList]);
 
   const init = async () => {
     if (P.isConnected) {
@@ -236,11 +234,12 @@ const AddLiquidity = (props) => {
         show={common.show}
         searchByName={common.setSearch}
         handleClose={cTrade.handleClose}
+        searchValue={common.searchValue}
         tokenType={common.tokenType}
-        tokenList={common.filteredTokenList}
+        tokenList={retainer.tokenList}
         currencyName={common.selectedCurrency}
         searchToken={cTrade.handleSearchToken}
-        handleOrder={common.FilteredTokenList}
+        handleOrder={retainer.tokenList}
         selectCurrency={cTrade.selectToken}
       />
       <ConnectWallet

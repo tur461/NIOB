@@ -5,7 +5,22 @@ import CoinItem from "../../coinItem/CoinItem";
 import { useDispatch } from "react-redux";
 import { tokenListAdd, tokenListDel } from "../../../redux/actions";
 
-const ModalCurrency = ({ show, handleClose, tokenList, searchByName, searchToken, selectCurrency, tokenType, currencyName }) => {
+const ModalCurrency = ({ 
+  show, 
+  searchValue, 
+  handleClose, 
+  tokenList, 
+  searchByName, 
+  searchToken, 
+  selectCurrency, 
+  tokenType, 
+  currencyName 
+}) => {
+  function _searchCallback(e) {
+    e.preventDefault();
+    searchToken(e.target.value);
+  }
+
   return (
     <Modal
       scrollable={true}
@@ -21,11 +36,12 @@ const ModalCurrency = ({ show, handleClose, tokenList, searchByName, searchToken
         <Col>
           <div className="gradiantWrap">
             <input
+              value={searchValue}
               className="searchInput_Style"
               placeholder="Search name or paste address"
               name="tokenSearch"
-              onChange={(e) => searchToken(e.target.value)}
-              onPaste={(e) => searchToken(e.target.value)}
+              onChange={_searchCallback}
+              onPaste={_searchCallback}
             />
           </div>
           <div className="tokenName">
@@ -37,13 +53,16 @@ const ModalCurrency = ({ show, handleClose, tokenList, searchByName, searchToken
 
       <Modal.Body>
         <Row className="coinListBlockStyle">
-          {tokenList && tokenList.length ? tokenList.map((token, index) =>
-            <Col key={index}>
-              {currencyName === token.symbol ?
-                <CoinItem onClick={() => selectCurrency(token, tokenType)} className="active" iconImage={token.icon} title={token.sym} tokenDetails={token} />
-                :
-                <CoinItem onClick={() => selectCurrency(token, tokenType)} iconImage={token.icon} title={token.sym} tokenDetails={token} />
-              }
+          {tokenList && tokenList.length ? tokenList.map((tkn, i) =>
+            <Col key={i}>
+              <CoinItem 
+                className={currencyName === tkn.sym ? 'active' : ''}
+                onClick={_ => selectCurrency(tkn, tokenType)} 
+                // isDisabled={tkn.isDisabled} 
+                iconImage={tkn.icon} 
+                title={tkn.sym} 
+                tokenDetails={tkn} 
+              />
             </Col>
           ) : <div className="">No results found.</div>}
         </Row>

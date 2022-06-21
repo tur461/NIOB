@@ -1,48 +1,12 @@
 import { WETH } from "../../assets/tokens";
-import { try2weth } from "../../services/utils/trading";
 import PairContract from "../../services/contracts/PairContract";
 import TokenContract from "../../services/contracts/TokenContract";
-import { iContains, isAddr, rEq } from "../../services/utils/global";
+import { rEq } from "../../services/utils/global";
 import default_icon from "../../assets/images/token_icons/default.svg";
 import { checkUserLpTokens, saveUserLpTokens } from "./PersistActions";
 
 const PC = PairContract;
 const TC = TokenContract;
-
-export const searchTokenByNameOrAddress = q => async (_, getState) => {
-  const TC = TokenContract;
-  try {
-      const {
-        persist: { tokenList, priAccount },
-      } = getState();
-      q = try2weth(q);
-      if (isAddr(q)) {
-        const filtered = tokenList.filter(tkn => rEq(tkn.addr, q));
-        if (filtered.length > 0) return filtered;
-        TC.setTo(q);
-        const tokenDecimal = await TC.decimals();
-        const tokenName = await TC.name();
-        const tokenSymbol = await TC.symbol();
-        const tokenBalance = await TC.balanceOf(priAccount);
-        const obj = {
-          icon: default_icon,
-          name: tokenName,
-          addr: q,
-          bal: tokenBalance,
-          isAdded: !0,
-          isDeleted: !1,
-          dec: tokenDecimal,
-          sym: tokenSymbol,
-        };
-        tokenList.push(obj);
-        return tokenList;
-      }
-      return tokenList.filter(tkn => iContains(tkn.name, q));
-    } catch (error) {
-      console.log("Error: ", error);
-      return error;
-    }
-  };
 
 export const delTokenFromList = d => async (_, getState) => {
   try {

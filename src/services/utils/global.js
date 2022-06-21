@@ -99,14 +99,13 @@ const fixBy = (s, n=3) => {
 }
 
 const parseTxErr = e => {
-    log.i('typeof:', typeof e);
     const errs = Object.keys(TX_ERR);
     for(let i=0,j=[]; i<errs.length; ++i) {
         j = TX_ERR[errs[i]].split(':');
         if(iContains(
-            e instanceof Object ? 
+            rEq(typeof e, 'object') ? 
             (e.message || e.reason) : 
-            e instanceof String ? 
+            rEq(typeof e,'string') ? 
             e : '', 
             j[0])
         ) return j[1];

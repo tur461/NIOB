@@ -1,7 +1,7 @@
 import "./Trade.scss";
 import { MISC, T_TYPE } from "../../services/constant";
 import { Container, Col } from 'react-bootstrap'
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useCommonTrade from "../../hooks/CommonTrade";
 import useCommon from "../../redux/volatiles/common";
 import { useSelector } from "react-redux";
@@ -23,21 +23,25 @@ import useXchange from "../../hooks/exchange";
 import Loader from "../../components/Loader";
 import { fixBy, iContains, toDec, xpand } from "../../services/utils/global";
 import { getEthBalance } from "../../services/contracts/Common";
+import useRetained from "../../redux/retained";
 
 const Exchange = (props) => {
   const swap = useSwap(s => s);
   const common = useCommon(s => s);
+  const retainer = useRetained(s => s);
   const cTrade = useCommonTrade({});
   const Xchange = useXchange({});
   const P = useSelector(state => state.persist);
 
   const [walletShow, setWalletShow] = useState(!1);
 
-  useEffect(() => {
-    common.setFilteredTokenList(P.tokenList.filter(tkn => iContains(tkn.name, common.search)));
-    init();
-  }, [common.search, P.tokenList]);
-
+  const ref = useRef(!0);
+  useEffect(_ => {
+    if(ref.current) {
+      init();
+      ref.current = !1;
+    }
+  });
   useEffect(() => {
     if (common.token1Value) {
       cTrade.handleInput(common.token1Value, T_TYPE.A, !0);
@@ -154,13 +158,14 @@ const Exchange = (props) => {
       </Container>
       <ModalCurrency
         show={common.show}
+        searchValue={common.searchValue}
         handleClose={cTrade.handleClose}
         tokenType={common.tokenType}
         searchByName={common.setSearch}
-        tokenList={common.filteredTokenList}
-        searchToken={cTrade.handleSearchToken}
+        tokenList={retainer.tokenList}
+        searchToken={cTrade.searchToken}
         currencyName={common.selectedCurrency}
-        handleOrder={common.setFilteredTokenList}
+        handleOrder={retainer.tokenList}
         selectCurrency={cTrade.selectToken}
       />
       <ConnectWallet
