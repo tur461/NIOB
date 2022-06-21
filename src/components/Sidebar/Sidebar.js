@@ -9,7 +9,7 @@ import {
 } from "react-pro-sidebar";
 import { isMobile } from "react-device-detect";
 import Twitter from "../../assets/images/twitter-icon.svg";
-import NIOBtoken from "../../assets/images/NIOB-Token-Icon.svg";
+import SaitamaTokenImg from "../../assets/images/token_icons/Saitama.png";
 import Telegram from "../../assets/images/telegram-icon.svg";
 import Docs from "../../assets/images/docs-icon.svg";
 import Medium from "../../assets/images/medium-icon.svg";
@@ -108,7 +108,7 @@ const Sidebar = (props) => {
         <ul className="token-language">
           <li className="token_list">
             <Link to='#'>
-              <img alt="icon 1" src={NIOBtoken} /> <span>${NiobBusdValue ? NiobBusdValue.toFixed(4) : "0"}</span>
+              <img alt="icon 1" src={SaitamaTokenImg} /> <span>${NiobBusdValue ? NiobBusdValue.toFixed(4) : "0"}</span>
             </Link>
           </li>
           <li className="lang_list">
