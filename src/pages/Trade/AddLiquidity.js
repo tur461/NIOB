@@ -86,7 +86,7 @@ const AddLiquidity = (props) => {
           </div>
           
           {common.isFirstLP && (
-            <div className="firstPro_Note">
+            <div className="firstPro_Note d-none">
               <p>You are the first liquidity provider.</p>
               <p>
                 The ratio of tokens you add will set the price of this pool.

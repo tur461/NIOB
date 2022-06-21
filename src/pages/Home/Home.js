@@ -526,7 +526,7 @@ const Home = () => {
           </div>
         </Col>
         <Col xl={6} lg={12}>
-          <div className="comnBlk mb-4">
+          <div className="comnBlk mb-4 d-none">
             <h3>SAITA Stats</h3>
             <ul className="pl-0 saitamaStats">
               <li>
@@ -563,7 +563,7 @@ const Home = () => {
               </li>
             </ul>
           </div>
-          <div className="comnBlk">
+          <div className="comnBlk d-none" >
             <h3>Total Value Locked (TVL)</h3>
             <div className="totl_value">
               <h3>$20,000,000.00</h3>

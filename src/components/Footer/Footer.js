@@ -12,7 +12,7 @@ const Footer = (props) => {
       <div className="footer_align">
         <div className="niob_price">
           <img src={NIOB} alt={"img"} />
-          <div className="flex">
+          <div className="flex d-none">
             <span>SAITA Price</span>
             <span className="vlue">$0.50</span>
           </div>
@@ -21,7 +21,7 @@ const Footer = (props) => {
           <img src={MetaMask} alt={"icon"} />
           <Button className="cm_btn">Buy SAITA</Button>
         </div>
-        <div className="noib_info">
+        <div className="noib_info d-none">
           <ul className="ps-0">
             <li>
               Total supply: <span>300.000.000 SAITA</span>
