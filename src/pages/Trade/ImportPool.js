@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Container, Col } from 'react-bootstrap'
 import CardCustom from "../../components/cardCustom/CardCustom";
 import PlusIcon from "../../assets/images/plus_yellow.png";
@@ -6,13 +6,32 @@ import ModalCurrency from "../../components/Modal/ModalCurrency/ModalCurrency";
 import useCommon from "../../redux/volatiles/common";
 import useCommonTrade from "../../hooks/CommonTrade";
 import useRetained from "../../redux/retained";
-import { T_TYPE } from "../../services/constant";
+import { MISC, T_TYPE } from "../../services/constant";
 import iconDropDown from "../../assets/images/down-arrow.png";
+import { getEthBalance } from "../../services/contracts/Common";
+import { toDec } from "../../services/utils/global";
+import { useSelector } from "react-redux";
 
 const ImportPool = props => {
+    const ref = useRef(!0);
+    const cTrade = useCommonTrade();
     const common = useCommon(s => s);
     const retained = useRetained(s => s);
-    const cTrade = useCommonTrade();
+    const P = useSelector(s => s.persist);
+
+    useEffect(_ => {
+        if(ref.current) {
+            (
+                async _ => common.setTokenBalance(
+                    toDec(
+                        await getEthBalance(P.priAccount), MISC.DEF_DEC
+                    ), 
+                    T_TYPE.A
+                )
+            )();
+            ref.current = !1;
+        }
+    });
     return (
         <>
             <Container>

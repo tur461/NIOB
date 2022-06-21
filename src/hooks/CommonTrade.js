@@ -127,7 +127,6 @@ const useCommonTrade = _ => {
         common[`setShowMaxBtn${selected}`](!0);
         common.setTokenCurrency(token.sym, selected);
         common.setModalCurrency(!common.modalCurrency);
-        // retainer.setTokenDisabled(addr[_getIdx(selected)]);
 
         if(singleToken) {
             common.setIsFirstLP(!0);

@@ -38,7 +38,14 @@ const Exchange = (props) => {
   const ref = useRef(!0);
   useEffect(_ => {
     if(ref.current) {
-      init();
+      (async _ =>
+          common.setTokenBalance(
+            toDec(
+              await getEthBalance(P.priAccount), MISC.DEF_DEC
+            ), 
+            T_TYPE.A
+          )
+      )();
       ref.current = !1;
     }
   });
@@ -53,11 +60,6 @@ const Exchange = (props) => {
     common.token2Currency, 
   ]);
 
-
-  const init = async () => {
-    if (P.isConnected)
-      common.setTokenBalance(toDec(await getEthBalance(P.priAccount), MISC.DEF_DEC), T_TYPE.A);
-  };
 
   
   return (

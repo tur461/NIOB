@@ -39,7 +39,7 @@ const initialState = {
     priceImpact: 0,
     pairExist: !0,
     poolShareShown: !1,
-    
+
     show: !1,
     show1: !1,
     search: '',

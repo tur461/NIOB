@@ -1,5 +1,5 @@
 import "./Trade.scss";
-import { T_TYPE } from "../../services/constant";
+import { MISC, T_TYPE } from "../../services/constant";
 import React, { useEffect, useRef } from "react";
 import { isEth } from "../../services/utils/trading";
 import useLiquidity from "../../hooks/liquidity";
@@ -21,7 +21,7 @@ import SettingModal from "../../components/Modal/SettingModal/SettingModal";
 import ModalCurrency from "../../components/Modal/ModalCurrency/ModalCurrency";
 import RecentTransactions from "../../components/RecentTransactions/RecentTransactions";
 import log from "../../services/logging/logger";
-import { fixBy, iContains } from "../../services/utils/global";
+import { fixBy, iContains, toDec } from "../../services/utils/global";
 import { getEthBalance } from "../../services/contracts/Common";
 import TokenContract from "../../services/contracts/TokenContract";
 import useRetained from "../../redux/retained";
@@ -32,44 +32,50 @@ const AddLiquidity = (props) => {
   const cTrade = useCommonTrade({});
   const liquidity = useLiquidity({});
   const P = useSelector(s => s.persist);
-
+  
   const TC = TokenContract;
   const ref = useRef(!0);
   useEffect(_ => {
     if(ref.current) {
       log.i('[AddLiquidity] a hard reload happened');
-      common.reset();
+      // common.reset();
+      (
+        async _ => common.setTokenBalance(
+            toDec(
+                await getEthBalance(P.priAccount), MISC.DEF_DEC
+            ), 
+            T_TYPE.A
+        )
+      )();
       init();
       ref.current = !1;
     } // else log.i('[AddLiquidity] a soft reload happened');
   })
 
   const init = async () => {
-    if (P.isConnected) {
-      const { lptoken } = props;
-      let bal = '0';
-      if (lptoken) {
-        let i = lptoken.token0Obj ? 0 : lptoken.token0Obj ? 1 : -1;
-        try {
-          if(isEth(lptoken[`token${i}Obj`].addr))
-            bal = await getEthBalance(P.priAccount);
-          else {
-            TC.setTo(lptoken[`token${i}Obj`].addr);
-            bal = await TC.balanceOf(P.priAccount);
-          }
-        } catch(e) {
-          log.e('Reason:', e.reason);
+    const { lptoken } = props;
+    if (lptoken) {
+      let i = lptoken.token0Obj ? 0 : lptoken.token0Obj ? 1 : -1;
+      try {
+        let bal = 0;
+        if(isEth(lptoken[`token${i}Obj`].addr))
+          bal = await getEthBalance(P.priAccount);
+        else {
+          TC.setTo(lptoken[`token${i}Obj`].addr);
+          bal = await TC.balanceOf(P.priAccount);
         }
-        common.setCurrentPair(lptoken.pair);
-        common.setLpTokenBalance(lptoken.balance);
-        common.setSharePoolValue(lptoken.poolShare);
-        if(i>=0) {
-          common.setTokenValue(lptoken[`token${i}Obj`], i+1);
-          common.setTokenDeposit(lptoken[`token${i}Deposit`], i+1);
-          common.setTokenCurrency(lptoken[`token${i}Obj`].symbol, i+1);
-        }
+        common.setTokenBalance(bal, T_TYPE.A);
+      } catch(e) {
+        log.e('Reason:', e.reason);
       }
-      common.setTokenBalance(bal, T_TYPE.A);
+      common.setCurrentPair(lptoken.pair);
+      common.setLpTokenBalance(lptoken.balance);
+      common.setSharePoolValue(lptoken.poolShare);
+      if(i>=0) {
+        common.setTokenValue(lptoken[`token${i}Obj`], i+1);
+        common.setTokenDeposit(lptoken[`token${i}Deposit`], i+1);
+        common.setTokenCurrency(lptoken[`token${i}Obj`].symbol, i+1);
+      }
     }
   };
 

@@ -8,8 +8,11 @@ import AddLiquidity from "./AddLiquidity";
 import ImportPool from "./ImportPool";
 import { useSelector } from "react-redux";
 import { toast } from "../../components/Toast/Toast";
+import useCommon from "../../redux/volatiles/common";
 
 const Trade = (props) => {
+  const common = useCommon(s => s);
+
   const { match: { params }, history } = props;
   const { tab, fillter } = params;
   const [colLiquidity, setColLiquidity] = useState(1);
