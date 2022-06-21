@@ -164,7 +164,7 @@ ul.social_links li{ position: relative; transition: all ease 0.5s;}
 ul.social_links li:hover img{width: 30px; transform: rotate(360deg); transition: all ease 0.5s;}  
 ul.social_links li img{width: 30px; transition: all ease 0.5s;}  
 .pro-sidebar .pro-menu > ul > .pro-sub-menu > .pro-inner-list-item {
-    background-color: #3d0c6f !important;
+    background-color: $baseColor !important;
 }
 
 .pro-sidebar > .pro-sidebar-inner > .pro-sidebar-layout{
