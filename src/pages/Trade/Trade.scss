@@ -356,6 +356,35 @@
   margin-bottom: .5rem;
 }
 
+.import-pool--section {
+  // display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
+  .dropdown-icon {
+    top: 20px;
+    right: 28px;
+    width: 21px;
+    position: absolute;
+    color: red;
+    background: transparent;
+  }
+
+  .import-pool--top button, 
+  .import-pool--bottom button {
+    cursor: pointer;
+    position: relative;
+    width: 100%;
+    padding: .8rem;
+    font-size: 1.2rem;
+    background: transparent;
+    border: 1px solid black;
+    border-radius: 1rem;
+  }
+}
+
 
 
 

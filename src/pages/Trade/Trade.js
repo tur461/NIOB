@@ -62,7 +62,6 @@ const Trade = (props) => {
                   <Tab eventKey="liquidity" title="Liquidity">
                     {fillter === "addLiquidity" ? <AddLiquidity lptoken={lptoken} /> : fillter === "importPool" ? <ImportPool lptoken={lptoken} /> : <Liquidity handleAddLiquidity={handleAddLiquidity} handleRemove={handleRemove} lptoken={lptoken} />}
                   </Tab>
-                  <Tab eventKey="Bridge" title="Bridge">Bridge</Tab>
                 </Tabs>
               </div>
             </Col>

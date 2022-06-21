@@ -4,7 +4,6 @@ import log from "../../services/logging/logger";
 import "./CoinItemStyle.scss";
 
 const CoinItem = ({iconImage, tokenDetails, isDisabled, ...p}) => {
-  log.i('coinItem:', tokenDetails, isDisabled, p.className)
   return (
     <>
     <Col {...p} className={`coinItem_style ${p.className}`} disabled={isDisabled}>
