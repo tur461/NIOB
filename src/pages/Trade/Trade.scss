@@ -9,6 +9,7 @@
     padding: 50px 0;
   }
   .comnBlk {
+    border: 1px solid $borderColorVL;
     padding: 40px 40px 30px;
     padding-top: 0;
     max-width: 600px;
@@ -27,6 +28,7 @@
   }
   .swapScreen {
     .container {
+      
       position: relative;
       @media (max-width: 767px) {
         padding: 0;

@@ -17,6 +17,7 @@ $icon-bg-color: transparent !default;
     padding-top: 94px;
     transition: all .25s;
     background-color: #000;
+    border: 1px solid $borderColorL ;
     &.isFixed{
         padding-top: 0px;
     }
@@ -101,7 +102,8 @@ li.pro-menu-item{
 }
 .pro-sub-menu ul li .pro-inner-item::before{display: none !important;}
 .pro-sidebar .pro-menu .pro-menu-item.pro-sub-menu > .pro-inner-item > .pro-arrow-wrapper .pro-arrow{
-    border-color: $blueColor;
+    // border-color: $blueColor;
+    border-top: 1px solid $borderColorVL;
     padding:3.5px;
 }
 .pro-sidebar .pro-menu > ul > .pro-sub-menu > .pro-inner-list-item {
@@ -118,7 +120,7 @@ li.pro-menu-item{
     padding: 5px 35px 5px 20px;
 }
 .sidebar_footer{
-    border-top: 2px solid #7868E6 !important;
+    border-top: 1px solid $borderColorVL !important;
     flex: 0 0 auto;
     padding: 60px 0;
 }

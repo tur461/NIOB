@@ -2,7 +2,7 @@
 @import "../../assets/theme/_mixins.scss";
 .selectCoin_style:hover, .selectCoin_style:focus {
 
-  border: 1px solid red;
+  border: 1px solid $borderColorVL;
   border-radius: 1rem;
 }
 .selectCoin_style *:disabled {
