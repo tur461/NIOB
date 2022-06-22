@@ -17,7 +17,7 @@ const ModalCurrency = ({
   currencyName 
 }) => {
   function _searchCallback(e) {
-    e.preventDefault();
+    //e.preventDefault();
     searchToken(e.target.value);
   }
 
