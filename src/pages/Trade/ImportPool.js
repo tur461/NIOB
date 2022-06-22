@@ -9,7 +9,7 @@ import useRetained from "../../redux/retained";
 import { MISC, T_TYPE } from "../../services/constant";
 import iconDropDown from "../../assets/images/down-arrow.png";
 import { getEthBalance } from "../../services/contracts/Common";
-import { toDec } from "../../services/utils/global";
+import { isAddr, toDec } from "../../services/utils/global";
 import { useSelector } from "react-redux";
 
 const ImportPool = props => {
@@ -40,7 +40,7 @@ const ImportPool = props => {
                         <Col className="import-pool--top">
                             <button onClick={_ => cTrade.openSelectTokenModal(T_TYPE.A)}>
                                 <strong style={{ fontSize: props.selectTokenText ? "" : "" }}>
-                                ETH
+                                {common.token1.sym}
                                 </strong>
                                 <img className="dropdown-icon" src={iconDropDown}  alt="icon 22"/>
                             </button>
@@ -55,17 +55,51 @@ const ImportPool = props => {
                         <Col className="import-pool--bottom">
                             <button onClick={_ => cTrade.openSelectTokenModal(T_TYPE.B)}>
                                 <strong style={{ fontSize: props.selectTokenText ? "" : "" }}>
-                                BNB
+                                {common.token2.sym || 'Select Token'}
                                 </strong>
                                 <img className="dropdown-icon" src={iconDropDown}  alt="icon 22"/>
                             </button>
                         </Col>
-                        <Col>
-                            <div>
-                                No Pool Found
-                            </div>
-                        </Col>
                     </div>
+                    {
+                        (isAddr(common.addrPair[0]) && isAddr(common.addrPair[1])) ?
+                            common.pairExist ?
+                                <div className="importpooldetails">
+                                    <p>Pool Found!</p>
+                                    <h4>LP TOKENS IN YOUR WALLET</h4>
+                                    <ul>
+                                        <li>
+                                            <span>
+                                                <img src={common.token1.icon} alt="icon" /> 
+                                                <img src={common.token2.icon} alt="icon" /> 
+                                                {common.token1.sym} / {common.token2.sym}
+                                            </span> 
+                                            <span>
+                                                {common.lpTokenBalance.toFixed(5)}
+                                            </span>
+                                        </li> <br />
+                                        <li>
+                                            {common.token1.sym}: {common.token1Value}
+                                        </li> <br />
+                                        <li>
+                                            {common.token2.sym}: {common.token2Value}
+                                        </li> <br />
+                                    </ul>
+                                </div>
+                                :
+                                <div className="importpooldetails">
+                                    <p>No pool found</p>
+                                    {/* <p>
+                                        <Link to="#" onClick={() => props.addBtn()}>Create pool</Link>
+                                    </p> */}
+                                    <br />
+                                </div>
+                            :
+                            <div className="importpooldetails">
+                                <p>Select a token to find your liquidity.</p>
+                                <br />
+                            </div>
+                    }
                 </CardCustom>
             </Container>
             <ModalCurrency
