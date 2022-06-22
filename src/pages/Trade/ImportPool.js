@@ -9,7 +9,7 @@ import useRetained from "../../redux/retained";
 import { MISC, T_TYPE } from "../../services/constant";
 import iconDropDown from "../../assets/images/down-arrow.png";
 import { getEthBalance } from "../../services/contracts/Common";
-import { isAddr, toDec } from "../../services/utils/global";
+import { fixBy, isAddr, toDec } from "../../services/utils/global";
 import { useSelector } from "react-redux";
 
 const ImportPool = props => {
@@ -39,6 +39,7 @@ const ImportPool = props => {
                     <div className="import-pool--section">
                         <Col className="import-pool--top">
                             <button onClick={_ => cTrade.openSelectTokenModal(T_TYPE.A)}>
+                                <img className="token-icon" src={common.token1.icon}  alt="icon 22"/>
                                 <strong style={{ fontSize: props.selectTokenText ? "" : "" }}>
                                 {common.token1.sym}
                                 </strong>
@@ -54,6 +55,9 @@ const ImportPool = props => {
                         </div>
                         <Col className="import-pool--bottom">
                             <button onClick={_ => cTrade.openSelectTokenModal(T_TYPE.B)}>
+                                {common.token2.icon ? 
+                                <img className="token-icon" src={common.token2.icon}  alt="icon 22"/> :
+                                <></>}
                                 <strong style={{ fontSize: props.selectTokenText ? "" : "" }}>
                                 {common.token2.sym || 'Select Token'}
                                 </strong>
@@ -64,30 +68,30 @@ const ImportPool = props => {
                     {
                         (isAddr(common.addrPair[0]) && isAddr(common.addrPair[1])) ?
                             common.pairExist ?
-                                <div className="importpooldetails">
+                                <div className="">
                                     <p>Pool Found!</p>
                                     <h4>LP TOKENS IN YOUR WALLET</h4>
-                                    <ul>
+                                    <ul className="lp-token-details--section">
                                         <li>
+                                            <img src={common.token1.icon} alt="icon" /> 
+                                            <img src={common.token2.icon} alt="icon" /> 
                                             <span>
-                                                <img src={common.token1.icon} alt="icon" /> 
-                                                <img src={common.token2.icon} alt="icon" /> 
-                                                {common.token1.sym} / {common.token2.sym}
+                                            {   common.token1.sym} / {common.token2.sym}
                                             </span> 
                                             <span>
-                                                {common.lpTokenBalance.toFixed(5)}
+                                                {fixBy(common.lpTokenBalance, 5)}
                                             </span>
                                         </li> <br />
                                         <li>
-                                            {common.token1.sym}: {common.token1Value}
+                                            <span>{common.token1.sym}:</span> <span>{common.token1.bal}</span>
                                         </li> <br />
                                         <li>
-                                            {common.token2.sym}: {common.token2Value}
+                                            <span>{common.token2.sym}:</span> <span>{common.token2.bal}</span>
                                         </li> <br />
                                     </ul>
                                 </div>
                                 :
-                                <div className="importpooldetails">
+                                <div className="">
                                     <p>No pool found</p>
                                     {/* <p>
                                         <Link to="#" onClick={() => props.addBtn()}>Create pool</Link>
@@ -95,7 +99,7 @@ const ImportPool = props => {
                                     <br />
                                 </div>
                             :
-                            <div className="importpooldetails">
+                            <div className="">
                                 <p>Select a token to find your liquidity.</p>
                                 <br />
                             </div>

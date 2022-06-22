@@ -95,7 +95,7 @@ const remPoint = p => {
 const fixBy = (s, n=3) => {
     s = s+''
     s = s.substring(0, indexOf(s, '.')+n+1)
-    return s.length > 5 ? s.substring(0, 5) + '..' : s;
+    return s.length > indexOf(s, '.') + n+1 ? s.substring(0, 5) + '..' : s;
 }
 
 const parseTxErr = e => {

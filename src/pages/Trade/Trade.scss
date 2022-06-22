@@ -364,6 +364,13 @@
   align-items: center;
   justify-content: center;
   width: 100%;
+  .token-icon {
+    width: 1.5rem;
+    margin-right: 1rem;
+  }
+  strong {
+    color: $white;
+  }
 
   .dropdown-icon {
     top: 20px;
@@ -376,14 +383,33 @@
 
   .import-pool--top button, 
   .import-pool--bottom button {
+
     cursor: pointer;
     position: relative;
     width: 100%;
     padding: .8rem;
     font-size: 1.2rem;
     background: transparent;
-    border: 1px solid black;
+    border: 1px solid $outlineColor;
     border-radius: 1rem;
+    box-shadow: 0px 0px 10px 4px $borderColorVL;
+
+    &:hover {
+      transition: all ease-out .2s; 
+      transform: scale(1.01);}
+      // box-shadow: 0px 0px 4px 0px $borderColorVL;
+    }
+
+}
+
+.lp-token-details--section {
+  li img{
+    width: 2rem !important;
+    margin-right: .8rem;
+  }
+  li span {
+    margin-right: 1rem;
+    display: inline-block;
   }
 }
 

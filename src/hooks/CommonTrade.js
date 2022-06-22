@@ -82,7 +82,7 @@ const useCommonTrade = _ => {
         }
         else l_t.e(ERR.PAIR_NOT_EXIST.msg);
         common.setPairExist(exists);
-        return exists;
+        return {exists, pr};
     }
 
 
@@ -138,19 +138,20 @@ const useCommonTrade = _ => {
         let pairExist = await _checkIfPairExists(addr);
         if(_areTokensBoth(addr)) {
             const p = _tryGetPossiblePath(addr);
-            common.setPath(pairExist ? p || null : null);
+            common.setPath(pairExist.exists ? p || null : null);
         }
-        if (isSwap && pairExist) {
-            const dec = await TC.getPairDec(addr);
-            PC.setTo(common.pair)
-            const reserves = await PC.getReserves();
-            TC.setTo(common.pair);
-            const lpTokenBalance = await TC.balanceOf([P.priAccount]);
-            calcLiqPercentForSelCurrency(reserves, dec[0], dec[1], lpTokenBalance, common.pair);
+        log.i('pair exists:', pairExist);
+        if(pairExist.exists) {
+            TC.setTo(pairExist.pr);
+            PC.setTo(pairExist.pr);
+            const lptBal = await TC.balanceOf([P.priAccount]);
+            common.setLpTokenBalance(lptBal);
+            const rsv = await PC.getReserves();
+            log.i('pair exists:', lptBal, rsv);
+            calcLiqPercentForSelCurrency(rsv, dec[0], dec[1], lptBal, pairExist.pr);
+            common.setHasPriceImpact(!0);
             common.setIsFirstLP(!1);
             common.showPoolShare(!0);
-            common.setHasPriceImpact(!0);
-            common.setLpTokenBalance(lpTokenBalance);
         } else {
             common.setIsFirstLP(!0);
             common.showPoolShare(!0);
