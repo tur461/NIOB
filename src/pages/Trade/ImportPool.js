@@ -11,6 +11,7 @@ import iconDropDown from "../../assets/images/down-arrow.png";
 import { getEthBalance } from "../../services/contracts/Common";
 import { fixBy, isAddr, toDec } from "../../services/utils/global";
 import { useSelector } from "react-redux";
+import Loader from "../../components/Loader";
 
 const ImportPool = props => {
     const ref = useRef(!0);
@@ -66,6 +67,7 @@ const ImportPool = props => {
                         </Col>
                     </div>
                     {
+                        common.isFetching ? <Loader stroke='white' text='please wait..'/> :
                         (isAddr(common.addrPair[0]) && isAddr(common.addrPair[1])) ?
                             common.pairExist ?
                                 <div className="">

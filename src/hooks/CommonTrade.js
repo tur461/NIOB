@@ -98,7 +98,8 @@ const useCommonTrade = _ => {
     const selectToken = async (token, selected, isSwap) => {
         common.setSearch('');
         handleClose();
-        dsp(startLoading())
+        dsp(startLoading());
+        common.setFetching(!0);
         let addr = _getIdx(selected) ? [
                 try2weth(_getToken(T_TYPE.A).addr),
                 try2weth(token.addr),
@@ -108,12 +109,17 @@ const useCommonTrade = _ => {
             ], singleToken=!1;
         if(isAddr(addr[0]) && isAddr(addr[1])) common.setAddrPair(addr);
         else if(isAddr(addr[0]) || isAddr(addr[1])) singleToken = !0;
-        else return l_t.e(ERR.TOKEN_ADDR_NDEF.msg);
+        else {
+            dsp(stopLoading());
+            common.setFetching(!1);
+            return l_t.e(ERR.TOKEN_ADDR_NDEF.msg);
+        }
 
         if(!singleToken && rEq(...addr)) {
             common.setIsErr(!0)
             common.setErrText(ERR.SAME_TOKENS.msg)
             dsp(stopLoading())
+            common.setFetching(!1);
             return l_t.e(ERR.SAME_TOKENS.msg);
         }
 
@@ -132,6 +138,7 @@ const useCommonTrade = _ => {
             common.setIsFirstLP(!0);
             common.showPoolShare(!0);
             common.setLpTokenBalance(0);
+            common.setFetching(!1);
             return dsp(stopLoading());
         }
         if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
@@ -157,7 +164,8 @@ const useCommonTrade = _ => {
             common.showPoolShare(!0);
             common.setLpTokenBalance(0);
         }
-        dsp(stopLoading())
+        dsp(stopLoading());
+        common.setFetching(!1);
     }
 
     const openSelectTokenModal = async tt => {
