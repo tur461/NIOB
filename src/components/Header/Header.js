@@ -36,6 +36,7 @@ const Header = props => {
 
     return(
         <div className={`header_style ${props.className}`}>
+                <div style={{color: 'white'}}>WELCOME to dex</div>
                 <div className="header_left_style">
                     <div className="for_desktop">
                         <div  className="hamburg" onClick={props.small_nav}>
@@ -46,6 +47,7 @@ const Header = props => {
                                 <img src={IconToggle} alt=""/>                            
                             }
                         </div> 
+                        
                     </div>
                     <div className="for_mobile">
                         <div className="hamburg" onClick={props.small_nav}>
@@ -60,10 +62,12 @@ const Header = props => {
                     <Link to="/home" className="header_logo"></Link> 
                 </div>
                 <div className="header_right_style">
+                
                     <Button 
                         onClick={_ => prepWalletConnectModal()} 
                         title={P.isConnected ? `${P.priAccount.substring(1, 6)}...${P.priAccount.substr(P.priAccount.length - 4)}` : 'Connect'}
                     />
+                    
                 </div>
                 <ConnectWallet show={show} handleShow={handleShow} handleClose={handleClose} /> 
         </div>

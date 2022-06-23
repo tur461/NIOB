@@ -296,7 +296,7 @@ const useCommonTrade = _ => {
         ip = formatRaw(ip, _getToken(tt).dec);
         
         log.i('pair', addrList, ip);
-        const res = await RouterContract[`getAmounts${isIP_A(tt) ? 'Out' : 'In'}`]([ip, addrList]);
+        const res = await RouterContract[`getAmounts${isIP_A(tt) ? 'Out' : 'In'}`]([ip, common.path]);
         let finalAmount = formatOk(res[isIP_A(tt) ? res.length - 1 : 0], dec[1]).toFixed(8);
         const ratio = ipF / finalAmount;
 
@@ -461,7 +461,16 @@ const useCommonTrade = _ => {
         if(
             (rEq(addr[0], ADDRESS.WETH) && rEq(addr[1], ADDRESS.SAITAMA)) ||
             (rEq(addr[1], ADDRESS.WETH) && rEq(addr[0], ADDRESS.SAITAMA))
-        ) return isAddr(await FactoryContract.getPair([addr[0], ADDRESS.SAITAMA])) ? addr : null;
+        ) return addr;
+
+        if(
+            (
+            rEq(addr[0], ADDRESS.WETH) ||
+            rEq(addr[1], ADDRESS.WETH) ||
+            rEq(addr[0], ADDRESS.SAITAMA) ||
+            rEq(addr[1], ADDRESS.SAITAMA)
+            ) && isAddr(await FactoryContract.getPair(addr))
+        ) return addr;
     
         let p1 = await FactoryContract.getPair([addr[0], ADDRESS.WETH]);
         let p2 = await FactoryContract.getPair([addr[1], ADDRESS.WETH]);
