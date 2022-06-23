@@ -189,7 +189,7 @@ const ERR = {
   XCESV_IP_AMT: ErrObj.create('Excessive input amount!'),
   INSUF_LIQ: ErrObj.create('Insufficient liquidity for '),
   INSUF_OP_AMT: ErrObj.create('Insufficient output amount!'),
-  PATH_NOT_EXIST: ErrObj.create('No path exist in the pair!'),
+  PATH_NOT_EXIST: ErrObj.create('No path exist via Saitama or Eth!'),
   INSTALL_WALLET: ErrObj.create('You have to install Wallet!'),
   SAME_TOKENS: ErrObj.create('Please select dissimilar tokens!'),
   TOKEN_ADDR_NDEF: ErrObj.create('one or both of the token address/s invalid!') 

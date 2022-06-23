@@ -79,7 +79,6 @@ const useCommonTrade = _ => {
         const exists = isAddr(pr);
         if(exists) {
             common.setPair(pr);
-            common.setPath(pr);
         }
         else l_t.e(ERR.PAIR_NOT_EXIST.msg);
         common.setPairExist(exists);
@@ -87,16 +86,6 @@ const useCommonTrade = _ => {
     }
 
     const _getLPFee = ip => ((ip * THRESHOLD.LIQUIDITY_PROVIDER_FEE) / 100).toFixed(8);
-
-
-    async function _tryGetPossiblePath(addr) {
-        let prAddr=['',''], weth = TOKENS.WETH.addr, sma = TOKENS.SAITAMA.addr;
-        prAddr= [await FactoryContract.getPair([addr[0], weth]), await FactoryContract.getPair([addr[1], weth])];
-        if(isAddr(prAddr[0]) && isAddr(prAddr[1])) return [addr[0], weth, addr[1]] 
-        prAddr= [await FactoryContract.getPair([addr[0], sma]), await FactoryContract.getPair([addr[1], sma])];
-        if(isAddr(prAddr[0]) && isAddr(prAddr[1])) return [addr[0], sma, addr[1]]
-        return null; 
-    }
 
     const computePriceImpact = async (dec, amtIn, amtOut, isIn) => {
         const pr = common.pair;
@@ -163,30 +152,29 @@ const useCommonTrade = _ => {
         }
         //if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
         let pairExist = await _checkIfPairExists(addr);
-        if(_areTokensBoth(addr)) {
-            const p = _tryGetPossiblePath(addr);
-            common.setPath(pairExist.exists ? p || null : null);
-        }
-        log.i('pair exists:', pairExist);
+
         if(pairExist.exists) {
             TC.setTo(pairExist.pr);
             PC.setTo(pairExist.pr);
             const lptBal = await TC.balanceOf([P.priAccount]);
-            common.setLpTokenBalance(lptBal);
             const rsv = await PC.getReserves();
             const dec = await TC.getPairDec(addr)
+            log.i('reserves:', rsv, dec, lptBal, pairExist);
             common.setDecPair(dec);
-            common.setReserves(rsv.map((r, i) => formatOk(r, dec[i])));
-            // log.i('pair exists:', lptBal, rsv);
-            // calcLiqPercentForSelCurrency(rsv, dec[0], dec[1], lptBal, pairExist.pr);
-            // common.setHasPriceImpact(!0);
             common.setIsFirstLP(!1);
             common.showPoolShare(!0);
+            common.setLpTokenBalance(lptBal);
+            common.setReserves(rsv.map((r, i) => formatOk(r, dec[i])));
         } else {
             common.setIsFirstLP(!0);
             common.showPoolShare(!0);
             common.setLpTokenBalance(0);
         }
+        const path = await normalizePair(addr);
+        log.i('path:', path);
+        common.setPathExist(!!path);
+        path && common.setPath(path)
+        
         dsp(stopLoading());
         common.setFetching(!1);
     }
@@ -225,18 +213,15 @@ const useCommonTrade = _ => {
     }
 
     async function _swapCriteriaOk(ip, aList, cList, tt) {
+        log.i('pathExist, pairExist', common.pathExist, common.pairExist)
         let r = !0, t='';
         if(isIP_A(tt) && await _balanceNotEnough(aList[0], ip)) {
             r = !1;
             t = ERR.LOW_BAL.msg + cList[0];
         }
-        else if(!common.path) {
+        else if(!common.pathExist) {
             r = !1;
             t = ERR.PATH_NOT_EXIST.msg;
-        } 
-        else if(!common.pairExist) {
-            r = !1;
-            t = ERR.PAIR_NOT_EXIST.msg;
         } 
         else if(
             (!isEth(aList[0]) && !isWeth(aList[0])) && 
@@ -472,18 +457,19 @@ const useCommonTrade = _ => {
         common.setTokenDeposit(t1, T_TYPE.B);
     }
 
-    const normalizePair = async pair => {
+    const normalizePair = async addr => {
         if(
-            (rEq(pair[0], ADDRESS.WETH) && rEq(pair[1], ADDRESS.SAITAMA)) ||
-            (rEq(pair[1], ADDRESS.WETH) && rEq(pair[0], ADDRESS.SAITAMA))
-        ) return pair;
-        let p1 = await FactoryContract.getPair([pair[0], ADDRESS.WETH]);
-        let p2 = await FactoryContract.getPair([pair[1], ADDRESS.WETH]);
-        if (isAddr(p1) && isAddr(p2)) return [pair[0], ADDRESS.WETH, pair[1]];
+            (rEq(addr[0], ADDRESS.WETH) && rEq(addr[1], ADDRESS.SAITAMA)) ||
+            (rEq(addr[1], ADDRESS.WETH) && rEq(addr[0], ADDRESS.SAITAMA))
+        ) return isAddr(await FactoryContract.getPair([addr[0], ADDRESS.SAITAMA])) ? addr : null;
+    
+        let p1 = await FactoryContract.getPair([addr[0], ADDRESS.WETH]);
+        let p2 = await FactoryContract.getPair([addr[1], ADDRESS.WETH]);
+        if (isAddr(p1) && isAddr(p2)) return [addr[0], ADDRESS.WETH, addr[1]];
         
-        p1 = await FactoryContract.getPair([pair[0], ADDRESS.SAITAMA]);
-        p2 = await FactoryContract.getPair([pair[1], ADDRESS.SAITAMA]);
-        if (isAddr(p1) && isAddr(p2)) return [pair[0], ADDRESS.SAITAMA, pair[1]];
+        p1 = await FactoryContract.getPair([addr[0], ADDRESS.SAITAMA]);
+        p2 = await FactoryContract.getPair([addr[1], ADDRESS.SAITAMA]);
+        if (isAddr(p1) && isAddr(p2)) return [addr[0], ADDRESS.SAITAMA, addr[1]];
         return null;
     }
 

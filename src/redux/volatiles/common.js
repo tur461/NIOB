@@ -45,6 +45,7 @@ const initialState = {
     pair: ADDRESS.ZERO,
     priceImpact: 0,
     pairExist: !0,
+    pathExist: !0,
     poolShareShown: !1,
 
     reserves: [],
@@ -120,6 +121,7 @@ const useCommon = create((set, get) => ({
     setInsufLiq1: insufLiq1 => set(s => ({...s, insufLiq1})),
     setInsufLiq2: insufLiq2 => set(s => ({...s, insufLiq2})),
     setTokenType: tokenType => set(s => ({...s, tokenType})),
+    setPathExist: pathExist => set(s => ({...s, pathExist})),
     setPairExist: pairExist => set(s => ({...s, pairExist})),
     setIsFirstLP: isFirstLP => set(s => ({...s, isFirstLP})),
     setFetching: isFetching => set(s => ({...s, isFetching})),
