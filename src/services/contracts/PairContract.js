@@ -8,7 +8,10 @@ const PairContract = (_ => {
     return {
         setTo: a => inst = new (Web_3()).eth.Contract(ABI.PAIR, a),
         create: a => new (Web_3()).eth.Contract(ABI.PAIR, a),
-        getReserves: _ => _call(inst, 'getReserves'),
+        getReserves: async _ => {
+            const r = await _call(inst, 'getReserves');
+            return [r._reserve0, r._reserve1];
+        },
         getTokens: _ => Promise.all([_call(inst, 'token0'), _call(inst, 'token1')]),
     }
 })();

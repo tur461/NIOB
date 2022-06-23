@@ -1,4 +1,5 @@
-import { ERR, T_TYPE } from "../services/constant";
+import {Trade, Percent, TokenAmount} from '@uniswap/sdk';
+import { ERR, MISC, T_TYPE } from "../services/constant";
 import { BigNumber } from "bignumber.js";
 import useCommonTrade from "./CommonTrade";
 import useSwap from "../redux/volatiles/swap";
@@ -18,31 +19,6 @@ const useXchange = (props) => {
     const common = useCommon(s => s);
     const cTrade = useCommonTrade({});
     const P = useSelector(s => s.persist);
-
-    const _getDeadline = _ => tStamp(common.deadline * 60);
-
-    const _getEthSwapDataForTK1 = (dl, v) => {
-        let tv = common[`token${togIP(common.exact)}Value`]
-        return {
-            value: v,
-            deadline: dl,
-            to: P.priAccount,
-            amountOutMin: toFlr(Number(tv) - (Number(tv) * P.slippage / 100)),
-        };
-    }
-
-    const _getEthSwapDataForTK2 = (dl, v) => {
-        let i = common.exact,
-            x = i-1 ? toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].dec) :
-                toDec(common[`token${i}Value`],  common[`token${i}`].dec)
-        return {
-            value: v,  
-            deadline: dl,
-            to: P.priAccount,
-            amountIn: toBgFix(toFlr(x)),
-            amountOutMin: toBgFix(toFlr(x - (x * P.slippage / 100))),
-        };
-    }
 
     // 2nd is eth
     async function _swapExactTokensForEth (vList, tList, amtOut) {
@@ -69,7 +45,7 @@ const useXchange = (props) => {
         log.s('_swapTokensForExactEth');
         const ethVal = vList[1];
         const amountOut = vList[1];
-        const amountInMax = cTrade.getValueAfterSlippage(amtIn, tList[0].dec, !0);
+        const amountInMax = cTrade.getValueAfterSlippage(amtIn, tList[0].dec, !1);
         const path = tList.map(t => try2weth(t.addr));
         const to = P.priAccount;
         const deadline = cTrade.getDeadline();
@@ -104,7 +80,7 @@ const useXchange = (props) => {
     
     // 1st is eth
     async function _swapEthForExactTokens (vList, tList, amtIn) {
-        log.s('_swapEthForExactTokens');
+        log.i('_swapEthForExactTokens');
         const ethVal = amtIn;
         const amountOut = vList[1];
         const path = tList.map(t => try2weth(t.addr));
@@ -164,9 +140,10 @@ const useXchange = (props) => {
         const tList = cTrade.getTokens();
         const vList = cTrade.getValueList().map((v, i) => xpand(toFull(v, tList[i].dec)));
         const ethToken = cTrade.getEthToken();
+        const amt = await cTrade.getAmount(vList, aList, exactIn);
+        log.i('got amount:', amt);
         dsp(startLoading());
         try{
-            let amt = await cTrade.getAmount(vList, aList, exactIn);
             const prm =[vList, tList, amt];   
             if(ethToken) { // either of the tokens is eth!
                 if(ethToken.i) { // second token is eth! --> swap tokens for eth
@@ -198,50 +175,9 @@ const useXchange = (props) => {
         // use swap-confirmed
         common.setLiqConfirmed(!1);
     }
-
-    const _getSwapAmountInData = (dl, v) => {
-        let i = common.exact, 
-            x = [
-                toDec(common[`token${i}Value`], common[`token${i}`].dec),
-                toDec(common[`token${togIP(i)}Value`], common[`token${togIP(i)}`].dec)
-            ]; 
-        return {
-            value: v,
-            deadline: dl,
-            to: P.priAccount,
-            amountIn: toBgFix(x[i-1]).toString(),
-            amountOutMin: toBgFix(x[togIP(i)-1] + (x[togIP(i)-1] * P.slippage / 100)).toString(),
-        }; 
-    }
-
-    const handleSwitchCurrencies = () => {
-        common.setExact(togIP(common.exact));
-        common.setToken(common.token1, T_TYPE.B);
-        common.setToken(common.token2, T_TYPE.A);
-        common.setTokenIcon(common.token1Icon, T_TYPE.B);
-        common.setTokenIcon(common.token2Icon, T_TYPE.A);
-        common.setTokenValue(common.token1Value, T_TYPE.B);
-        common.setTokenValue(common.token2Value, T_TYPE.A);
-        common.setTokenBalance(common.token1Balance, T_TYPE.B);
-        common.setTokenBalance(common.token2Balance, T_TYPE.A);
-        common.setTokenCurrency(common.token1Currency, T_TYPE.B);
-        common.setTokenCurrency(common.token2Currency, T_TYPE.A);
-    }
     
-    const liquidityProviderFee = () => {
-        const value = common.exact === T_TYPE.A ? common.token1Value : common.token2Value;
-        const tknCurrency = common.exact === T_TYPE.A ? common.token1Currency : common.token2Currency;
-        let lpf = (value * 2) / 1000;
-        lpf = BigNumber(lpf).toFixed();
-        const calLpf = lpf + ' ' + tknCurrency
-        return calLpf;
-    }
-
-
     const Xchange = {
         performSwap,
-        liquidityProviderFee,
-        handleSwitchCurrencies,
     }
     return Xchange;
 }

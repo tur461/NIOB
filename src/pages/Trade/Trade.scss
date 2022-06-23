@@ -1,6 +1,10 @@
 @import "../../assets/theme/clr_var.scss";
 @import "../../assets/styles/common.scss";
 
+.warning-text {
+  color: red !important;
+}
+
 .container_wrap.trade {
   padding: 100px 0;
   background: $baseColor;

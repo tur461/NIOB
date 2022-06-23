@@ -1,3 +1,4 @@
+import {Percent} from '@uniswap/sdk';
 import React, { useState } from "react";
 import { Col, Row, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,6 +7,7 @@ import "./SettingModal.scss";
 import ReactTooltip from "react-tooltip";
 import TolerenceImg from "../../../assets/images/tolerence.png";
 import { Link } from "react-router-dom";
+import { MISC } from '../../../services/constant';
 
 const SettingModal = ({ show, handleClose, deadLineSet, slippageSet }) => {
   const dispatch = useDispatch();

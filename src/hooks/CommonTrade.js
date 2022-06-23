@@ -1,18 +1,19 @@
 import React from "react";
+import {Token, Fetcher, Route, Trade, TradeType, TokenAmount, Percent} from '@uniswap/sdk';
 import useCommon from "../redux/volatiles/common"
 import { useDispatch, useSelector } from "react-redux";
 import ButtonPrimary from "../components/Button/Button";
 import { ExchangeService } from "../services/ExchangeService";
-import { ADDRESS, ERR, MISC, STR, THRESHOLD, TOKENS, T_TYPE, VAL, TOKEN_LIST } from "../services/constant";
+import { ADDRESS, ERR, MISC, STR, THRESHOLD, TOKENS, T_TYPE, VAL, TOKEN_LIST, NETWORK } from "../services/constant";
 import { addTransaction, searchTokenByNameOrAddress, startLoading, stopLoading } from "../redux/actions";
-import { hasVal, iContains, isAddr, isDefined, rDefined, rEq, toBgFix, toDec, toFull, tStamp, xpand, zero } from "../services/utils/global";
+import { formatOk, formatRaw, hasPoint, hasVal, iContains, isAddr, isDefined, rDefined, rEq, swap, toBgFix, toDec, toFull, tStamp, xpand, zero } from "../services/utils/global";
 import { isIP_A, isIP_B, togIP, isEth, try2weth, isWeth } from "../services/utils/trading";
 import log from "../services/logging/logger";
 import l_t from "../services/logging/l_t";
 import toast from "../services/logging/toast";
 import TokenContract from "../services/contracts/TokenContract";
 import FactoryContract from "../services/contracts/Factory";
-import { getEthBalance } from "../services/contracts/Common";
+import { getEthBalance, Web_3 } from "../services/contracts/Common";
 import RouterContract from "../services/contracts/Router";
 import PairContract from "../services/contracts/PairContract";
 import useRetained from "../redux/retained";
@@ -25,6 +26,7 @@ const useCommonTrade = _ => {
     const common = useCommon(s => s);
     const retainer = useRetained(s => s);
     const P = useSelector(s => s.persist);
+    const wU = (Web_3()).utils;
 
     const PC = PairContract;
     const TC = TokenContract;
@@ -44,7 +46,7 @@ const useCommonTrade = _ => {
     const getEthToken = _ => {
         let pr = common.addrPair;
         return isWeth(pr[0]) ? {tkn: common.token1, i: 0} : 
-                isWeth(pr[0]) ? {tkn: common.token2, i: 1} : null;
+                isWeth(pr[1]) ? {tkn: common.token2, i: 1} : null;
     }
 
     const getOtherToken = _ => {
@@ -57,13 +59,13 @@ const useCommonTrade = _ => {
     const getValueList = _ => [common.token1Value, common.token2Value];
 
     const getValueAfterSlippage = (v, d, isMin) => {
-        log.i('after slippage;', v, d);
-        v = parseFloat(toDec(v, d));
-        log.i('parsed:', v);
-        return xpand(toFull(`${v + ((v * (isMin ? -1 : 1)) * (parseFloat(common.slippage) / 100))}`, d));
+        v = parseFloat(formatOk(v, d));
+        v = `${v + ((v * (isMin ? -1 : 1)) * (parseFloat(common.slippage) / 100))}`;
+        return formatRaw(v, d);
     }
 
     const getAmount = async (vL, aL, isIn) => {
+        log.i('getAmount:', vL, aL, isIn);
         const al = await RouterContract[`getAmounts${isIn ? 'Out' : 'In'}`]([vL[isIn ? 0 : 1], aL]);
         return al[isIn ? al.length-1 : 0];
     }
@@ -85,6 +87,8 @@ const useCommonTrade = _ => {
         return {exists, pr};
     }
 
+    const _getLPFee = ip => ((ip * THRESHOLD.LIQUIDITY_PROVIDER_FEE) / 100).toFixed(8);
+
 
     async function _tryGetPossiblePath(addr) {
         let prAddr=['',''], weth = TOKENS.WETH.addr, sma = TOKENS.SAITAMA.addr;
@@ -95,19 +99,68 @@ const useCommonTrade = _ => {
         return null; 
     }
 
-    const selectToken = async (token, selected, isSwap) => {
+    const fetchAndSetChainData = async (aList, dList, ipAmt, isIn) => {
+        try {
+            const t1 = new Token(NETWORK.CHAIN_ID_INT, aList[0], dList[0]);
+            const t2 = new Token(NETWORK.CHAIN_ID_INT, aList[1], dList[1]);
+            const pair = await Fetcher.fetchPairData(t1, t2);
+            log.i(aList, dList, ipAmt, isIn, pair);
+            const route = new Route([pair], t1, t2);
+            const trade = new Trade(
+                route,
+                new TokenAmount(
+                    isIn ?  t1 : t2, 
+                    ipAmt,
+                ),
+                isIn ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT
+            );
+            
+            log.i('price impact:', trade.priceImpact.toFixed(4));
+            common.setCPair(pair);
+            common.setTrade(trade);
+            common.setRoute(route);
+            common.setTokens([t1, t2]);
+            common.setDataFetched(!0);
+            common.setPriceImpact(trade.priceImpact.toFixed(4));
+        } catch(e) {
+            log.e('error fetching data:', e);
+            common.setDataFetched(!1);
+            return !1;
+        }
+        return !0;
+    }
+
+    const computePriceImpact = async (dec, amtIn, amtOut, isIn) => {
+        const pr = common.pair;
+        const aList = common.addrPair;
+        PC.setTo(pr);
+        amtIn = hasPoint(amtIn) ? amtIn : formatOk(amtIn, dec[1]);
+        let R = (await PC.getReserves()).map((r, i) => formatOk(r, dec[i]));
+        let pI = amtIn / (R[0] + Number(amtIn));
+        pI = (pI * 100).toFixed(4);
+        log.i('PI:', pI, R, amtIn);
+        const b = [amtIn >= R[0], amtOut >= R[1]];
+        common.setPriceImpact(pI);
+        common.setHasPriceImpact(pI >= THRESHOLD.HIGH_PRICE_IMPACT);
+        return !0;
+    }
+
+    const selectToken = async (token, selected) => {
         common.setSearch('');
         handleClose();
         dsp(startLoading());
         common.setFetching(!0);
+        log.i('selected:', selected, 'tkn:', _getToken(selected), token);
         let addr = _getIdx(selected) ? [
-                try2weth(_getToken(T_TYPE.A).addr),
+                try2weth(_getToken(T_TYPE.A)?.addr),
                 try2weth(token.addr),
             ] : [
                 try2weth(token.addr),
-                try2weth(_getToken(T_TYPE.B).addr),
+                try2weth(_getToken(T_TYPE.B)?.addr),
             ], singleToken=!1;
-        if(isAddr(addr[0]) && isAddr(addr[1])) common.setAddrPair(addr);
+        if(isAddr(addr[0]) && isAddr(addr[1])) {
+            common.setAddrPair(addr);
+        }
         else if(isAddr(addr[0]) || isAddr(addr[1])) singleToken = !0;
         else {
             dsp(stopLoading());
@@ -124,11 +177,10 @@ const useCommonTrade = _ => {
         }
 
         TC.setTo(addr[_getIdx(selected)]);
+        token.addr = addr[_getIdx(selected)];
+        token.dec = await TC.decimals();
+        token.bal = await TC.balanceOf([P.priAccount]);
         common.setToken(token, selected);
-        const dec = await TC.decimals();
-        log.i('dec:', dec, selected);
-        common.setDec(dec, selected);
-        common.setTokenBalance(await TC.balanceOf([P.priAccount]), selected);
         common[`setShowBal${selected}`](!0);
         common[`setShowMaxBtn${selected}`](!0);
         common.setTokenCurrency(token.sym, selected);
@@ -141,7 +193,7 @@ const useCommonTrade = _ => {
             common.setFetching(!1);
             return dsp(stopLoading());
         }
-        if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
+        //if(selected === T_TYPE.B) { let t = addr[1]; addr[1] = addr[0]; addr[0] = t; }
         let pairExist = await _checkIfPairExists(addr);
         if(_areTokensBoth(addr)) {
             const p = _tryGetPossiblePath(addr);
@@ -154,9 +206,12 @@ const useCommonTrade = _ => {
             const lptBal = await TC.balanceOf([P.priAccount]);
             common.setLpTokenBalance(lptBal);
             const rsv = await PC.getReserves();
-            log.i('pair exists:', lptBal, rsv);
-            calcLiqPercentForSelCurrency(rsv, dec[0], dec[1], lptBal, pairExist.pr);
-            common.setHasPriceImpact(!0);
+            const dec = await TC.getPairDec(addr)
+            common.setDecPair(dec);
+            common.setReserves(rsv.map((r, i) => formatOk(r, dec[i])));
+            // log.i('pair exists:', lptBal, rsv);
+            // calcLiqPercentForSelCurrency(rsv, dec[0], dec[1], lptBal, pairExist.pr);
+            // common.setHasPriceImpact(!0);
             common.setIsFirstLP(!1);
             common.showPoolShare(!0);
         } else {
@@ -221,6 +276,12 @@ const useCommonTrade = _ => {
         ){
             log.e('need of approval for token 1');
             common.setTokenApproved(!1, T_TYPE.A);
+        } else if(
+            (isIP_A(tt) && ip >= common.reserves[0]) ||
+            (isIP_B(tt) && ip >= common.reserves[1])
+        ) {
+            r = !1;
+            t = ERR.INSUF_LIQ.msg + _getToken(tt).sym;
         }
         !r && l_t.e(t);
         common.setIsErr(!r);
@@ -257,6 +318,7 @@ const useCommonTrade = _ => {
         timeOut = setTimeout(async _ => {
             if(_genCriteriaOk(ip)) {
                 await (iss ? handleIP_swap(ip, tt) : handleIP_liquidity(ip, tt));
+                // put fetch chain data function here!
                 common.setFetching(!1);
             }
         }, MISC.TYPE_DELAY);
@@ -265,26 +327,25 @@ const useCommonTrade = _ => {
 
     async function handleIP_swap(ip, tt) {
         if(!hasVal(ip)) return common.setTokenValue(ip, togIP(tt));
+        log.i('addr pair:', common.addrPair, ip, common.reserves);
         let addrList = common.addrPair, 
             cList = [common.token1Currency, common.token2Currency];
         common.setFetching(!0);
-        if(!(await _swapCriteriaOk(ip, addrList, cList, tt))) return common.setFetching(!1);;
-        common.setExact(tt);
-        log.i('pair', addrList);
-        ip = xpand(toFull(ip, _getToken(tt).dec));
+        if(!(await _swapCriteriaOk(parseFloat(ip), addrList, cList, tt))) return common.setFetching(!1);;
+        common.setShowSwapInfo(!1);
+        const t1 = _getToken(tt);
+        const t2 = _getToken(togIP(tt));
+        const dec = [
+            isIP_A(tt) ? t1.dec : t2.dec,
+            isIP_B(tt) ? t2.dec : t1.dec,
+        ];
+        const ipF = formatOk(ip, dec[0]);
+        ip = formatRaw(ip, _getToken(tt).dec);
+        
+        log.i('pair', addrList, ip);
         const res = await RouterContract[`getAmounts${isIP_A(tt) ? 'Out' : 'In'}`]([ip, addrList]);
-        common.setHasPriceImpact(!0);
-        log.i('amounts:', res);
-        let finalAmount = '';
-        if (res.length) {
-            finalAmount = toDec(res[isIP_A(tt) ? res.length - 1 : 0], _getToken(togIP(tt)).dec).toFixed(8);
-            log.i('final amount:', finalAmount);
-            const ratio = Number(ip) / finalAmount;
-            common.setSharePoolValue(ratio.toFixed(10));
-            let out = toBgFix(toFull(finalAmount, _getToken(togIP(tt)).dec));
-            common.setMinReceived(Number(out) - (Number(out) * P.slippage / 100));
-            calculatePriceImpact(ip, addrList);
-        }
+        let finalAmount = formatOk(res[isIP_A(tt) ? res.length - 1 : 0], dec[1]).toFixed(8);
+        const ratio = ipF / finalAmount;
 
         if(isIP_B(tt) && await _balanceNotEnough(addrList[0], finalAmount)) {
             ip = ERR.LOW_BAL.msg + cList[0];
@@ -293,7 +354,20 @@ const useCommonTrade = _ => {
             common.setErrText(ip);
         }
         
+        const done = await computePriceImpact(
+            dec, 
+            isIP_A(tt) ? ip : finalAmount, 
+            isIP_A(tt) ? finalAmount : ip, 
+            isIP_A(tt)
+        ); 
+        
+        common.setIsIn(isIP_A(tt));
         common.setTokenValue(finalAmount, togIP(tt));
+        common.setLPFee(_getLPFee(ipF));
+        common.setSharePoolValue(ratio.toFixed(10));
+        common.setMaxSpent(xpand(isIP_A(tt) ? ipF : toDec(getValueAfterSlippage(finalAmount, dec[0],!1), dec[0])));
+        common.setMinReceived(xpand(isIP_A(tt) ? formatOk(getValueAfterSlippage(finalAmount,dec[0],!0), dec[1]) : formatOk(ip, dec[1])));
+        common.setShowSwapInfo(!0);
     }
 
     async function handleIP_liquidity(ip, tt) {
@@ -375,18 +449,18 @@ const useCommonTrade = _ => {
         let addr = try2weth(tkn.addr);
         TC.setTo(addr);
         let allowance = await TC.allowanceOf([P.priAccount, ADDRESS.ROUTER]);
-        allowance = toDec(allowance, tkn.dec);
+        allowance = formatOk(allowance, tkn.dec);
         log.i('allowance:', amount, allowance, amount <= allowance);
         return amount <= allowance;
     }
 
     const getBalance = async addr => {
         let bal = 0;
-        if (isEth(addr) || isWeth(addr)) 
-            bal = await getEthBalance(P.priAccount);
+        if (isEth(addr) || isWeth(addr))
+            bal = formatOk(await getEthBalance(P.priAccount), MISC.DEF_DEC);
         else {
             TC.setTo(addr);
-            bal = xpand(toFull(await TC.balanceOf([P.priAccount]), await TC.decimals()));
+            bal = formatOk(await TC.balanceOf([P.priAccount]), await TC.decimals());
         }
         
         log.i('getting balance:', addr, bal);
@@ -445,31 +519,6 @@ const useCommonTrade = _ => {
         return null;
     }
 
-    const calculatePriceImpact = async (amt, addrForPriceImpact) => {
-        let pImp, calPriceImpact;
-        const cPair = await FactoryContract.getPair(addrForPriceImpact);
-        PC.setTo(cPair);
-        const reserve = await PC.getReserves();
-        const t = await PC.getTokens();
-        const dec = await TC.getPairDec(t);
-        if (rEq(t[0], addrForPriceImpact[0])) {
-            const res = Number(reserve[0]) / (10 ** dec[0]);
-
-            calPriceImpact = (amt / res) * 100;
-            pImp = (calPriceImpact - (calPriceImpact * THRESHOLD.LIQUIDITY_PROVIDER_FEE) / 100);
-            if (common.hasPriceImpact) Number(pImp * 2);
-            common.setPriceImpact(pImp.toFixed(5));
-        }
-        if (rEq(t[1], addrForPriceImpact[1])) {
-            const res = Number(reserve[1]) / (10 ** dec[1]);
-
-            calPriceImpact = (amt / res) * 100;
-            pImp = (calPriceImpact - (calPriceImpact * THRESHOLD.LIQUIDITY_PROVIDER_FEE) / 100);
-            if (common.hasPriceImpact) pImp = Number(pImp * 2);
-            common.setPriceImpact(pImp.toFixed(5));
-        }
-    }
-
     const _searchTokenByNameOrAddress = async q => {
         const TC = TokenContract;
         try {
@@ -518,6 +567,29 @@ const useCommonTrade = _ => {
         }
     }
 
+    const handleSwitchCurrencies = _ => {
+        if(rEq(common.token2Currency, STR.SEL_TKN))
+            return l_t.e(ERR.SEL_TOKEN.msg);
+        common.setExact(togIP(common.exact));
+        common.setToken(common.token1, T_TYPE.B);
+        common.setToken(common.token2, T_TYPE.A);
+        common.setTokenIcon(common.token1Icon, T_TYPE.B);
+        common.setTokenIcon(common.token2Icon, T_TYPE.A);
+        common.setTokenValue(common.token1Value, T_TYPE.B);
+        common.setTokenValue(common.token2Value, T_TYPE.A);
+        common.setTokenBalance(common.token1Balance, T_TYPE.B);
+        common.setTokenBalance(common.token2Balance, T_TYPE.A);
+        common.setTokenCurrency(common.token1Currency, T_TYPE.B);
+        common.setTokenCurrency(common.token2Currency, T_TYPE.A);
+        let dec = swap(common.decPair)
+        let addr = swap(common.addrPair);
+        let reserves = swap(common.reserves);
+        common.setDecPair(dec);        
+        common.setAddrPair(addr);        
+        common.setReserves(reserves);        
+        
+    }
+
     const handleClose = _ => common.setShow(!1);
 
     const cTrade = {
@@ -544,8 +616,8 @@ const useCommonTrade = _ => {
         getApprovalButton,
         handleTokenApproval,
         openSelectTokenModal,
-        calculatePriceImpact,
         getValueAfterSlippage,
+        handleSwitchCurrencies,
     }
 
     return cTrade;

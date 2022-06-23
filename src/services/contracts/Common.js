@@ -1,6 +1,6 @@
 import Web3 from "web3";
 import l_t from "../logging/l_t";
-import { remPoint, rEq, toFull } from "../utils/global";
+import { isAddr, remPoint, rEq, toFull } from "../utils/global";
 import { ERR, MISC, NETWORK, WALLET_TYPE } from "../constant";
 import WalletConnectProvider from '@walletconnect/web3-provider'
 import log from "../logging/logger";
@@ -87,6 +87,7 @@ function getGasPrice() {
 }
 
 async function getEthBalance (addr) {
+    if(!isAddr(addr)) return 0;
     return await (Web_3()).eth.getBalance(addr);
 }
 

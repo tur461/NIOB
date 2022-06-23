@@ -76,6 +76,7 @@ const typingGuard = (cbk, p) => {
 const indexOf = (s, q) => s.indexOf(q);
 
 const _remPoint = v => {
+    v = `${v}`;
     const i = indexOf(v, '.');
     if(contains(v, '.')) return v.substring(0, i);
     return v;
@@ -90,6 +91,11 @@ const remPoint = p => {
     else a[b] = p[b];
     return a;
 }, {}) : p instanceof String ? _remPoint(p) : p;
+}
+
+const hasPoint = s => {
+    s = `${s}`;
+    return s.indexOf('.') >= 0;
 }
 
 const fixBy = (s, n=3) => {
@@ -113,10 +119,29 @@ const parseTxErr = e => {
     return TX_ERR.DEF;
 }
 
+const formatRaw = (v, d) => {
+    v = toFull(v, d);
+    v = xpand(v);
+    v = _remPoint(v);
+    return v;
+}
+const formatOk = (v, d) => {
+    if(hasPoint(v)) return v;
+    v = toDec(v, d);
+    return Number(v);
+}
+
+const swap = v => {
+    v = [...v];
+    const t = v[0]; v[0] = v[1]; v[1] = t;
+    return [...v];
+}
+
 export {
     LS,
     rEq,
     zero,
+    swap,
     clone,
     toFlr,
     fixBy,
@@ -128,11 +153,14 @@ export {
     hasVal,
     toBgFix,
     obj2list,
+    hasPoint,
     remPoint,
     rDefined,
+    formatOk,
     contains,
     isDefined,
     iContains,
+    formatRaw,
     parseTxErr,
     typingGuard,
 }

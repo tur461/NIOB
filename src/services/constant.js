@@ -21,7 +21,8 @@ const LINKS = {
 
 const THRESHOLD = {
   MIN_LIQUIDITY: 10 ** 3,
-  LIQUIDITY_PROVIDER_FEE: 0.2,
+  HIGH_PRICE_IMPACT: 3,
+  LIQUIDITY_PROVIDER_FEE: 2,
 
 }
 
@@ -51,7 +52,8 @@ const MISC = {
   DEF_DEC: 18,
   TYPE_DELAY: 350,
   DEF_DEADLINE: 20,
-  DEF_SLIPPAGE: 0.5,
+  DEF_SLIPPAGE: 5, // %
+  PERCENT_RESOLUTION: '10000',
 }
 
 const VAL = {
@@ -94,6 +96,7 @@ const WALLET_TYPE = {
 const NETWORK = {
   VERSION: '0.1',
   CHAIN_ID: '0x4', // 4 for rinkeby
+  CHAIN_ID_INT: 4, // in int
   NATIVE_CURR_SYMBOL: 'ETH',
   NATIVE_CURR_NAME: 'Ether',
   NATIVE_CURR_DEC: MISC.DEF_DEC,
@@ -184,6 +187,7 @@ const ERR = {
   SEL_TOKEN: ErrObj.create('Please select token!'),
   PAIR_NOT_EXIST: ErrObj.create('Pair doesn\'t exist!'),
   XCESV_IP_AMT: ErrObj.create('Excessive input amount!'),
+  INSUF_LIQ: ErrObj.create('Insufficient liquidity for '),
   INSUF_OP_AMT: ErrObj.create('Insufficient output amount!'),
   PATH_NOT_EXIST: ErrObj.create('No path exist in the pair!'),
   INSTALL_WALLET: ErrObj.create('You have to install Wallet!'),

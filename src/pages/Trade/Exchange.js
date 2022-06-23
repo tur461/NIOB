@@ -89,7 +89,7 @@ const Exchange = (props) => {
           />
           <div 
             className="convert_plus" 
-            onClick={Xchange.handleSwitchCurrencies}
+            onClick={cTrade.handleSwitchCurrencies}
           > <img src={ArrowDown} alt='icon 10'/> </div>
           <SelectCoin
             className="mb-0"
@@ -149,11 +149,21 @@ const Exchange = (props) => {
         </CardCustom>
         {
           !common.isFetching && !common.isErr ?
+          common.showSwapInfo &&
             <div className="details-section">
               <ul>
-                <li>Minimum received:<span>{common.minReceived / 10 ** 18}</span></li>
-                <li>Price impact:<span>{common.priceImpact}%</span></li>
-                <li>Liquidity provider fee:<span>{Xchange.liquidityProviderFee()}</span></li>
+                <li>Maximum spent:<span>{common.maxSpent}</span></li>
+                <li>Minimum received:<span>{common.minReceived}</span></li>
+                <li className={common.hasPriceImpact ? 'warning-text' : ''}>
+                  Price impact:
+                  <span>
+                    {common.priceImpact}%
+                  </span>
+                  <span>
+                    {common.hasPriceImpact ? '(high)' : ''}
+                  </span>
+                </li>
+                <li>Liquidity provider fee:<span>{`${common.lpFee} ETH`}</span></li>
               </ul>
             </div> : !common.isErr ? <Loader stroke='white' text='please wait..'/> : <></>
           }
