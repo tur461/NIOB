@@ -1,5 +1,4 @@
 import React from "react";
-import {Token, Fetcher, Route, Trade, TradeType, TokenAmount, Percent} from '@uniswap/sdk';
 import useCommon from "../redux/volatiles/common"
 import { useDispatch, useSelector } from "react-redux";
 import ButtonPrimary from "../components/Button/Button";
@@ -97,37 +96,6 @@ const useCommonTrade = _ => {
         prAddr= [await FactoryContract.getPair([addr[0], sma]), await FactoryContract.getPair([addr[1], sma])];
         if(isAddr(prAddr[0]) && isAddr(prAddr[1])) return [addr[0], sma, addr[1]]
         return null; 
-    }
-
-    const fetchAndSetChainData = async (aList, dList, ipAmt, isIn) => {
-        try {
-            const t1 = new Token(NETWORK.CHAIN_ID_INT, aList[0], dList[0]);
-            const t2 = new Token(NETWORK.CHAIN_ID_INT, aList[1], dList[1]);
-            const pair = await Fetcher.fetchPairData(t1, t2);
-            log.i(aList, dList, ipAmt, isIn, pair);
-            const route = new Route([pair], t1, t2);
-            const trade = new Trade(
-                route,
-                new TokenAmount(
-                    isIn ?  t1 : t2, 
-                    ipAmt,
-                ),
-                isIn ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT
-            );
-            
-            log.i('price impact:', trade.priceImpact.toFixed(4));
-            common.setCPair(pair);
-            common.setTrade(trade);
-            common.setRoute(route);
-            common.setTokens([t1, t2]);
-            common.setDataFetched(!0);
-            common.setPriceImpact(trade.priceImpact.toFixed(4));
-        } catch(e) {
-            log.e('error fetching data:', e);
-            common.setDataFetched(!1);
-            return !1;
-        }
-        return !0;
     }
 
     const computePriceImpact = async (dec, amtIn, amtOut, isIn) => {

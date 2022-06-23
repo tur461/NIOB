@@ -1,4 +1,3 @@
-import {Percent} from '@uniswap/sdk';
 import create from 'zustand';
 import { ADDRESS, MISC, STR, TOKENS, T_TYPE } from "../../services/constant";
 import { TOKEN_LIST } from "../../assets/tokens";

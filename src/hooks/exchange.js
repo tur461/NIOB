@@ -1,4 +1,3 @@
-import {Trade, Percent, TokenAmount} from '@uniswap/sdk';
 import { ERR, MISC, T_TYPE } from "../services/constant";
 import { BigNumber } from "bignumber.js";
 import useCommonTrade from "./CommonTrade";

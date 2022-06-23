@@ -1,4 +1,3 @@
-import {Percent} from '@uniswap/sdk';
 import React, { useState } from "react";
 import { Col, Row, Modal } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
