@@ -36,7 +36,6 @@ const Header = props => {
 
     return(
         <div className={`header_style ${props.className}`}>
-                <div style={{color: 'white'}}>WELCOME to dex</div>
                 <div className="header_left_style">
                     <div className="for_desktop">
                         <div  className="hamburg" onClick={props.small_nav}>

@@ -56,56 +56,58 @@ const ImportPool = props => {
                         </div>
                         <Col className="import-pool--bottom">
                             <button onClick={_ => cTrade.openSelectTokenModal(T_TYPE.B)}>
-                                {common.token2.icon ? 
-                                <img className="token-icon" src={common.token2.icon}  alt="icon 22"/> :
+                                {common.token2?.icon ? 
+                                <img className="token-icon" src={common.token2?.icon}  alt="icon 22"/> :
                                 <></>}
                                 <strong style={{ fontSize: props.selectTokenText ? "" : "" }}>
-                                {common.token2.sym || 'Select Token'}
+                                {common.token2?.sym || 'Select Token'}
                                 </strong>
                                 <img className="dropdown-icon" src={iconDropDown}  alt="icon 22"/>
                             </button>
                         </Col>
                     </div>
-                    {
-                        common.isFetching ? <Loader stroke='white' text='please wait..'/> :
-                        (isAddr(common.addrPair[0]) && isAddr(common.addrPair[1])) ?
-                            common.pairExist ?
-                                <div className="">
-                                    <p>Pool Found!</p>
-                                    <h4>LP TOKENS IN YOUR WALLET</h4>
-                                    <ul className="lp-token-details--section">
-                                        <li>
-                                            <img src={common.token1.icon} alt="icon" /> 
-                                            <img src={common.token2.icon} alt="icon" /> 
-                                            <span>
-                                            {   common.token1.sym} / {common.token2.sym}
-                                            </span> 
-                                            <span>
-                                                {fixBy(common.lpTokenBalance, 5)}
-                                            </span>
-                                        </li> <br />
-                                        <li>
-                                            <span>{common.token1.sym}:</span> <span>{common.token1.bal}</span>
-                                        </li> <br />
-                                        <li>
-                                            <span>{common.token2.sym}:</span> <span>{common.token2.bal}</span>
-                                        </li> <br />
-                                    </ul>
-                                </div>
+                    <div>
+                        {
+                            common.isFetching ? <Loader stroke='white' text='please wait..'/> :
+                            (isAddr(common.addrPair[0]) && isAddr(common.addrPair[1])) ?
+                                common.pairExist?
+                                    <div className="">
+                                        <p>Pool Found!</p>
+                                        <h4>LP TOKENS IN YOUR WALLET</h4>
+                                        <ul className="lp-token-details--section">
+                                            <li>
+                                                <img src={common.token1.icon} alt="icon" /> 
+                                                <img src={common.token2.icon} alt="icon" /> 
+                                                <span>
+                                                {   common.token1.sym} / {common.token2.sym}
+                                                </span> 
+                                                <span>
+                                                    {fixBy(common.lpTokenBalance, 5)}
+                                                </span>
+                                            </li> <br />
+                                            <li>
+                                                <span>{common.token1.sym}:</span> <span>{common.token1.bal}</span>
+                                            </li> <br />
+                                            <li>
+                                                <span>{common.token2.sym}:</span> <span>{common.token2.bal}</span>
+                                            </li> <br />
+                                        </ul>
+                                    </div>
+                                    :
+                                    <div className="">
+                                        <p>No pool found</p>
+                                        {/* <p>
+                                            <Link to="#" onClick={() => props.addBtn()}>Create pool</Link>
+                                        </p> */}
+                                        <br />
+                                    </div>
                                 :
                                 <div className="">
-                                    <p>No pool found</p>
-                                    {/* <p>
-                                        <Link to="#" onClick={() => props.addBtn()}>Create pool</Link>
-                                    </p> */}
+                                    <p>Select a token to find your liquidity.</p>
                                     <br />
                                 </div>
-                            :
-                            <div className="">
-                                <p>Select a token to find your liquidity.</p>
-                                <br />
-                            </div>
-                    }
+                        }
+                    </div>
                 </CardCustom>
             </Container>
             <ModalCurrency
